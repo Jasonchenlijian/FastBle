@@ -64,53 +64,53 @@ public class BleManager {
     /**
      * 扫描连接符合名称的设备，并监听数据变化
      */
-    public void connectDevice(String deviceName,
+    public boolean connectDevice(String deviceName,
                               long time_out,
                               BleManagerConnectCallback callback) {
-        scanAndConnect(deviceName, time_out, callback);
+        return scanAndConnect(deviceName, time_out, callback);
     }
 
     /**
      * notify
      */
-    public void notifyDevice(String uuid_service,
+    public boolean notifyDevice(String uuid_service,
                              String uuid_notification,
                              String uuid_client,
                              BleManagerNotifyCallback callback) {
-        enableNotificationOfCharacteristic(uuid_service, uuid_notification, uuid_client, callback);
+        return enableNotificationOfCharacteristic(uuid_service, uuid_notification, uuid_client, callback);
 
     }
 
     /**
      * indicate
      */
-    public void indicateDevice(String uuid_service,
+    public boolean indicateDevice(String uuid_service,
                                String uuid_indication,
                                String uuid_client,
                                BleManagerIndicateCallback callback) {
-        enableIndicationOfCharacteristic(uuid_service, uuid_indication, uuid_client, callback);
+        return enableIndicationOfCharacteristic(uuid_service, uuid_indication, uuid_client, callback);
 
     }
 
     /**
      * 向设备写特征值
      */
-    public void writeDevice(String uuid_service,
+    public boolean writeDevice(String uuid_service,
                             String uuid_write,
                             String uuid_client,
                             byte[] data,
                             BleManagerWriteCallback callback) {
-        writeDataToCharacteristic(uuid_service, uuid_write, uuid_client, data, callback);
+        return writeDataToCharacteristic(uuid_service, uuid_write, uuid_client, data, callback);
     }
 
     /**
      * 向设备读特征值
      */
-    public void readDevice(String uuid_service,
+    public boolean readDevice(String uuid_service,
                            String uuid_read,
                            String uuid_client,
                            BleManagerReadCallback callback) {
-        readDataFromCharacteristic(uuid_service, uuid_read, uuid_client, callback);
+        return readDataFromCharacteristic(uuid_service, uuid_read, uuid_client, callback);
     }
 
     /**
@@ -143,9 +143,9 @@ public class BleManager {
     /**
      * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
      */
-    private void scanAndConnect(String deviceName, long time_out, final BleManagerConnectCallback connectCallback) {
+    private boolean scanAndConnect(String deviceName, long time_out, final BleManagerConnectCallback connectCallback) {
 
-        bleBluetooth.scanNameAndConnect(deviceName, time_out, false, new BleBleGattCallback() {
+        return bleBluetooth.scanNameAndConnect(deviceName, time_out, false, new BleBleGattCallback() {
 
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
@@ -177,9 +177,9 @@ public class BleManager {
     /**
      * 接收特征值改变通知--Notification
      */
-    private void enableNotificationOfCharacteristic(String uuid_service, String uuid_notification,
+    private boolean enableNotificationOfCharacteristic(String uuid_service, String uuid_notification,
                                                     String uuid_client, final BleManagerNotifyCallback notifyCallback) {
-        bleBluetooth.newBleConnector()
+        return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_notification, null, uuid_client)
                 .enableCharacteristicNotification(new BleCharacterCallback() {
                     @Override
@@ -202,9 +202,9 @@ public class BleManager {
     /**
      * 接收特征值改变通知--Indication
      */
-    private void enableIndicationOfCharacteristic(String uuid_service, String uuid_indication,
+    private boolean enableIndicationOfCharacteristic(String uuid_service, String uuid_indication,
                                                   String uuid_client, final BleManagerIndicateCallback indicateCallback) {
-        bleBluetooth.newBleConnector()
+        return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_indication, null, uuid_client)
                 .enableCharacteristicIndication(new BleCharacterCallback() {
                     @Override
@@ -227,9 +227,9 @@ public class BleManager {
     /**
      * 写特征值
      */
-    private void writeDataToCharacteristic(String uuid_service, String uuid_write,
+    private boolean writeDataToCharacteristic(String uuid_service, String uuid_write,
                                            String uuid_client, byte[] data, final BleManagerWriteCallback writeCallback) {
-        bleBluetooth.newBleConnector()
+        return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_write, null, uuid_client)
                 .writeCharacteristic(data, new BleCharacterCallback() {
                     @Override
@@ -252,9 +252,9 @@ public class BleManager {
     /**
      * 读特征值
      */
-    private void readDataFromCharacteristic(String uuid_service, String uuid_read,
+    private boolean readDataFromCharacteristic(String uuid_service, String uuid_read,
                                             String uuid_client, final BleManagerReadCallback readCallback) {
-        bleBluetooth.newBleConnector()
+        return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_read, null, uuid_client)
                 .readCharacteristic(new BleCharacterCallback() {
                     @Override
