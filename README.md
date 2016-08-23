@@ -1,14 +1,17 @@
 # BleLib
-Android BLE 蓝牙开发框架，使用回调方式处理，搜索、连接、notify、indicate、读、写等一系列蓝牙操作。
+Android BLE 蓝牙开发框架，使用回调方式处理，搜索、连接、notify、indicate、读、写等一系列蓝牙操作。传参，然后回调结果，就是这么简单。
 
-## Usage ##
 ***
-- 初始化
+
+## Usage
+***
+- #####初始化
 
       bleManager = BleManager.getInstance();
+
       bleManager.init(this);
 
-- 扫描指定名称设备、并连接
+- #####扫描指定名称设备、并连接
 
         bleManager.connectDevice(
                 DEVICE_NAME,
@@ -30,7 +33,7 @@ Android BLE 蓝牙开发框架，使用回调方式处理，搜索、连接、no
                     }
                 });
 
-- notify
+- #####notify
 
         bleManager.notifyDevice(
                 UUID_SERVICE_LISTEN,
@@ -51,7 +54,7 @@ Android BLE 蓝牙开发框架，使用回调方式处理，搜索、连接、no
 
                 });
 
-- indicate
+- #####indicate
 
         bleManager.indicateDevice(
                 UUID_SERVICE_LISTEN,
@@ -71,7 +74,7 @@ Android BLE 蓝牙开发框架，使用回调方式处理，搜索、连接、no
                     }
                 });
 
-- 写指令
+- #####写指令
 
         bleManager.writeDevice(
                 UUID_SERVICE_OPERATE,
@@ -92,6 +95,10 @@ Android BLE 蓝牙开发框架，使用回调方式处理，搜索、连接、no
                    }
                 });
 
-- 关闭操作
+- #####关闭操作
 
         bleManager.closeBluetoothGatt();
+
+- #####其他
+    其他蓝牙操作可参考示例代码，或从BleManager这个类中开放的方法中找到。
+
