@@ -50,9 +50,6 @@ public class BluetoothUtil {
      * Clears the device cache. After uploading new hello4 the DFU target will have other services than before.
      */
     public static boolean refreshDeviceCache(BluetoothGatt gatt) {
-        /*
-         * There is a refresh() method in BluetoothGatt class but for now it's hidden. We will call it using reflections.
-		 */
         try {
             final Method refresh = BluetoothGatt.class.getMethod("refresh");
             if (refresh != null) {

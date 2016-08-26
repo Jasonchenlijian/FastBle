@@ -1,12 +1,5 @@
 package com.clj.fastble.utils;
 
-/**
- * reference apache commons <a
- * href="http://commons.apache.org/codec/">http://commons.apache.org/codec/</a>
- *
- * @author Aub
- *
- */
 public class HexUtil {
 
     /**
@@ -57,7 +50,6 @@ public class HexUtil {
     protected static char[] encodeHex(byte[] data, char[] toDigits) {
         int l = data.length;
         char[] out = new char[l << 1];
-        // two characters form the hex value.
         for (int i = 0, j = 0; i < l; i++) {
             out[j++] = toDigits[(0xF0 & data[i]) >>> 4];
             out[j++] = toDigits[0x0F & data[i]];

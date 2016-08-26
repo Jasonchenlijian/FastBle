@@ -4,7 +4,7 @@ package com.clj.fastble.log;
 public final class BleLog {
 
 	public static boolean isPrint = true;
-	private static String defaultTag = "Log";
+	private static String defaultTag = "FastBle";
 
 	private BleLog() {}
 

@@ -27,12 +27,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-/**
- * One Device, One connection, One {@link BleBluetooth} Instance.
- * One connection can has many callback.
- * One {@link BleBluetooth} Instance can add many {@link BluetoothGattCallback}
- * {@link BleBleGattCallback} is an abstract extension of {@link BluetoothGattCallback}.
- */
+
 public class BleBluetooth {
     private static final String TAG = BleBluetooth.class.getSimpleName();
 
