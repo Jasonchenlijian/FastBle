@@ -141,6 +141,15 @@ public class BleManager {
     }
 
     /**
+     * 关闭蓝牙
+     */
+    public void disableBluetooth() {
+        if (bleBluetooth != null) {
+            bleBluetooth.disableBluetooth();
+        }
+    }
+
+    /**
      * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
      */
     private boolean scanAndConnect(String deviceName, long time_out, final BleManagerConnectCallback connectCallback) {
