@@ -3,7 +3,6 @@ package com.clj.fastble;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.util.Log;
 
@@ -49,8 +48,6 @@ public class BleManager {
 
     /**
      * 初始化
-     *
-     * @param context Activity
      */
     public void init(Context context) {
 
@@ -62,11 +59,18 @@ public class BleManager {
     }
 
     /**
+     * 显示异常信息
+     */
+    public void handleException(BleException exception) {
+        bleExceptionHandler.handleException(exception);
+    }
+
+    /**
      * 扫描连接符合名称的设备，并监听数据变化
      */
     public boolean connectDevice(String deviceName,
-                              long time_out,
-                              BleManagerConnectCallback callback) {
+                                 long time_out,
+                                 BleBleGattCallback callback) {
         return scanAndConnect(deviceName, time_out, callback);
     }
 
@@ -74,32 +78,30 @@ public class BleManager {
      * notify
      */
     public boolean notifyDevice(String uuid_service,
-                             String uuid_notification,
-                             String uuid_client,
-                             BleManagerNotifyCallback callback) {
+                                String uuid_notification,
+                                String uuid_client,
+                                BleCharacterCallback callback) {
         return enableNotificationOfCharacteristic(uuid_service, uuid_notification, uuid_client, callback);
-
     }
 
     /**
      * indicate
      */
     public boolean indicateDevice(String uuid_service,
-                               String uuid_indication,
-                               String uuid_client,
-                               BleManagerIndicateCallback callback) {
+                                  String uuid_indication,
+                                  String uuid_client,
+                                  BleCharacterCallback callback) {
         return enableIndicationOfCharacteristic(uuid_service, uuid_indication, uuid_client, callback);
-
     }
 
     /**
      * 向设备写特征值
      */
     public boolean writeDevice(String uuid_service,
-                            String uuid_write,
-                            String uuid_client,
-                            byte[] data,
-                            BleManagerWriteCallback callback) {
+                               String uuid_write,
+                               String uuid_client,
+                               byte[] data,
+                               BleCharacterCallback callback) {
         return writeDataToCharacteristic(uuid_service, uuid_write, uuid_client, data, callback);
     }
 
@@ -107,9 +109,9 @@ public class BleManager {
      * 向设备读特征值
      */
     public boolean readDevice(String uuid_service,
-                           String uuid_read,
-                           String uuid_client,
-                           BleManagerReadCallback callback) {
+                              String uuid_read,
+                              String uuid_client,
+                              BleCharacterCallback callback) {
         return readDataFromCharacteristic(uuid_service, uuid_read, uuid_client, callback);
     }
 
@@ -117,10 +119,10 @@ public class BleManager {
      * 获取当前状态
      */
     public void getBluetoothState() {
-        Log.d(TAG, "连接状态:  " + bleBluetooth.getConnectionState()
-                + '\n' + "是否扫描中: " + bleBluetooth.isInScanning()
-                + '\n' + "是否连接: " + bleBluetooth.isConnected()
-                + '\n' + "服务是否被发现: " + bleBluetooth.isServiceDiscovered());
+        Log.d(TAG, "ConnectionState:  " + bleBluetooth.getConnectionState()
+                + "\nisInScanning: " + bleBluetooth.isInScanning()
+                + "\nisConnected: " + bleBluetooth.isConnected()
+                + "\nisServiceDiscovered: " + bleBluetooth.isServiceDiscovered());
     }
 
     /**
@@ -137,6 +139,15 @@ public class BleManager {
         if (bleBluetooth != null && bleBluetooth.isConnectingOrConnected()) {
             bleBluetooth.closeBluetoothGatt();
             bleBluetooth.removeAllCallback();
+        }
+    }
+
+    /**
+     * 开启蓝牙
+     */
+    public void enableBluetooth() {
+        if (bleBluetooth != null) {
+            bleBluetooth.enableBluetooth();
         }
     }
 
@@ -177,146 +188,73 @@ public class BleManager {
         return bleBluetooth.isServiceDiscovered();
     }
 
+    /**
+     * 将某一不再需要的接口移除(notify、indicate、 write、read)
+     */
+    public void removeBleCharacterCallback(BleCharacterCallback callback) {
+        bleBluetooth.removeGattCallback(callback.getBluetoothGattCallback());
+    }
+
+    /**
+     * 将某一不再需要的接口移除(connect)
+     */
+    public void removeBleBleGattCallback(BleBleGattCallback callback) {
+        bleBluetooth.removeGattCallback(callback);
+    }
 
 
-
+    /*************************************inner method****************************************************/
 
     /**
      * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
      */
-    private boolean scanAndConnect(String deviceName, long time_out, final BleManagerConnectCallback connectCallback) {
+    private boolean scanAndConnect(String deviceName, long time_out, BleBleGattCallback callback) {
 
-        return bleBluetooth.scanNameAndConnect(deviceName, time_out, false, new BleBleGattCallback() {
-
-            @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                if (connectCallback != null) {
-                    connectCallback.onConnectSuccess(gatt, status);
-                }
-                gatt.discoverServices();                // 连接上设备，则搜索服务
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                if (connectCallback != null) {
-                    connectCallback.onServicesDiscovered(gatt, status);
-                }
-                BluetoothUtil.printServices(gatt);     // 打印该设备所有服务、特征值
-                getBluetoothState();                   // 打印与该设备的当前状态
-            }
-
-            @Override
-            public void onConnectFailure(BleException exception) {
-                if (connectCallback != null) {
-                    connectCallback.onConnectFailure(exception);
-                }
-                bleExceptionHandler.handleException(exception);
-            }
-        });
+        return bleBluetooth.scanNameAndConnect(deviceName, time_out, false, callback);
     }
 
     /**
      * 接收特征值改变通知--Notification
      */
     private boolean enableNotificationOfCharacteristic(String uuid_service, String uuid_notification,
-                                                    String uuid_client, final BleManagerNotifyCallback notifyCallback) {
+                                                       String uuid_client, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_notification, null, uuid_client)
-                .enableCharacteristicNotification(new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        if (notifyCallback != null) {
-                            notifyCallback.onNotifyDataChangeSuccess(characteristic);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                        if (notifyCallback != null) {
-                            notifyCallback.onNotifyDataChangeFailure(exception);
-                        }
-                        bleExceptionHandler.handleException(exception);
-                    }
-                });
+                .enableCharacteristicNotification(callback);
     }
 
     /**
      * 接收特征值改变通知--Indication
      */
     private boolean enableIndicationOfCharacteristic(String uuid_service, String uuid_indication,
-                                                  String uuid_client, final BleManagerIndicateCallback indicateCallback) {
+                                                     String uuid_client, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_indication, null, uuid_client)
-                .enableCharacteristicIndication(new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        if (indicateCallback != null) {
-                            indicateCallback.onIndicateDataChangeSuccess(characteristic);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                        if (indicateCallback != null) {
-                            indicateCallback.onIndicateDataChangeFailure(exception);
-                        }
-                        bleExceptionHandler.handleException(exception);
-                    }
-                });
+                .enableCharacteristicIndication(callback);
     }
 
     /**
      * 写特征值
      */
     private boolean writeDataToCharacteristic(String uuid_service, String uuid_write,
-                                           String uuid_client, byte[] data, final BleManagerWriteCallback writeCallback) {
+                                              String uuid_client, byte[] data, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_write, null, uuid_client)
-                .writeCharacteristic(data, new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        if (writeCallback != null) {
-                            writeCallback.onDataWriteSuccess(characteristic);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                        if (writeCallback != null) {
-                            writeCallback.onDataWriteFailure(exception);
-                        }
-                        bleExceptionHandler.handleException(exception);
-                    }
-                });
+                .writeCharacteristic(data, callback);
     }
 
     /**
      * 读特征值
      */
     private boolean readDataFromCharacteristic(String uuid_service, String uuid_read,
-                                            String uuid_client, final BleManagerReadCallback readCallback) {
+                                               String uuid_client, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_read, null, uuid_client)
-                .readCharacteristic(new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        if (readCallback != null) {
-                            readCallback.onDataReadSuccess(characteristic);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                        if (readCallback != null) {
-                            readCallback.onDataReadFailure(exception);
-                        }
-                        bleExceptionHandler.handleException(exception);
-                    }
-                });
+                .readCharacteristic(callback);
     }
 
 
-    /********************************以下方法待完善*******************************/
+    /********************************wait*******************************/
 
     /**
      * 扫描所有符合名称的设备，并列出来

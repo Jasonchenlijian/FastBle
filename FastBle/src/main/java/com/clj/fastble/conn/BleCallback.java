@@ -7,12 +7,12 @@ import com.clj.fastble.exception.BleException;
 public abstract class BleCallback {
     private BluetoothGattCallback bluetoothGattCallback;
 
-    protected BleCallback setBluetoothGattCallback(BluetoothGattCallback bluetoothGattCallback) {
+    public BleCallback setBluetoothGattCallback(BluetoothGattCallback bluetoothGattCallback) {
         this.bluetoothGattCallback = bluetoothGattCallback;
         return this;
     }
 
-    protected BluetoothGattCallback getBluetoothGattCallback() {
+    public BluetoothGattCallback getBluetoothGattCallback() {
         return bluetoothGattCallback;
     }
 

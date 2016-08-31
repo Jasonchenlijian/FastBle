@@ -39,12 +39,6 @@
             android:layout_marginTop="30dp"
             android:text="向某一特征值写数据" />
 
-        <Button
-            android:id="@+id/btn_41"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="监听写完之后的数据改变" />
-
 
         <Button
             android:id="@+id/btn_6"
