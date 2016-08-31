@@ -15,7 +15,7 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
         bleManager.connectDevice(
                 DEVICE_NAME,
                 TIME_OUT,
-                new BleBleGattCallback() {
+                new BleGattCallback() {
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
