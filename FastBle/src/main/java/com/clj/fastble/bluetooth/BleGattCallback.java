@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGattCallback;
 import com.clj.fastble.exception.BleException;
 
 
-public abstract class BleBleGattCallback extends BluetoothGattCallback {
+public abstract class BleGattCallback extends BluetoothGattCallback {
 
     public abstract void onConnectSuccess(BluetoothGatt gatt, int status);
 

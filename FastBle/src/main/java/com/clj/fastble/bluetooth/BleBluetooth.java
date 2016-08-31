@@ -77,7 +77,7 @@ public class BleBluetooth {
         return callbackList.add(callback);
     }
 
-    public boolean addGattCallback(BleBleGattCallback callback) {
+    public boolean addGattCallback(BleGattCallback callback) {
         return callbackList.add(callback);
     }
 
@@ -147,7 +147,7 @@ public class BleBluetooth {
      */
     public synchronized BluetoothGatt connect(final BluetoothDevice device,
                                               final boolean autoConnect,
-                                              final BleBleGattCallback callback) {
+                                              final BleGattCallback callback) {
         Log.i(TAG, "connect name：" + device.getName()
                 + " mac:" + device.getAddress()
                 + " autoConnect ------> " + autoConnect);
@@ -169,7 +169,7 @@ public class BleBluetooth {
      *                    device becomes available (true).
      * @param callback    GATT callback handler that will receive asynchronous callbacks.
      */
-    public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleBleGattCallback callback) {
+    public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(name)) {
             throw new IllegalArgumentException("非法设备名 ! ");
         }
@@ -292,7 +292,7 @@ public class BleBluetooth {
         return connectionState;
     }
 
-    private BleBleGattCallback coreGattCallback = new BleBleGattCallback() {
+    private BleGattCallback coreGattCallback = new BleGattCallback() {
 
         @Override
         public void onConnectFailure(BleException exception) {
@@ -300,8 +300,8 @@ public class BleBluetooth {
 
             bluetoothGatt = null;
             for (BluetoothGattCallback call : callbackList) {
-                if (call instanceof BleBleGattCallback) {
-                    ((BleBleGattCallback) call).onConnectFailure(exception);
+                if (call instanceof BleGattCallback) {
+                    ((BleGattCallback) call).onConnectFailure(exception);
                 }
             }
         }
@@ -312,8 +312,8 @@ public class BleBluetooth {
 
             bluetoothGatt = gatt;
             for (BluetoothGattCallback call : callbackList) {
-                if (call instanceof BleBleGattCallback) {
-                    ((BleBleGattCallback) call).onConnectSuccess(gatt, status);
+                if (call instanceof BleGattCallback) {
+                    ((BleGattCallback) call).onConnectSuccess(gatt, status);
                 }
             }
         }

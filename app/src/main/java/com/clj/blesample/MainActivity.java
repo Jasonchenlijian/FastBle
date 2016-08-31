@@ -8,7 +8,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.clj.fastble.BleManager;
-import com.clj.fastble.bluetooth.BleBleGattCallback;
+import com.clj.fastble.bluetooth.BleGattCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.utils.BluetoothUtil;
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 bleManager.connectDevice(
                         DEVICE_NAME,
                         TIME_OUT,
-                        new BleBleGattCallback() {
+                        new BleGattCallback() {
                             @Override
                             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                                 Log.i(TAG, "连接成功！");

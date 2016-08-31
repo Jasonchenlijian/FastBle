@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.util.Log;
 
-import com.clj.fastble.bluetooth.BleBleGattCallback;
+import com.clj.fastble.bluetooth.BleGattCallback;
 import com.clj.fastble.bluetooth.BleBluetooth;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.exception.BleException;
@@ -70,7 +70,7 @@ public class BleManager {
      */
     public boolean connectDevice(String deviceName,
                                  long time_out,
-                                 BleBleGattCallback callback) {
+                                 BleGattCallback callback) {
         return scanAndConnect(deviceName, time_out, callback);
     }
 
@@ -198,7 +198,7 @@ public class BleManager {
     /**
      * 将某一不再需要的接口移除(connect)
      */
-    public void removeBleBleGattCallback(BleBleGattCallback callback) {
+    public void removeBleBleGattCallback(BleGattCallback callback) {
         bleBluetooth.removeGattCallback(callback);
     }
 
@@ -208,7 +208,7 @@ public class BleManager {
     /**
      * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
      */
-    private boolean scanAndConnect(String deviceName, long time_out, BleBleGattCallback callback) {
+    private boolean scanAndConnect(String deviceName, long time_out, BleGattCallback callback) {
 
         return bleBluetooth.scanNameAndConnect(deviceName, time_out, false, callback);
     }
@@ -281,7 +281,7 @@ public class BleManager {
      * (与 scanSpecifiedDevicePeriod方法 配合使用)
      */
     private void connect(BluetoothDevice device) {
-        bleBluetooth.connect(device, true, new BleBleGattCallback() {
+        bleBluetooth.connect(device, true, new BleGattCallback() {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();
