@@ -103,19 +103,9 @@ public class BleConnector {
         if (serviceUUID != null && bluetoothGatt != null) {
             service = bluetoothGatt.getService(serviceUUID);
         }
-        if (service == null) {
-            Log.w(TAG, "withUUID: service为空");
-        } else {
-            Log.w(TAG, "withUUID: service不为空");
-        }
 
         if (service != null && charactUUID != null) {
             characteristic = service.getCharacteristic(charactUUID);
-        }
-        if (characteristic == null) {
-            Log.w(TAG, "withUUID: characteristic为空");
-        } else {
-            Log.w(TAG, "withUUID: characteristic不为空");
         }
 
         if (characteristic != null && descriptorUUID != null) {
@@ -449,7 +439,7 @@ public class BleConnector {
 
 
     /**
-     * listen bluetooth gatt callback, and send a delayed message.
+     * listen bleBluetooth gatt callback, and send a delayed message.
      */
     private void listenAndTimer(final BleCallback bleCallback, int what, BluetoothGattCallback callback) {
         bleCallback.setBluetoothGattCallback(callback);

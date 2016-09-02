@@ -1,5 +1,6 @@
 package com.clj.blesample;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import com.clj.fastble.BleManager;
 import com.clj.fastble.bluetooth.BleGattCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.exception.BleException;
+import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.BluetoothUtil;
 import com.clj.fastble.utils.HexUtil;
 
@@ -37,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
     private BleManager bleManager;                                                // Ble核心管理类
 
+    private BluetoothDevice[] bluetoothDevices;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,7 +55,67 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
 
-        /**扫描指定名称设备、并连接*/
+        /*******************************关键操作示例**********************************/
+
+
+        /**扫描出周围所有设备*/
+        findViewById(R.id.btn_0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                bleManager.scanDevice(new ListScanCallback(TIME_OUT) {
+                    @Override
+                    public void onDeviceFound(BluetoothDevice[] devices) {
+                        Log.i(TAG, "共发现" + devices.length + "台设备");
+                        for (int i = 0; i < devices.length; i++) {
+                            Log.i(TAG, "name:" + devices[i].getName() + "------mac:" + devices[i].getAddress());
+                        }
+                        bluetoothDevices = devices;
+                    }
+
+                    @Override
+                    public void onScanTimeout() {
+                        super.onScanTimeout();
+                        Log.i(TAG, "搜索时间结束");
+                    }
+                });
+            }
+        });
+
+        /**当搜索到周围有设备之后，可以选择直接连某一个设备*/
+        findViewById(R.id.btn_01).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (bluetoothDevices == null || bluetoothDevices.length < 1)
+                    return;
+                BluetoothDevice sampleDevice = bluetoothDevices[0];
+
+
+                bleManager.connectDevice(sampleDevice, new BleGattCallback() {
+                    @Override
+                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+                        Log.i(TAG, "连接成功！");
+                        gatt.discoverServices();                // 连接上设备后搜索服务
+                    }
+
+                    @Override
+                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                        Log.i(TAG, "服务被发现！");
+                        BluetoothUtil.printServices(gatt);            // 打印该设备所有服务、特征值
+                        bleManager.getBluetoothState();               // 打印与该设备的当前状态
+                    }
+
+                    @Override
+                    public void onConnectFailure(BleException exception) {
+                        Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
+                        bleManager.handleException(exception);
+                    }
+                });
+            }
+        });
+
+        /**扫描出周围指定名称设备、并连接*/
         findViewById(R.id.btn_1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -134,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /**写指令*/
+        /**write*/
         findViewById(R.id.btn_4).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

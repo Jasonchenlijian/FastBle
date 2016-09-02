@@ -19,7 +19,8 @@ import com.clj.fastble.conn.BleConnector;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.log.BleLog;
-import com.clj.fastble.scan.FirstNameScanCallback;
+import com.clj.fastble.scan.ListScanCallback;
+import com.clj.fastble.scan.NameScanCallback;
 import com.clj.fastble.scan.PeriodScanCallback;
 import com.clj.fastble.utils.BluetoothUtil;
 
@@ -90,14 +91,6 @@ public class BleBluetooth {
     }
 
 
-    /**
-     * Starts a scan for Bluetooth LE devices.
-     * <p>
-     * <p>Requires {@link android.Manifest.permission#BLUETOOTH_ADMIN} permission.
-     *
-     * @param callback the callback LE scan results are delivered
-     * @return true, if the scan was started successfully
-     */
     public boolean startLeScan(BluetoothAdapter.LeScanCallback callback) {
         boolean suc = bluetoothAdapter.startLeScan(callback);
         if (suc) {
@@ -107,7 +100,7 @@ public class BleBluetooth {
     }
 
     public boolean startLeScan(PeriodScanCallback callback) {
-        callback.setLiteBluetooth(this).notifyScanStarted();
+        callback.setBleBluetooth(this).notifyScanStarted();
         boolean suc = bluetoothAdapter.startLeScan(callback);
         if (suc) {
             connectionState = STATE_SCANNING;
@@ -127,53 +120,29 @@ public class BleBluetooth {
         }
     }
 
-    /**
-     * Note: Be Sure Call This On Main(UI) Thread!
-     * Note: Be Sure Call This On Main(UI) Thread!
-     * Note: Be Sure Call This On Main(UI) Thread!
-     * <p>
-     * Connect to GATT Server hosted by this device. Caller acts as GATT client.
-     * The callback is used to deliver results to Caller, such as connection status as well
-     * as any further GATT client operations.
-     * The method returns a BluetoothGatt instance. You can use BluetoothGatt to conduct
-     * GATT client operations.
-     *
-     * @param device      the device to be connected.
-     * @param autoConnect Whether to directly connect to the remote device (false)
-     *                    or to automatically connect as soon as the remote
-     *                    device becomes available (true).
-     * @param callback    GATT callback handler that will receive asynchronous callbacks.
-     * @return BluetoothGatt instance. You can use BluetoothGatt to conduct GATT client operations.
-     */
     public synchronized BluetoothGatt connect(final BluetoothDevice device,
                                               final boolean autoConnect,
                                               final BleGattCallback callback) {
         Log.i(TAG, "connect name：" + device.getName()
                 + " mac:" + device.getAddress()
-                + " autoConnect ------> " + autoConnect);
-//        callbackList.add(callback);
+                + " autoConnect：" + autoConnect);
         addGattCallback(callback);
         return device.connectGatt(context, autoConnect, coreGattCallback);
     }
 
     /**
-     * Note: Be Sure Call This On Main(UI) Thread!
-     * <p>
-     * Try to scan specified device. Connect to GATT Server hosted by this device. Caller acts as GATT client.
-     * The callback is used to deliver results to Caller, such as connection status as well
-     * as any further GATT client operations.
-     *
-     * @param name        name of device
-     * @param autoConnect Whether to directly connect to the remote device (false)
-     *                    or to automatically connect as soon as the remote
-     *                    device becomes available (true).
-     * @param callback    GATT callback handler that will receive asynchronous callbacks.
+     * 搜索指定设备名
+     * @param name      设备名
+     * @param time_out  超时时间
+     * @param autoConnect
+     * @param callback
+     * @return
      */
     public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(name)) {
             throw new IllegalArgumentException("非法设备名 ! ");
         }
-        startLeScan(new FirstNameScanCallback(name, time_out) {
+        startLeScan(new NameScanCallback(name, time_out) {
 
             @Override
             public void onScanTimeout() {
@@ -195,13 +164,7 @@ public class BleBluetooth {
         return true;
     }
 
-    /**
-     * Clears the device cache. After uploading new hello4 the DFU target will have other services than before.
-     */
     public boolean refreshDeviceCache() {
-        /*
-         * There is a refresh() method in BluetoothGatt class but for now it's hidden. We will call it using reflections.
-		 */
         try {
             final Method refresh = BluetoothGatt.class.getMethod("refresh");
             if (refresh != null) {
@@ -220,12 +183,13 @@ public class BleBluetooth {
      */
     public void closeBluetoothGatt() {
         if (bluetoothGatt != null) {
-
             bluetoothGatt.disconnect();
-            refreshDeviceCache();
-            bluetoothGatt.close();
+        }
 
-            Log.i(TAG, "closed BluetoothGatt ");
+        refreshDeviceCache();
+
+        if (bluetoothGatt != null) {
+            bluetoothGatt.close();
         }
     }
 

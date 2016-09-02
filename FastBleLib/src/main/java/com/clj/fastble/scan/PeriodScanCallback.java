@@ -3,12 +3,15 @@ package com.clj.fastble.scan;
 import android.bluetooth.BluetoothAdapter;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+
 import com.clj.fastble.bluetooth.BleBluetooth;
 
 public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallback {
+
     protected Handler handler = new Handler(Looper.getMainLooper());
-    protected long timeoutMillis;
-    protected BleBluetooth liteBluetooth;
+    protected long timeoutMillis = 10000;
+    protected BleBluetooth bleBluetooth;
 
     public PeriodScanCallback(long timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
@@ -22,7 +25,7 @@ public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallb
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    liteBluetooth.stopScan(PeriodScanCallback.this);
+                    bleBluetooth.stopScan(PeriodScanCallback.this);
                     onScanTimeout();
                 }
             }, timeoutMillis);
@@ -42,12 +45,12 @@ public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallb
         return this;
     }
 
-    public BleBluetooth getLiteBluetooth() {
-        return liteBluetooth;
+    public BleBluetooth getBleBluetooth() {
+        return bleBluetooth;
     }
 
-    public PeriodScanCallback setLiteBluetooth(BleBluetooth liteBluetooth) {
-        this.liteBluetooth = liteBluetooth;
+    public PeriodScanCallback setBleBluetooth(BleBluetooth bluetooth) {
+        this.bleBluetooth = bluetooth;
         return this;
     }
 }

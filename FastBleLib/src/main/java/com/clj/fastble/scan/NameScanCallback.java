@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by 陈利健 on 2016/8/12.
  * 一段限制时间内搜索符合name的设备，取第一个搜索到的设备
  */
-public abstract class FirstNameScanCallback extends PeriodScanCallback {
+public abstract class NameScanCallback extends PeriodScanCallback {
 
     /**
      * 设备名
@@ -21,7 +21,7 @@ public abstract class FirstNameScanCallback extends PeriodScanCallback {
     private AtomicBoolean hasFound = new AtomicBoolean(false);
 
 
-    public FirstNameScanCallback(String name, long timeoutMillis) {
+    public NameScanCallback(String name, long timeoutMillis) {
         super(timeoutMillis);
         this.name = name;
         if (name == null) {
@@ -40,7 +40,7 @@ public abstract class FirstNameScanCallback extends PeriodScanCallback {
         if (!hasFound.get()) {
             if (name.equalsIgnoreCase(device.getName())) {
                 hasFound.set(true);
-                liteBluetooth.stopScan(FirstNameScanCallback.this);
+                bleBluetooth.stopScan(NameScanCallback.this);
                 onDeviceFound(device, rssi, scanRecord);
             }
         }

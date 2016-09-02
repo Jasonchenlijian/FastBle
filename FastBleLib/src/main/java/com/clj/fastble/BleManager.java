@@ -2,17 +2,15 @@ package com.clj.fastble;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.util.Log;
 
-import com.clj.fastble.bluetooth.BleGattCallback;
 import com.clj.fastble.bluetooth.BleBluetooth;
+import com.clj.fastble.bluetooth.BleGattCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
-import com.clj.fastble.scan.ListNameScanCallback;
-import com.clj.fastble.utils.BluetoothUtil;
+import com.clj.fastble.scan.ListScanCallback;
 
 /**
  * Created by 陈利健 on 2016/8/17.
@@ -65,13 +63,29 @@ public class BleManager {
         bleExceptionHandler.handleException(exception);
     }
 
+
+    /**
+     * 扫描周围所有设备
+     */
+    public boolean scanDevice(ListScanCallback callback) {
+        return scanAllDevice(callback);
+    }
+
+    /**
+     * 直接连接某一设备
+     */
+    public void connectDevice(BluetoothDevice device,
+                                 BleGattCallback callback) {
+        connect(device, callback);
+    }
+
     /**
      * 扫描连接符合名称的设备，并监听数据变化
      */
     public boolean connectDevice(String deviceName,
                                  long time_out,
                                  BleGattCallback callback) {
-        return scanAndConnect(deviceName, time_out, callback);
+        return scanNameAndConnect(deviceName, time_out, callback);
     }
 
     /**
@@ -206,9 +220,26 @@ public class BleManager {
     /*************************************inner method****************************************************/
 
     /**
+     * 扫描周围设备
+     * （获取周围所有的设备后，可以供用户自行选择与哪一个连接）
+     */
+    private boolean scanAllDevice(ListScanCallback callback) {
+
+        return bleBluetooth.startLeScan(callback);
+    }
+
+    /**
+     * 与某一指定的设备连接
+     * (与 scanSpecifiedDevicePeriod方法 配合使用)
+     */
+    private void connect(BluetoothDevice device, BleGattCallback callback) {
+        bleBluetooth.connect(device, true, callback);
+    }
+
+    /**
      * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
      */
-    private boolean scanAndConnect(String deviceName, long time_out, BleGattCallback callback) {
+    private boolean scanNameAndConnect(String deviceName, long time_out, BleGattCallback callback) {
 
         return bleBluetooth.scanNameAndConnect(deviceName, time_out, false, callback);
     }
@@ -255,48 +286,5 @@ public class BleManager {
 
 
     /********************************wait*******************************/
-
-    /**
-     * 扫描所有符合名称的设备，并列出来
-     * （获取周围所有的设备后，可以供用户自行选择与哪一个连接）
-     */
-    private void scanSpecifiedDevicePeriod(String deviceName, long timeOut) {
-
-        bleBluetooth.startLeScan(new ListNameScanCallback(deviceName, timeOut) {
-
-            @Override
-            public void onScanTimeout() {
-
-            }
-
-            @Override
-            public void onDeviceFound(BluetoothDevice device, int rssi, byte[] scanRecord) {
-
-            }
-        });
-    }
-
-    /**
-     * 与某一指定的设备连接
-     * (与 scanSpecifiedDevicePeriod方法 配合使用)
-     */
-    private void connect(BluetoothDevice device) {
-        bleBluetooth.connect(device, true, new BleGattCallback() {
-            @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                gatt.discoverServices();
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                BluetoothUtil.printServices(gatt);
-            }
-
-            @Override
-            public void onConnectFailure(BleException exception) {
-                bleExceptionHandler.handleException(exception);
-            }
-        });
-    }
 
 }

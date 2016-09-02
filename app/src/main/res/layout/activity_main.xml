@@ -14,6 +14,18 @@
         android:paddingTop="@dimen/activity_vertical_margin">
 
         <Button
+            android:id="@+id/btn_0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="扫描所有设备" />
+
+        <Button
+            android:id="@+id/btn_01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="直接连接某一个设备" />
+
+        <Button
             android:id="@+id/btn_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

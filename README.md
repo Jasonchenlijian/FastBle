@@ -7,11 +7,58 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
 
 ## Usage
 
-- ####初始化 (对象、异常类、蓝牙开启)
+- ####初始化 (默认开启蓝牙)
         bleManager = BleManager.getInstance();
         bleManager.init(this);
 
+- #### 扫描出周围所有蓝牙可连接设备
+	可获得周围蓝牙设备BluetoothDevice对象数组
+
+        bleManager.scanDevice(new ListScanCallback(TIME_OUT) {
+            @Override
+            public void onDeviceFound(BluetoothDevice[] devices) {
+                Log.i(TAG, "共发现" + devices.length + "台设备");
+                for (int i = 0; i < devices.length; i++) {
+                    Log.i(TAG, "name:" + devices[i].getName() + "------mac:" + devices[i].getAddress());
+                }
+                bluetoothDevices = devices;
+            }
+
+            @Override
+            public void onScanTimeout() {
+                super.onScanTimeout();
+                Log.i(TAG, "搜索时间结束");
+            }
+        });
+
+- #### 直连某一个设备
+	当搜索到周围设备之后，可以选择选择某一个设备和其连接，传入的参数即为这个BluetoothDevice对象
+
+        bleManager.connectDevice(sampleDevice, new BleGattCallback() {
+            @Override
+            public void onConnectSuccess(BluetoothGatt gatt, int status) {
+                Log.i(TAG, "连接成功！");
+                gatt.discoverServices();                	  // 连接上设备后搜索服务
+            }
+
+            @Override
+            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                Log.i(TAG, "服务被发现！");
+                BluetoothUtil.printServices(gatt);            // 打印该设备所有服务、特征值
+                bleManager.getBluetoothState();               // 打印与该设备的当前状态
+            }
+
+            @Override
+            public void onConnectFailure(BleException exception) {
+                Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
+                bleManager.handleException(exception);
+            }
+        });
+            
+
 - ####扫描指定名称设备、并连接
+	如果你确定周围有已知名称的蓝牙设备，或只需要连接指定名称的蓝牙设备，而忽略其他名称的设备，可以选择直接对指定名称进行搜索，搜索到即连接，搜索不到则回调超时接口。
+
         bleManager.connectDevice(
                 DEVICE_NAME,
                 TIME_OUT,
@@ -25,8 +72,8 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "服务被发现！");
-                        BluetoothUtil.printServices(gatt);         // 打印该设备所有服务、特征值
-                        bleManager.getBluetoothState();            // 打印与该设备的当前状态
+                        BluetoothUtil.printServices(gatt);      // 打印该设备所有服务、特征值
+                        bleManager.getBluetoothState();         // 打印与该设备的当前状态
                    }
 
                    @Override
