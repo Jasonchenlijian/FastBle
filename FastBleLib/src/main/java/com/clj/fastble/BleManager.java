@@ -245,7 +245,7 @@ public class BleManager {
     }
 
     /**
-     * 接收特征值改变通知--Notification
+     * notify
      */
     private boolean enableNotificationOfCharacteristic(String uuid_service, String uuid_notification,
                                                        String uuid_client, final BleCharacterCallback callback) {
@@ -255,7 +255,7 @@ public class BleManager {
     }
 
     /**
-     * 接收特征值改变通知--Indication
+     * indicate
      */
     private boolean enableIndicationOfCharacteristic(String uuid_service, String uuid_indication,
                                                      String uuid_client, final BleCharacterCallback callback) {
@@ -265,7 +265,7 @@ public class BleManager {
     }
 
     /**
-     * 写特征值
+     * write
      */
     private boolean writeDataToCharacteristic(String uuid_service, String uuid_write,
                                               String uuid_client, byte[] data, final BleCharacterCallback callback) {
@@ -275,7 +275,7 @@ public class BleManager {
     }
 
     /**
-     * 读特征值
+     * read
      */
     private boolean readDataFromCharacteristic(String uuid_service, String uuid_read,
                                                String uuid_client, final BleCharacterCallback callback) {
@@ -283,8 +283,5 @@ public class BleManager {
                 .withUUIDString(uuid_service, uuid_read, null, uuid_client)
                 .readCharacteristic(callback);
     }
-
-
-    /********************************wait*******************************/
 
 }

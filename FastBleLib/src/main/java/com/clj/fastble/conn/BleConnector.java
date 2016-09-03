@@ -131,14 +131,14 @@ public class BleConnector {
     /***************************************main operation************************************************/
 
     /**
-     * Notification
+     * notify
      */
     public boolean enableCharacteristicNotification(BleCharacterCallback bleCallback) {
         return enableCharacteristicNotification(getCharacteristic(), bleCallback);
     }
 
     /**
-     * Notification
+     * notify
      */
     public boolean enableCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                                     BleCharacterCallback bleCallback) {
@@ -160,20 +160,20 @@ public class BleConnector {
     }
 
     /**
-     * Indication
+     * indicate
      */
     public boolean enableCharacteristicIndication(BleCharacterCallback bleCallback) {
         return enableCharacteristicIndication(getCharacteristic(), bleCallback);
     }
 
     /**
-     * Indication
+     * indicate
      */
     public boolean enableCharacteristicIndication(BluetoothGattCharacteristic characteristic,
                                                   BleCharacterCallback bleCallback) {
 
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-            BleLog.w(TAG, "charact.getProperties():" + characteristic.getProperties());
+            BleLog.w(TAG, "characteristic.getProperties():" + characteristic.getProperties());
 
             handleCharacteristicIndicationCallback(bleCallback);
 
@@ -188,7 +188,7 @@ public class BleConnector {
     }
 
     /**
-     * 写数据
+     * write
      */
     public boolean writeCharacteristic(byte[] data, BleCharacterCallback bleCallback) {
         if (data == null)
@@ -197,7 +197,7 @@ public class BleConnector {
     }
 
     /**
-     * 向一个特征值characteristic写数据
+     * write
      */
     public boolean writeCharacteristic(BluetoothGattCharacteristic character, byte[] data,
                                        final BleCharacterCallback bleCallback) {
@@ -229,14 +229,14 @@ public class BleConnector {
     }
 
     /**
-     * 读数据
+     * read
      */
     public boolean readCharacteristic(BleCharacterCallback bleCallback) {
         return readCharacteristic(getCharacteristic(), bleCallback);
     }
 
     /**
-     * 向一个特征值characteristic读数据
+     * read
      */
     public boolean readCharacteristic(BluetoothGattCharacteristic character, BleCharacterCallback bleCallback) {
 
@@ -244,35 +244,22 @@ public class BleConnector {
             Log.e(TAG, "getCharacteristic()为空！");
             return false;
         }
-        if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) == 0) {
-            BleLog.w(TAG, "Check characteristic 是否可读-------false"
-                    + "\n getProperties(): " + characteristic.getProperties());
-            return false;
-        } else {
+        if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
             BleLog.w(TAG, "Check characteristic 是否可读-------true"
                     + "\n getProperties(): " + characteristic.getProperties());
-        }
-
-        if ((characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-
-            // If there is an active notification on a characteristic, clear
-            // it first so it doesn't update the data field on the user interface.
-            setCharacteristicNotification(getBluetoothGatt(), character, false);
-
-            handleCharacteristicReadCallback(bleCallback);
-
-            handleAfterInitialed(getBluetoothGatt().readCharacteristic(character), bleCallback);
-
-            setCharacteristicNotification(getBluetoothGatt(), character, true);
-
-            return true;
-
         } else {
+            BleLog.w(TAG, "Check characteristic 是否可读-------false"
+                    + "\n getProperties(): " + characteristic.getProperties());
             if (bleCallback != null) {
                 bleCallback.onFailure(new OtherException("该特征值不支持读写!"));
             }
             return false;
         }
+
+        setCharacteristicNotification(getBluetoothGatt(), character, false);
+        handleCharacteristicReadCallback(bleCallback);
+
+        return handleAfterInitialed(getBluetoothGatt().readCharacteristic(character), bleCallback);
     }
 
     /**
@@ -297,7 +284,7 @@ public class BleConnector {
     }
 
     /**
-     * notification
+     * notify
      */
     public boolean setCharacteristicNotification(BluetoothGatt gatt,
                                                  BluetoothGattCharacteristic characteristic,
@@ -327,7 +314,7 @@ public class BleConnector {
     }
 
     /**
-     * indication
+     * indicate
      */
     public boolean setCharacteristicIndication(BluetoothGatt gatt,
                                                BluetoothGattCharacteristic characteristic,
