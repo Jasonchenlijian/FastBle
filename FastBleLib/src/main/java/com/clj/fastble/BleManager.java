@@ -150,7 +150,7 @@ public class BleManager {
      * 关闭连接
      */
     public void closeBluetoothGatt() {
-        if (bleBluetooth != null && bleBluetooth.isConnectingOrConnected()) {
+        if (bleBluetooth != null) {
             bleBluetooth.closeBluetoothGatt();
             bleBluetooth.removeAllCallback();
         }

@@ -186,7 +186,9 @@ public class BleBluetooth {
             bluetoothGatt.disconnect();
         }
 
-        refreshDeviceCache();
+        if (bluetoothGatt != null) {
+            refreshDeviceCache();
+        }
 
         if (bluetoothGatt != null) {
             bluetoothGatt.close();
