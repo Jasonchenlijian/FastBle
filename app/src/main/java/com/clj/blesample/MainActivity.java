@@ -142,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
                                 bleManager.handleException(exception);
                             }
+
                         });
             }
         });
@@ -158,14 +159,12 @@ public class MainActivity extends AppCompatActivity {
                         new BleCharacterCallback() {
                             @Override
                             public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                                Log.d(TAG, "特征值Notification通知数据回调： "
-                                        + '\n' + Arrays.toString(characteristic.getValue())
-                                        + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                                Log.d(TAG, "特征值Notify通知数据回调： " + '\n' + Arrays.toString(characteristic.getValue()));
                             }
 
                             @Override
                             public void onFailure(BleException exception) {
-                                Log.e(TAG, "特征值Notification通知回调失败: " + '\n' + exception.toString());
+                                Log.e(TAG, "特征值Notify通知回调失败: " + '\n' + exception.toString());
                                 bleManager.handleException(exception);
                             }
                         });
@@ -184,14 +183,12 @@ public class MainActivity extends AppCompatActivity {
                         new BleCharacterCallback() {
                             @Override
                             public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                                Log.d(TAG, "特征值Indication通知数据回调： "
-                                        + '\n' + Arrays.toString(characteristic.getValue())
-                                        + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                                Log.d(TAG, "特征值Indicate通知数据回调： " + '\n' + Arrays.toString(characteristic.getValue()));
                             }
 
                             @Override
                             public void onFailure(BleException exception) {
-                                Log.e(TAG, "特征值Indication通知回调失败: " + '\n' + exception.toString());
+                                Log.e(TAG, "特征值Indicate通知回调失败: " + '\n' + exception.toString());
                                 bleManager.handleException(exception);
                             }
                         });
@@ -211,9 +208,7 @@ public class MainActivity extends AppCompatActivity {
                         new BleCharacterCallback() {
                             @Override
                             public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                                Log.d(TAG, "写特征值成功: "
-                                        + '\n' + Arrays.toString(characteristic.getValue())
-                                        + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                                Log.d(TAG, "写特征值成功: " + '\n' + Arrays.toString(characteristic.getValue()));
                             }
 
                             @Override

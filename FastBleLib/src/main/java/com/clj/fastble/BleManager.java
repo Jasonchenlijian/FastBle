@@ -3,6 +3,7 @@ package com.clj.fastble;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
@@ -19,6 +20,8 @@ import com.clj.fastble.scan.ListScanCallback;
 public class BleManager {
 
     private static final String TAG = "BleManager";
+
+    private Context mContext;
 
     /**
      * 单例
@@ -49,6 +52,8 @@ public class BleManager {
      */
     public void init(Context context) {
 
+        mContext = context;
+
         if (bleBluetooth == null) {
             bleBluetooth = new BleBluetooth(context);
         }
@@ -75,7 +80,7 @@ public class BleManager {
      * 直接连接某一设备
      */
     public void connectDevice(BluetoothDevice device,
-                                 BleGattCallback callback) {
+                              BleGattCallback callback) {
         connect(device, callback);
     }
 
@@ -95,7 +100,7 @@ public class BleManager {
                                 String uuid_notification,
                                 String uuid_client,
                                 BleCharacterCallback callback) {
-        return enableNotificationOfCharacteristic(uuid_service, uuid_notification, uuid_client, callback);
+        return enableNotifyOfCharacteristic(uuid_service, uuid_notification, uuid_client, callback);
     }
 
     /**
@@ -105,7 +110,7 @@ public class BleManager {
                                   String uuid_indication,
                                   String uuid_client,
                                   BleCharacterCallback callback) {
-        return enableIndicationOfCharacteristic(uuid_service, uuid_indication, uuid_client, callback);
+        return enableIndicateOfCharacteristic(uuid_service, uuid_indication, uuid_client, callback);
     }
 
     /**
@@ -157,6 +162,13 @@ public class BleManager {
     }
 
     /**
+     * 当前设备是否支持BLE
+     */
+    public boolean isSupportBle() {
+        return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+    }
+
+    /**
      * 开启蓝牙
      */
     public void enableBluetooth() {
@@ -172,6 +184,16 @@ public class BleManager {
         if (bleBluetooth != null) {
             bleBluetooth.disableBluetooth();
         }
+    }
+
+    /**
+     * 本机蓝牙是否打开
+     */
+    public boolean isBlueEnable() {
+        if (bleBluetooth != null) {
+            return bleBluetooth.isBlueEnable();
+        }
+        return false;
     }
 
     /**
@@ -247,21 +269,21 @@ public class BleManager {
     /**
      * notify
      */
-    private boolean enableNotificationOfCharacteristic(String uuid_service, String uuid_notification,
-                                                       String uuid_client, final BleCharacterCallback callback) {
+    private boolean enableNotifyOfCharacteristic(String uuid_service, String uuid_notify,
+                                                 String uuid_client, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_notification, null, uuid_client)
-                .enableCharacteristicNotification(callback);
+                .withUUIDString(uuid_service, uuid_notify, null, uuid_client)
+                .enableCharacteristicNotify(callback, uuid_notify);
     }
 
     /**
      * indicate
      */
-    private boolean enableIndicationOfCharacteristic(String uuid_service, String uuid_indication,
-                                                     String uuid_client, final BleCharacterCallback callback) {
+    private boolean enableIndicateOfCharacteristic(String uuid_service, String uuid_indicate,
+                                                   String uuid_client, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_indication, null, uuid_client)
-                .enableCharacteristicIndication(callback);
+                .withUUIDString(uuid_service, uuid_indicate, null, uuid_client)
+                .enableCharacteristicIndicate(callback, uuid_indicate);
     }
 
     /**
@@ -271,7 +293,7 @@ public class BleManager {
                                               String uuid_client, byte[] data, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_write, null, uuid_client)
-                .writeCharacteristic(data, callback);
+                .writeCharacteristic(data, callback, uuid_write);
     }
 
     /**
@@ -281,7 +303,7 @@ public class BleManager {
                                                String uuid_client, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_read, null, uuid_client)
-                .readCharacteristic(callback);
+                .readCharacteristic(callback, uuid_read);
     }
 
 }

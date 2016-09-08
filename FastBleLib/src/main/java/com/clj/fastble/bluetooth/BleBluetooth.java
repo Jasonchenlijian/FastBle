@@ -19,7 +19,6 @@ import com.clj.fastble.conn.BleConnector;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.log.BleLog;
-import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.scan.NameScanCallback;
 import com.clj.fastble.scan.PeriodScanCallback;
 import com.clj.fastble.utils.BluetoothUtil;
@@ -132,8 +131,9 @@ public class BleBluetooth {
 
     /**
      * 搜索指定设备名
-     * @param name      设备名
-     * @param time_out  超时时间
+     *
+     * @param name        设备名
+     * @param time_out    超时时间
      * @param autoConnect
      * @param callback
      * @return
@@ -199,9 +199,16 @@ public class BleBluetooth {
      * 检查蓝牙是否关闭，如果关闭则开启
      */
     public void enableBluetoothIfDisabled(Activity activity, int requestCode) {
-        if (!bluetoothAdapter.isEnabled()) {
+        if (!isBlueEnable()) {
             BluetoothUtil.enableBluetooth(activity, requestCode);
         }
+    }
+
+    /**
+     * 蓝牙是否打开
+     */
+    public boolean isBlueEnable() {
+        return bluetoothAdapter.isEnabled();
     }
 
     public static boolean isMainThread() {

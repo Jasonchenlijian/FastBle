@@ -5,6 +5,12 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
 
 ***
 
+## 更新日志
+- 2016-09-08 
+	1. 增加设备是否支持ble的判断。
+	2. 修正监听不同character的时候，当其中一个character发生变化,与该特征值无关的callback也会回调结果的bug。
+
+
 ## Usage
 
 - ####初始化 (默认开启蓝牙)
@@ -91,14 +97,13 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "特征值Notification通知数据回调： "
-                                + '\n' + Arrays.toString(characteristic.getValue())
-                                + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        Log.d(TAG, "特征值Notify通知数据回调： "
+                                + '\n' + Arrays.toString(characteristic.getValue()));
                     }
 
                     @Override
                     public void onFailure(BleException exception) {
-                        Log.e(TAG, "特征值Notification通知回调失败: " + '\n' + exception.toString());
+                        Log.e(TAG, "特征值Notify通知回调失败: " + '\n' + exception.toString());
                         bleManager.handleException(exception);
                     }
                 });
@@ -111,14 +116,13 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "特征值Indication通知数据回调： "
-                                + '\n' + Arrays.toString(characteristic.getValue())
-                                + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        Log.d(TAG, "特征值Indicate通知数据回调： "
+                                + '\n' + Arrays.toString(characteristic.getValue()));
                     }
 
                     @Override
                     public void onFailure(BleException exception) {
-                        Log.e(TAG, "特征值Indication通知回调失败: " + '\n' + exception.toString());
+                        Log.e(TAG, "特征值Indicate通知回调失败: " + '\n' + exception.toString());
                         bleManager.handleException(exception);
                     }
                 });
@@ -133,8 +137,7 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
                         Log.d(TAG, "写特征值成功: "
-                                + '\n' + Arrays.toString(characteristic.getValue())
-                                + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                                + '\n' + Arrays.toString(characteristic.getValue()));
                     }
 
                     @Override
@@ -151,20 +154,19 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
 		boolean d = bleManager.isServiceDiscovered();
 
 - #### 必要时移除某一回调
-	作为参数传入的callback将被加入callback集合不会移除，今后当该callback监听的特征值每一次发生变化时，将会出发callback回调。所以当使用者不再需要此callback的时候，可自行移除。
+	作为参数传入的callback将被加入callback集合不会移除，会持续保持监听。今后当该callback监听的特征值每一次发生变化时，将会触发callback回调（其他特征值发生变化不会影响）。所以当使用者不再需要此callback的时候，可自行移除。
 
 		/**将回调实例化，而不是以匿名对象的形式*/
     	BleCharacterCallback bleCharacterCallback = new BleCharacterCallback() {
         	@Override
         	public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            	Log.d(TAG, "特征值Notification通知数据回调： "
-                    + '\n' + Arrays.toString(characteristic.getValue())
-                    + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+            	Log.d(TAG, "特征值Notificaty通知数据回调： "
+                    + '\n' + Arrays.toString(characteristic.getValue()));
         	}
 
         	@Override
         	public void onFailure(BleException exception) {
-            	Log.e(TAG, "特征值Notification通知回调失败: " + '\n' + exception.toString());
+            	Log.e(TAG, "特征值Notify通知回调失败: " + '\n' + exception.toString());
             	bleManager.handleException(exception);
         	}
     	};
@@ -183,10 +185,12 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
 - ####复位（断开此次蓝牙连接，移除所有回调）
         bleManager.closeBluetoothGatt();
 
-- ####开启蓝牙
+- ####判断设备是否支持ble
+		bleManager.isSupportBle();
+
+- ####开启或关闭蓝牙
 		bleManager.enableBluetooth();
 
-- ####关闭蓝牙
 		bleManager.disableBluetooth();
 
 - ####其他
