@@ -8,54 +8,14 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="方法一：scan then select one to connect" />
+        <include
+            layout="@layout/layout_item_connect" />
 
-        <Button
-            android:id="@+id/btn_scan"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="scan" />
-
-        <LinearLayout
-            android:id="@+id/layout_device_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
-            android:padding="10dp"
-            android:text="方法二：input a known device name to connect" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/et_device_name"
-                android:layout_width="200dp"
-                android:layout_height="50dp"
-                android:hint="device name"
-                android:padding="10dp" />
-
-            <Button
-                android:id="@+id/btn_connect"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="connect" />
-
-        </LinearLayout>
+        <include
+            layout="@layout/layout_item_state" />
 
     </LinearLayout>
+
 
 </ScrollView>
 
