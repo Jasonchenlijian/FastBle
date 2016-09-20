@@ -6,9 +6,13 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
 ***
 
 ## 更新日志
+- 2016-09-20
+    1. 优化callback机制，一个character有且只会存在一个callback，并可以手动移除，即stop listen
+    2. 示例代码中添加DemoActivity和OperateActivity。前者示范如何使用本框架，后者可以作为蓝牙调试工具，测试蓝牙设备。
+
 - 2016-09-08 
 	1. 增加设备是否支持ble的判断。
-	2. 修正监听不同character的时候，当其中一个character发生变化,与该特征值无关的callback也会回调结果的bug。
+	2. 修正监听不同character的时候，当其中一个character发生变化,与该character无关的callback也会回调结果的bug。
 
 
 ## Usage
@@ -33,7 +37,7 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
             @Override
             public void onScanTimeout() {
                 super.onScanTimeout();
-                Log.i(TAG, "搜索时间结束");
+                Log.i(TAG, "Time Out");
             }
         });
 
@@ -44,13 +48,12 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "连接成功！");
-                gatt.discoverServices();                	  // 连接上设备后搜索服务
+                gatt.discoverServices();
             }
 
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "服务被发现！");
-                BluetoothUtil.printServices(gatt);            // 打印该设备所有服务、特征值
                 bleManager.getBluetoothState();               // 打印与该设备的当前状态
             }
 
@@ -72,115 +75,66 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
-                        gatt.discoverServices();                // 连接上设备后搜索服务
+                        gatt.discoverServices();
                     }
 
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "服务被发现！");
-                        BluetoothUtil.printServices(gatt);      // 打印该设备所有服务、特征值
-                        bleManager.getBluetoothState();         // 打印与该设备的当前状态
-                   }
+                        bleManager.getBluetoothState();               // 打印与该设备的当前状态
+                    }
 
-                   @Override
-                   public void onConnectFailure(BleException exception) {
+                    @Override
+                    public void onConnectFailure(BleException exception) {
                         Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
                         bleManager.handleException(exception);
-                   }
-               });
-
-- ####notify
-        bleManager.notifyDevice(
-                UUID_SERVICE_LISTEN,
-                UUID_LISTEN_NOTIFY,
-                UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
-                new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "特征值Notify通知数据回调： "
-                                + '\n' + Arrays.toString(characteristic.getValue()));
                     }
 
-                    @Override
-                    public void onFailure(BleException exception) {
-                        Log.e(TAG, "特征值Notify通知回调失败: " + '\n' + exception.toString());
-                        bleManager.handleException(exception);
-                    }
                 });
+
+- ####构造某一character的callback
+    	BleCharacterCallback notifyCallback_1 = new BleCharacterCallback() {
+        	@Override
+        	public void onSuccess(BluetoothGattCharacteristic characteristic) {
+            	Log.d(TAG, "notifyCallback_1 success： " + '\n' + Arrays.toString(characteristic.getValue()));
+        	}
+
+        	@Override
+        	public void onFailure(BleException exception) {
+            	bleManager.handleException(exception);
+        	}
+    	};
+
+- ####对这个character进行notify
+	参数中的callback和uuid将会形成关联，一旦设备的此uuid对应的character发生数据变化，此callback将会回调结果。此callbak将会唯一存在，和uuid是一一对应的关系。
+
+        bleManager.notifyDevice(UUID_SERVICE, UUID_NOTIFY_1, notifyCallback_1);
+
+- ####不再notify这个character
+    uuid作为参数，即不再监听这个uuid对应的character
+
+        bleManager.stopListenCharacterCallback(UUID_NOTIFY_1);
 
 - ####indicate
-         bleManager.indicateDevice(
-                UUID_SERVICE_LISTEN,
-                UUID_LISTEN_INDICATE,
-                UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
-                new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "特征值Indicate通知数据回调： "
-                                + '\n' + Arrays.toString(characteristic.getValue()));
-                    }
+        bleManager.indicateDevice(UUID_SERVICE, UUID_INDICATE, indicateCallback);
 
-                    @Override
-                    public void onFailure(BleException exception) {
-                        Log.e(TAG, "特征值Indicate通知回调失败: " + '\n' + exception.toString());
-                        bleManager.handleException(exception);
-                    }
-                });
-
-- ####写指令
+- ####write
         bleManager.writeDevice(
-                UUID_SERVICE_OPERATE,
-                UUID_OPERATE_WRITE,
-                UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
+                UUID_SERVICE,
+                UUID_WRITE,
                 HexUtil.hexStringToBytes(SAMPLE_WRITE_DATA),
-                new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "写特征值成功: "
-                                + '\n' + Arrays.toString(characteristic.getValue()));
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                        Log.e(TAG, "写读特征值失败: " + '\n' + exception.toString());
-                        bleManager.handleException(exception);
-                    }
-               });
+                writeCallback);
+- ####read
+        bleManager.readDevice(
+                UUID_SERVICE,
+                UUID_READ,
+                readCallback);
 
 - #### 获取当前连接的状态
 		boolean a = bleManager.isInScanning();
 		boolean b = bleManager.isConnectingOrConnected();
 		boolean c = bleManager.isConnected();
 		boolean d = bleManager.isServiceDiscovered();
-
-- #### 必要时移除某一回调
-	作为参数传入的callback将被加入callback集合不会移除，会持续保持监听。今后当该callback监听的特征值每一次发生变化时，将会触发callback回调（其他特征值发生变化不会影响）。所以当使用者不再需要此callback的时候，可自行移除。
-
-		/**将回调实例化，而不是以匿名对象的形式*/
-    	BleCharacterCallback bleCharacterCallback = new BleCharacterCallback() {
-        	@Override
-        	public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            	Log.d(TAG, "特征值Notificaty通知数据回调： "
-                    + '\n' + Arrays.toString(characteristic.getValue()));
-        	}
-
-        	@Override
-        	public void onFailure(BleException exception) {
-            	Log.e(TAG, "特征值Notify通知回调失败: " + '\n' + exception.toString());
-            	bleManager.handleException(exception);
-        	}
-    	};
-
-		/**需要使用的时候，作为参数传入*/
-        bleManager.notifyDevice(
-                UUID_SERVICE_OPERATE,
-                UUID_OPERATE_NOTIFY,
-                UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR,
-                bleCharacterCallback);
-
-        /**不需要再监听特征值变化的时候，将该回调接口对象移除*/
-        bleManager.removeBleCharacterCallback(bleCharacterCallback);
-
 
 - ####复位（断开此次蓝牙连接，移除所有回调）
         bleManager.closeBluetoothGatt();
@@ -190,7 +144,6 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
 
 - ####开启或关闭蓝牙
 		bleManager.enableBluetooth();
-
 		bleManager.disableBluetooth();
 
 - ####其他

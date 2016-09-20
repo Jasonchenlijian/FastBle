@@ -29,13 +29,13 @@ public class DemoActivity extends AppCompatActivity {
     private static final String UUID_NOTIFY_1 = "00000000-0000-1000-8000-00805f9b34fb";
     private static final String UUID_NOTIFY_2 = "00000000-0000-1000-8000-00805f9b34fb";
     private static final String UUID_WRITE = "0000fff1-0000-1000-8000-00805f9b34fb";
-    private static final String SAMPLE_WRITE_DATA = "55aa0bb2100705100600ee";     // 要写入设备某一个特征值的指令
+    private static final String SAMPLE_WRITE_DATA = "000000000000000";                  // 要写入设备某一个character的指令
 
-    private static final long TIME_OUT = 10000;                                   // 扫描超时时间
-    private static final String DEVICE_NAME = "这里写你的设备名";                   // 符合连接规则的蓝牙设备名，即：device.getName
+    private static final long TIME_OUT = 10000;                                         // 扫描超时时间
+    private static final String DEVICE_NAME = "这里写你的设备名";                         // 符合连接规则的蓝牙设备名，即：device.getName
     private static final String TAG = "ble_sample";
 
-    private BleManager bleManager;                                                // Ble核心管理类
+    private BleManager bleManager;                                                      // Ble核心管理类
 
     private BluetoothDevice[] bluetoothDevices;
 
@@ -103,7 +103,7 @@ public class DemoActivity extends AppCompatActivity {
             @Override
             public void onScanTimeout() {
                 super.onScanTimeout();
-                Log.i(TAG, "搜索时间结束");
+                Log.i(TAG, "Time Out");
             }
         });
     }
@@ -120,13 +120,12 @@ public class DemoActivity extends AppCompatActivity {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "连接成功！");
-                gatt.discoverServices();                // 连接上设备后搜索服务
+                gatt.discoverServices();
             }
 
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "服务被发现！");
-                BluetoothUtil.printServices(gatt);            // 打印该设备所有服务、特征值
                 bleManager.getBluetoothState();               // 打印与该设备的当前状态
             }
 
@@ -149,13 +148,12 @@ public class DemoActivity extends AppCompatActivity {
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
-                        gatt.discoverServices();                // 连接上设备后搜索服务
+                        gatt.discoverServices();
                     }
 
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "服务被发现！");
-                        BluetoothUtil.printServices(gatt);            // 打印该设备所有服务、特征值
                         bleManager.getBluetoothState();               // 打印与该设备的当前状态
                     }
 
