@@ -98,9 +98,8 @@ public class BleManager {
      */
     public boolean notifyDevice(String uuid_service,
                                 String uuid_notification,
-                                String uuid_client,
                                 BleCharacterCallback callback) {
-        return enableNotifyOfCharacteristic(uuid_service, uuid_notification, uuid_client, callback);
+        return enableNotifyOfCharacteristic(uuid_service, uuid_notification, callback);
     }
 
     /**
@@ -108,9 +107,8 @@ public class BleManager {
      */
     public boolean indicateDevice(String uuid_service,
                                   String uuid_indication,
-                                  String uuid_client,
                                   BleCharacterCallback callback) {
-        return enableIndicateOfCharacteristic(uuid_service, uuid_indication, uuid_client, callback);
+        return enableIndicateOfCharacteristic(uuid_service, uuid_indication, callback);
     }
 
     /**
@@ -118,10 +116,9 @@ public class BleManager {
      */
     public boolean writeDevice(String uuid_service,
                                String uuid_write,
-                               String uuid_client,
                                byte[] data,
                                BleCharacterCallback callback) {
-        return writeDataToCharacteristic(uuid_service, uuid_write, uuid_client, data, callback);
+        return writeDataToCharacteristic(uuid_service, uuid_write, data, callback);
     }
 
     /**
@@ -129,9 +126,8 @@ public class BleManager {
      */
     public boolean readDevice(String uuid_service,
                               String uuid_read,
-                              String uuid_client,
                               BleCharacterCallback callback) {
-        return readDataFromCharacteristic(uuid_service, uuid_read, uuid_client, callback);
+        return readDataFromCharacteristic(uuid_service, uuid_read, callback);
     }
 
     /**
@@ -157,7 +153,7 @@ public class BleManager {
     public void closeBluetoothGatt() {
         if (bleBluetooth != null) {
             bleBluetooth.closeBluetoothGatt();
-            bleBluetooth.removeAllCallback();
+            bleBluetooth.clearCallback();
         }
     }
 
@@ -225,17 +221,17 @@ public class BleManager {
     }
 
     /**
-     * 将某一不再需要的接口移除(notify、indicate、 write、read)
+     * 停止监听某一特征值的回调函数
      */
-    public void removeBleCharacterCallback(BleCharacterCallback callback) {
-        bleBluetooth.removeGattCallback(callback.getBluetoothGattCallback());
+    public void stopListenCharacterCallback(String uuid) {
+        bleBluetooth.removeGattCallback(uuid);
     }
 
     /**
-     * 将某一不再需要的接口移除(connect)
+     * 停止监听连接状态回调函数
      */
-    public void removeBleBleGattCallback(BleGattCallback callback) {
-        bleBluetooth.removeGattCallback(callback);
+    public void stopListenConnectCallback() {
+        bleBluetooth.removeConnectGattCallback();
     }
 
 
@@ -270,9 +266,9 @@ public class BleManager {
      * notify
      */
     private boolean enableNotifyOfCharacteristic(String uuid_service, String uuid_notify,
-                                                 String uuid_client, final BleCharacterCallback callback) {
+                                                 final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_notify, null, uuid_client)
+                .withUUIDString(uuid_service, uuid_notify, null)
                 .enableCharacteristicNotify(callback, uuid_notify);
     }
 
@@ -280,9 +276,9 @@ public class BleManager {
      * indicate
      */
     private boolean enableIndicateOfCharacteristic(String uuid_service, String uuid_indicate,
-                                                   String uuid_client, final BleCharacterCallback callback) {
+                                                   final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_indicate, null, uuid_client)
+                .withUUIDString(uuid_service, uuid_indicate, null)
                 .enableCharacteristicIndicate(callback, uuid_indicate);
     }
 
@@ -290,9 +286,9 @@ public class BleManager {
      * write
      */
     private boolean writeDataToCharacteristic(String uuid_service, String uuid_write,
-                                              String uuid_client, byte[] data, final BleCharacterCallback callback) {
+                                              byte[] data, final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_write, null, uuid_client)
+                .withUUIDString(uuid_service, uuid_write, null)
                 .writeCharacteristic(data, callback, uuid_write);
     }
 
@@ -300,9 +296,9 @@ public class BleManager {
      * read
      */
     private boolean readDataFromCharacteristic(String uuid_service, String uuid_read,
-                                               String uuid_client, final BleCharacterCallback callback) {
+                                               final BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_read, null, uuid_client)
+                .withUUIDString(uuid_service, uuid_read, null)
                 .readCharacteristic(callback, uuid_read);
     }
 

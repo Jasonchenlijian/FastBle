@@ -21,6 +21,11 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.clj.blesample.DemoActivity" />
+
+        <activity android:name="com.clj.blesample.OperateActivity" />
+
+
     </application>
 
 </manifest>
