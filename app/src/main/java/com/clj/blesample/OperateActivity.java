@@ -24,6 +24,8 @@ import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.HexUtil;
 
+import java.util.Arrays;
+
 
 /**
  * Created by 陈利健 on 2016/9/20.
@@ -89,7 +91,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 break;
 
             case R.id.btn_disconnect:
-                bleManager.closeBluetoothGatt();
+                showDisConnectState();
                 break;
         }
     }
@@ -175,6 +177,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     @Override
                     public void run() {
                         progressDialog.dismiss();
+                        showDisConnectState();
                     }
                 });
                 bleManager.handleException(exception);
@@ -210,6 +213,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     @Override
                     public void run() {
                         progressDialog.dismiss();
+                        showDisConnectState();
                     }
                 });
                 bleManager.handleException(exception);
@@ -225,6 +229,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
         layout_item_connect.setVisibility(View.VISIBLE);
         layout_item_state.setVisibility(View.GONE);
+
+        layout_device_list.removeAllViews();
     }
 
     /**
@@ -254,7 +260,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
 
                     txt_character.setText(characteristic.getUuid().toString());
-                    txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                    txt_value.setText(Arrays.toString(characteristic.getValue()));
                     switch (characteristic.getProperties()) {
                         case 2:
                             btn_properties.setText(String.valueOf("read"));
@@ -343,7 +349,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "notify success： " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        Log.d(TAG, "notify success： " + '\n' + Arrays.toString(characteristic.getValue()));
 
                         runOnUiThread(new Runnable() {
                             @Override
@@ -352,7 +358,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                                 if (characterView != null) {
                                     TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
                                     if (txt_value != null) {
-                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                        txt_value.setText(Arrays.toString(characteristic.getValue()));
                                     }
                                 }
                             }
@@ -382,7 +388,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "indicate success： " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        Log.d(TAG, "indicate success： " + '\n' + Arrays.toString(characteristic.getValue()));
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -390,7 +396,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                                 if (characterView != null) {
                                     TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
                                     if (txt_value != null) {
-                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                        txt_value.setText(Arrays.toString(characteristic.getValue()));
                                     }
                                 }
                             }
@@ -421,7 +427,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "write success: " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        Log.d(TAG, "write success: " + '\n' + Arrays.toString(characteristic.getValue()));
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -429,7 +435,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                                 if (characterView != null) {
                                     TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
                                     if (txt_value != null) {
-                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                        txt_value.setText(Arrays.toString(characteristic.getValue()));
                                     }
                                 }
                             }
@@ -459,7 +465,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "read success: " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        Log.d(TAG, "read success: " + '\n' + Arrays.toString(characteristic.getValue()));
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -467,7 +473,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                                 if (characterView != null) {
                                     TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
                                     if (txt_value != null) {
-                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                        txt_value.setText(Arrays.toString(characteristic.getValue()));
                                     }
                                 }
                             }
