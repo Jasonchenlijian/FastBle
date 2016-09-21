@@ -1,11 +1,9 @@
 # FastBle
-Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notify、indicate、读、写等一系列蓝牙操作。
-
-传递参数，然后回调结果，如此。
+Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect、notify、indicate、write、read等一系列蓝牙操作。每一个characteristic会与一个callback形成一一对应的监听关系。
 
 ***
 
-## 更新日志
+## Update log
 - 2016-09-20
     1. 优化callback机制，一个character有且只会存在一个callback，并可以手动移除，即stop listen
     2. 示例代码中添加DemoActivity和OperateActivity。前者示范如何使用本框架，后者可以作为蓝牙调试工具，测试蓝牙设备。
@@ -13,6 +11,14 @@ Android BLE 蓝牙开发框架，使用回调方式处理搜索、连接、notif
 - 2016-09-08 
 	1. 增加设备是否支持ble的判断。
 	2. 修正监听不同character的时候，当其中一个character发生变化,与该character无关的callback也会回调结果的bug。
+
+## Preview
+![效果图](http://v2.freep.cn/3tb_160921102221cern512293.png)
+
+![效果图](http://v1.freep.cn/3tb_160921102240aiy2512293.png)
+
+![效果图](http://v2.freep.cn/3tb_1609211024593oc6512293.png)
+
 
 
 ## Usage
