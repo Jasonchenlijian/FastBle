@@ -48,6 +48,8 @@ public class HexUtil {
      * @return 十六进制char[]
      */
     protected static char[] encodeHex(byte[] data, char[] toDigits) {
+        if(data == null)
+            return null;
         int l = data.length;
         char[] out = new char[l << 1];
         for (int i = 0, j = 0; i < l; i++) {

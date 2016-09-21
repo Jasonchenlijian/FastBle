@@ -1,5 +1,6 @@
 package com.clj.blesample;
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -10,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -22,7 +24,6 @@ import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.HexUtil;
 
-import java.util.Arrays;
 
 /**
  * Created by 陈利健 on 2016/9/20.
@@ -41,6 +42,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     private LinearLayout layout_character_list;
 
     private BleManager bleManager;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
         findViewById(R.id.btn_scan).setOnClickListener(this);
         findViewById(R.id.btn_connect).setOnClickListener(this);
+        findViewById(R.id.btn_disconnect).setOnClickListener(this);
 
         layout_item_connect = (LinearLayout) findViewById(R.id.layout_item_connect);
         layout_device_list = (LinearLayout) findViewById(R.id.layout_device_list);
@@ -62,8 +65,14 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         bleManager.init(this);
 
         showDisConnectState();
+        progressDialog = new ProgressDialog(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        bleManager.closeBluetoothGatt();
+    }
 
     @Override
     public void onClick(View view) {
@@ -78,6 +87,10 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     connectNameDevice(deviceName);
                 }
                 break;
+
+            case R.id.btn_disconnect:
+                bleManager.closeBluetoothGatt();
+                break;
         }
     }
 
@@ -88,15 +101,23 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         if (bleManager.isInScanning())
             return;
 
-        bleManager.scanDevice(new ListScanCallback(20000) {
+        progressDialog.show();
+
+        bleManager.scanDevice(new ListScanCallback(10000) {
             @Override
-            public void onDeviceFound(BluetoothDevice[] devices) {
-                showDeviceList(devices);
+            public void onDeviceFound(final BluetoothDevice[] devices) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showDeviceList(devices);
+                    }
+                });
             }
 
             @Override
             public void onScanTimeout() {
                 super.onScanTimeout();
+                progressDialog.dismiss();
             }
         });
     }
@@ -130,6 +151,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
      * 连接设备
      */
     private void connectSpecialDevice(final BluetoothDevice device) {
+        progressDialog.show();
         bleManager.connectDevice(device, new BleGattCallback() {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
@@ -137,12 +159,24 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
             }
 
             @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                showConnectState(device.getName(), gatt);
+            public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();
+                        showConnectState(device.getName(), gatt);
+                    }
+                });
             }
 
             @Override
             public void onConnectFailure(BleException exception) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();
+                    }
+                });
                 bleManager.handleException(exception);
             }
         });
@@ -152,19 +186,32 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
      * 直连某一蓝牙设备
      */
     private void connectNameDevice(final String deviceName) {
-        bleManager.connectDevice(deviceName, 20000, new BleGattCallback() {
+        progressDialog.show();
+        bleManager.connectDevice(deviceName, 10000, new BleGattCallback() {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();
             }
 
             @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                showConnectState(deviceName, gatt);
+            public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();
+                        showConnectState(deviceName, gatt);
+                    }
+                });
             }
 
             @Override
             public void onConnectFailure(BleException exception) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();
+                    }
+                });
                 bleManager.handleException(exception);
             }
         });
@@ -203,67 +250,79 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     View characterView = LayoutInflater.from(this).inflate(R.layout.layout_list_item_character, null);
                     characterView.setTag(characteristic.getUuid().toString());
                     TextView txt_character = (TextView) characterView.findViewById(R.id.txt_character);
-                    final TextView txt_properties = (TextView) characterView.findViewById(R.id.txt_properties);
+                    final Button btn_properties = (Button) characterView.findViewById(R.id.btn_properties);
                     TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
 
                     txt_character.setText(characteristic.getUuid().toString());
-                    txt_value.setText(Arrays.toString(characteristic.getValue()));
+                    txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
                     switch (characteristic.getProperties()) {
                         case 2:
-                            txt_properties.setText("read");
-                            txt_properties.setOnClickListener(new View.OnClickListener() {
+                            btn_properties.setText(String.valueOf("read"));
+                            btn_properties.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    startRead(service.getUuid().toString(), characteristic.getUuid().toString());
+                                    if (btn_properties.getText().toString().equals("read")) {
+                                        startRead(service.getUuid().toString(), characteristic.getUuid().toString());
+                                    } else if (btn_properties.getText().toString().equals("stopListen")) {
+                                        stopListen(characteristic.getUuid().toString());
+                                        btn_properties.setText(String.valueOf("read"));
+                                    }
                                 }
                             });
                             break;
 
                         case 8:
-                            txt_properties.setText("write");
-                            txt_properties.setOnClickListener(new View.OnClickListener() {
+                            btn_properties.setText(String.valueOf("write"));
+                            btn_properties.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    EditDialog dialog = new EditDialog(OperateActivity.this);
-                                    dialog.setOnDialogClickListener(new EditDialog.OnDialogClickListener() {
-                                        @Override
-                                        public void onEditOkClick(String writeData) {
-                                            startWrite(service.getUuid().toString(), characteristic.getUuid().toString(), writeData);
-                                        }
+                                    if (btn_properties.getText().toString().equals("write")) {
+                                        EditDialog dialog = new EditDialog(OperateActivity.this);
+                                        dialog.setOnDialogClickListener(new EditDialog.OnDialogClickListener() {
+                                            @Override
+                                            public void onEditOkClick(String writeData) {
+                                                startWrite(service.getUuid().toString(), characteristic.getUuid().toString(), writeData);
+                                            }
 
-                                        @Override
-                                        public void onEditErrorClick() {
-                                            Log.e(TAG, "write error");
-                                        }
-                                    });
-                                    dialog.show();
+                                            @Override
+                                            public void onEditErrorClick() {
+                                                Log.e(TAG, "write error");
+                                            }
+                                        });
+                                        dialog.show();
+                                    } else if (btn_properties.getText().toString().equals("stopListen")) {
+                                        stopListen(characteristic.getUuid().toString());
+                                        btn_properties.setText(String.valueOf("write"));
+                                    }
                                 }
                             });
                             break;
 
                         case 16:
-                            txt_properties.setText("notify");
-                            txt_properties.setOnClickListener(new View.OnClickListener() {
+                            btn_properties.setText(String.valueOf("notify"));
+                            btn_properties.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    if (txt_properties.getText().toString().equals("notify")) {
+                                    if (btn_properties.getText().toString().equals("notify")) {
                                         startNotify(service.getUuid().toString(), characteristic.getUuid().toString());
-                                    } else if (txt_properties.getText().toString().equals("stop notify")) {
+                                    } else if (btn_properties.getText().toString().equals("stopListen")) {
                                         stopListen(characteristic.getUuid().toString());
+                                        btn_properties.setText(String.valueOf("notify"));
                                     }
                                 }
                             });
                             break;
 
                         case 32:
-                            txt_properties.setText("indicate");
-                            txt_properties.setOnClickListener(new View.OnClickListener() {
+                            btn_properties.setText(String.valueOf("indicate"));
+                            btn_properties.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    if (txt_properties.getText().toString().equals("indicate")) {
+                                    if (btn_properties.getText().toString().equals("indicate")) {
                                         startIndicate(service.getUuid().toString(), characteristic.getUuid().toString());
-                                    } else if (txt_properties.getText().toString().equals("stop indicate")) {
+                                    } else if (btn_properties.getText().toString().equals("stopListen")) {
                                         stopListen(characteristic.getUuid().toString());
+                                        btn_properties.setText(String.valueOf("indicate"));
                                     }
                                 }
                             });
@@ -283,15 +342,21 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 characterUUID,
                 new BleCharacterCallback() {
                     @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "notify success： " + '\n' + Arrays.toString(characteristic.getValue()));
-                        View characterView = layout_character_list.findViewWithTag(characterUUID);
-                        if (characterView != null) {
-                            TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
-                            if (txt_value != null) {
-                                txt_value.setText(Arrays.toString(characteristic.getValue()));
+                    public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "notify success： " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                View characterView = layout_character_list.findViewWithTag(characterUUID);
+                                if (characterView != null) {
+                                    TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
+                                    if (txt_value != null) {
+                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
 
                     @Override
@@ -303,8 +368,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         if (suc) {
             View characterView = layout_character_list.findViewWithTag(characterUUID);
             if (characterView != null) {
-                TextView txt_properties = (TextView) characterView.findViewById(R.id.txt_properties);
-                txt_properties.setText("stop notify");
+                Button btn_properties = (Button) characterView.findViewById(R.id.btn_properties);
+                btn_properties.setText(String.valueOf("stopListen"));
             }
         }
     }
@@ -316,15 +381,20 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                 characterUUID,
                 new BleCharacterCallback() {
                     @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "indicate success： " + '\n' + Arrays.toString(characteristic.getValue()));
-                        View characterView = layout_character_list.findViewWithTag(characterUUID);
-                        if (characterView != null) {
-                            TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
-                            if (txt_value != null) {
-                                txt_value.setText(Arrays.toString(characteristic.getValue()));
+                    public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "indicate success： " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                View characterView = layout_character_list.findViewWithTag(characterUUID);
+                                if (characterView != null) {
+                                    TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
+                                    if (txt_value != null) {
+                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
 
                     @Override
@@ -336,22 +406,34 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         if (suc) {
             View characterView = layout_character_list.findViewWithTag(characterUUID);
             if (characterView != null) {
-                TextView txt_properties = (TextView) characterView.findViewById(R.id.txt_properties);
-                txt_properties.setText("stop indicate");
+                Button btn_properties = (Button) characterView.findViewById(R.id.btn_properties);
+                btn_properties.setText(String.valueOf("stopListen"));
             }
         }
     }
 
-    private void startWrite(String serviceUUID, String characterUUID, String writeData) {
+    private void startWrite(String serviceUUID, final String characterUUID, String writeData) {
         Log.i(TAG, "startWrite");
-        bleManager.writeDevice(
+        boolean suc = bleManager.writeDevice(
                 serviceUUID,
                 characterUUID,
                 HexUtil.hexStringToBytes(writeData),
                 new BleCharacterCallback() {
                     @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "write success: " + '\n' + Arrays.toString(characteristic.getValue()));
+                    public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "write success: " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                View characterView = layout_character_list.findViewWithTag(characterUUID);
+                                if (characterView != null) {
+                                    TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
+                                    if (txt_value != null) {
+                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                    }
+                                }
+                            }
+                        });
                     }
 
                     @Override
@@ -359,24 +441,37 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                         bleManager.handleException(exception);
                     }
                 });
+
+        if (suc) {
+            View characterView = layout_character_list.findViewWithTag(characterUUID);
+            if (characterView != null) {
+                Button btn_properties = (Button) characterView.findViewById(R.id.btn_properties);
+                btn_properties.setText(String.valueOf("stopListen"));
+            }
+        }
     }
 
     private void startRead(String serviceUUID, final String characterUUID) {
         Log.i(TAG, "startRead");
-        bleManager.readDevice(
+        boolean suc = bleManager.readDevice(
                 serviceUUID,
                 characterUUID,
                 new BleCharacterCallback() {
                     @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "read success: " + '\n' + Arrays.toString(characteristic.getValue()));
-                        View characterView = layout_character_list.findViewWithTag(characterUUID);
-                        if (characterView != null) {
-                            TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
-                            if (txt_value != null) {
-                                txt_value.setText(Arrays.toString(characteristic.getValue()));
+                    public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "read success: " + '\n' + HexUtil.encodeHexStr(characteristic.getValue()));
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                View characterView = layout_character_list.findViewWithTag(characterUUID);
+                                if (characterView != null) {
+                                    TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
+                                    if (txt_value != null) {
+                                        txt_value.setText(HexUtil.encodeHexStr(characteristic.getValue()));
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
 
                     @Override
@@ -384,10 +479,18 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                         bleManager.handleException(exception);
                     }
                 });
+
+        if (suc) {
+            View characterView = layout_character_list.findViewWithTag(characterUUID);
+            if (characterView != null) {
+                Button btn_properties = (Button) characterView.findViewById(R.id.btn_properties);
+                btn_properties.setText(String.valueOf("stopListen"));
+            }
+        }
     }
 
     private void stopListen(String characterUUID) {
-        Log.i(TAG, "stopNotify");
+        Log.i(TAG, "stopListen");
         bleManager.stopListenCharacterCallback(characterUUID);
     }
 
