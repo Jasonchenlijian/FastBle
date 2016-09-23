@@ -313,6 +313,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                                         startNotify(service.getUuid().toString(), characteristic.getUuid().toString());
                                     } else if (btn_properties.getText().toString().equals("stopListen")) {
                                         stopListen(characteristic.getUuid().toString());
+                                        bleManager.stopNotify(service.getUuid().toString(), characteristic.getUuid().toString());
                                         btn_properties.setText(String.valueOf("notify"));
                                     }
                                 }
@@ -328,6 +329,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                                         startIndicate(service.getUuid().toString(), characteristic.getUuid().toString());
                                     } else if (btn_properties.getText().toString().equals("stopListen")) {
                                         stopListen(characteristic.getUuid().toString());
+                                        bleManager.stopIndicate(service.getUuid().toString(), characteristic.getUuid().toString());
                                         btn_properties.setText(String.valueOf("indicate"));
                                     }
                                 }

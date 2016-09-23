@@ -149,6 +149,27 @@ public class BleConnector {
     }
 
     /**
+     * stop notify
+     */
+    public boolean disableCharacteristicNotify() {
+        return disableCharacteristicNotify(getCharacteristic());
+    }
+
+    /**
+     * stop notify
+     */
+    public boolean disableCharacteristicNotify(BluetoothGattCharacteristic characteristic) {
+        if (characteristic != null
+                && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+            BleLog.w(TAG, "characteristic.getProperties():" + characteristic.getProperties());
+
+            return setCharacteristicNotification(getBluetoothGatt(), characteristic, false);
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * indicate
      */
     public boolean enableCharacteristicIndicate(BleCharacterCallback bleCallback, String uuid_indicate) {
@@ -172,6 +193,27 @@ public class BleConnector {
             if (bleCallback != null) {
                 bleCallback.onFailure(new OtherException("Characteristic not support indicate!"));
             }
+            return false;
+        }
+    }
+
+    /**
+     * stop indicate
+     */
+    public boolean disableCharacteristicIndicate() {
+        return disableCharacteristicIndicate(getCharacteristic());
+    }
+
+    /**
+     * stop indicate
+     */
+    public boolean disableCharacteristicIndicate(BluetoothGattCharacteristic characteristic) {
+        if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+            BleLog.w(TAG, "characteristic.getProperties():" + characteristic.getProperties());
+
+            return setCharacteristicIndication(getBluetoothGatt(), characteristic, false);
+
+        } else {
             return false;
         }
     }

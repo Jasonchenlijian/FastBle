@@ -221,17 +221,35 @@ public class BleManager {
     }
 
     /**
-     * 停止监听某一特征值的回调函数
+     * 移除某一特征值的监听回调
      */
     public void stopListenCharacterCallback(String uuid) {
         bleBluetooth.removeGattCallback(uuid);
     }
 
     /**
-     * 停止监听连接状态回调函数
+     * 移除连接状态监听回调
      */
     public void stopListenConnectCallback() {
         bleBluetooth.removeConnectGattCallback();
+    }
+
+    /**
+     * 停止notify
+     */
+    public boolean stopNotify(String uuid_service, String uuid_notify) {
+        return bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_notify, null)
+                .disableCharacteristicNotify();
+    }
+
+    /**
+     * 停止indicate
+     */
+    public boolean stopIndicate(String uuid_service, String uuid_notify) {
+        return bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_notify, null)
+                .disableCharacteristicIndicate();
     }
 
 
@@ -266,7 +284,7 @@ public class BleManager {
      * notify
      */
     private boolean enableNotifyOfCharacteristic(String uuid_service, String uuid_notify,
-                                                 final BleCharacterCallback callback) {
+                                                 BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_notify, null)
                 .enableCharacteristicNotify(callback, uuid_notify);
@@ -276,7 +294,7 @@ public class BleManager {
      * indicate
      */
     private boolean enableIndicateOfCharacteristic(String uuid_service, String uuid_indicate,
-                                                   final BleCharacterCallback callback) {
+                                                   BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_indicate, null)
                 .enableCharacteristicIndicate(callback, uuid_indicate);
@@ -286,7 +304,7 @@ public class BleManager {
      * write
      */
     private boolean writeDataToCharacteristic(String uuid_service, String uuid_write,
-                                              byte[] data, final BleCharacterCallback callback) {
+                                              byte[] data, BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_write, null)
                 .writeCharacteristic(data, callback, uuid_write);
@@ -296,7 +314,7 @@ public class BleManager {
      * read
      */
     private boolean readDataFromCharacteristic(String uuid_service, String uuid_read,
-                                               final BleCharacterCallback callback) {
+                                               BleCharacterCallback callback) {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_read, null)
                 .readCharacteristic(callback, uuid_read);

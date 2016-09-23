@@ -12,7 +12,6 @@ import com.clj.fastble.bluetooth.BleGattCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
-import com.clj.fastble.utils.BluetoothUtil;
 import com.clj.fastble.utils.HexUtil;
 
 import java.util.Arrays;
@@ -204,12 +203,12 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "特征值Indicate通知数据回调： " + '\n' + Arrays.toString(characteristic.getValue()));
+                        Log.d(TAG, "indicate： " + '\n' + Arrays.toString(characteristic.getValue()));
                     }
 
                     @Override
                     public void onFailure(BleException exception) {
-                        Log.e(TAG, "特征值Indicate通知回调失败: " + '\n' + exception.toString());
+                        Log.e(TAG, "indicate: " + '\n' + exception.toString());
                         bleManager.handleException(exception);
                     }
                 });
@@ -226,15 +225,50 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "写特征值成功: " + '\n' + Arrays.toString(characteristic.getValue()));
+                        Log.d(TAG, "write: " + '\n' + Arrays.toString(characteristic.getValue()));
                     }
 
                     @Override
                     public void onFailure(BleException exception) {
-                        Log.e(TAG, "写读特征值失败: " + '\n' + exception.toString());
+                        Log.e(TAG, "write: " + '\n' + exception.toString());
                         bleManager.handleException(exception);
                     }
                 });
+    }
+
+    /**
+     * read
+     */
+    private void read() {
+        bleManager.readDevice(
+                UUID_SERVICE,
+                UUID_WRITE,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "read: " + '\n' + Arrays.toString(characteristic.getValue()));
+                    }
+
+                    @Override
+                    public void onFailure(BleException exception) {
+                        Log.e(TAG, "read: " + '\n' + exception.toString());
+                        bleManager.handleException(exception);
+                    }
+                });
+    }
+
+    /**
+     * stop notify
+     */
+    private boolean stopNotify1() {
+        return bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY_1);
+    }
+
+    /**
+     * stop indicate
+     */
+    private boolean stopIndicate() {
+        return bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
     }
 
     /*****************************************callback********************************************/
