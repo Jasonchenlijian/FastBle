@@ -16,9 +16,9 @@ Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect
 	2. 修正监听不同character的时候，当其中一个character发生变化,与该character无关的callback也会回调结果的bug。
 
 ## Preview
-![效果图](https://github.com/Jasonchenlijian/FastBle/preview/ble1.png) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/preview/ble2.png) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/preview/ble3.png)
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble1.png) 
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble2.png) 
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble3.png)
 
 
 
