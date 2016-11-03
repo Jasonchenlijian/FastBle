@@ -14,8 +14,6 @@ import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.HexUtil;
 
-import java.util.Arrays;
-
 /**
  * Created by 陈利健 on 2016/9/20.
  * 如何按照此框架编写代码
@@ -203,7 +201,7 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "indicate： " + '\n' + Arrays.toString(characteristic.getValue()));
+                        Log.d(TAG, "indicate： " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
@@ -225,7 +223,7 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "write: " + '\n' + Arrays.toString(characteristic.getValue()));
+                        Log.d(TAG, "write: " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
@@ -246,7 +244,7 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "read: " + '\n' + Arrays.toString(characteristic.getValue()));
+                        Log.d(TAG, "read: " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
@@ -279,7 +277,7 @@ public class DemoActivity extends AppCompatActivity {
     BleCharacterCallback notifyCallback_1 = new BleCharacterCallback() {
         @Override
         public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "notifyCallback_1 success： " + '\n' + Arrays.toString(characteristic.getValue()));
+            Log.d(TAG, "notifyCallback_1 success： " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
         }
 
         @Override
@@ -294,7 +292,7 @@ public class DemoActivity extends AppCompatActivity {
     BleCharacterCallback notifyCallback_2 = new BleCharacterCallback() {
         @Override
         public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "notifyCallback_2 success： " + '\n' + Arrays.toString(characteristic.getValue()));
+            Log.d(TAG, "notifyCallback_2 success： " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
         }
 
         @Override
