@@ -152,8 +152,12 @@ public class BleManager {
      */
     public void closeBluetoothGatt() {
         if (bleBluetooth != null) {
-            bleBluetooth.closeBluetoothGatt();
             bleBluetooth.clearCallback();
+            try {
+                bleBluetooth.closeBluetoothGatt();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

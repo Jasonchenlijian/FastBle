@@ -4,6 +4,9 @@ Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect
 ***
 
 ## Update log
+- 2016-11-16
+	1. 优化关闭机制，在关闭连接前先移除回调。
+
 - 2016-09-23
 	1. 添加stopNotify和stopIndicate的方法，与stopListenCharacterCallback方法作区分。
 
