@@ -52,8 +52,8 @@ public class BleManager {
      */
     public void init(Context context) {
 
-        mContext = context;
-
+        // mContext = context;
+           mContext = context.getApplicationContext();
         if (bleBluetooth == null) {
             bleBluetooth = new BleBluetooth(context);
         }
