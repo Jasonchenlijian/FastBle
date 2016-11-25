@@ -23,23 +23,12 @@ public class BleManager {
 
     private Context mContext;
 
-    /**
-     * 单例
-     */
     private static BleManager manager;
 
-    /**
-     * 蓝牙主要操作对象
-     */
     private static BleBluetooth bleBluetooth;
-    /**
-     * 默认异常处理器
-     */
+
     private DefaultBleExceptionHandler bleExceptionHandler;
 
-    /**
-     * 单例对象
-     */
     public static BleManager getInstance() {
         if (manager == null) {
             manager = new BleManager();
@@ -67,7 +56,6 @@ public class BleManager {
     public void handleException(BleException exception) {
         bleExceptionHandler.handleException(exception);
     }
-
 
     /**
      * 扫描周围所有设备
