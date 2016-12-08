@@ -23,13 +23,13 @@ public class DemoActivity extends AppCompatActivity {
     // 下面的所有UUID及指令请根据实际设备替换
     private static final String UUID_SERVICE = "00000000-0000-1000-8000-00805f9b34fb";
     private static final String UUID_INDICATE = "0000000-0000-1000-8000-00805f9b34fb";
-    private static final String UUID_NOTIFY_1 = "00000000-0000-1000-8000-00805f9b34fb";
-    private static final String UUID_NOTIFY_2 = "00000000-0000-1000-8000-00805f9b34fb";
+    private static final String UUID_NOTIFY = "00000000-0000-1000-8000-00805f9b34fb";
     private static final String UUID_WRITE = "0000fff1-0000-1000-8000-00805f9b34fb";
     private static final String SAMPLE_WRITE_DATA = "000000000000000";                  // 要写入设备某一个character的指令
 
     private static final long TIME_OUT = 10000;                                         // 扫描超时时间
-    private static final String DEVICE_NAME = "这里写你的设备名";                         // 符合连接规则的蓝牙设备名，即：device.getName
+    private static final String DEVICE_NAME = "这里写你的设备名";                         // 符合连接规则的蓝牙设备名
+    private static final String DEVICE_MAC = "这里写你的设备地址";                        // 符合连接规则的蓝牙设备地址
     private static final String TAG = "ble_sample";
 
     private BleManager bleManager;                                                      // Ble核心管理类
@@ -113,7 +113,7 @@ public class DemoActivity extends AppCompatActivity {
             return;
         BluetoothDevice sampleDevice = bluetoothDevices[0];
 
-        bleManager.connectDevice(sampleDevice, new BleGattCallback() {
+        bleManager.connectDevice(sampleDevice, true, new BleGattCallback() {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "连接成功！");
@@ -123,12 +123,12 @@ public class DemoActivity extends AppCompatActivity {
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "服务被发现！");
-                bleManager.getBluetoothState();               // 打印与该设备的当前状态
+                bleManager.getBluetoothState();
             }
 
             @Override
             public void onConnectFailure(BleException exception) {
-                Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
+                Log.i(TAG, "连接失败或连接中断：" + exception.toString());
                 bleManager.handleException(exception);
             }
         });
@@ -141,6 +141,7 @@ public class DemoActivity extends AppCompatActivity {
         bleManager.connectDevice(
                 DEVICE_NAME,
                 TIME_OUT,
+                false,
                 new BleGattCallback() {
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
@@ -151,12 +152,12 @@ public class DemoActivity extends AppCompatActivity {
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "服务被发现！");
-                        bleManager.getBluetoothState();               // 打印与该设备的当前状态
+                        bleManager.getBluetoothState();
                     }
 
                     @Override
                     public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
+                        Log.i(TAG, "连接失败或连接中断：" + exception.toString());
                         bleManager.handleException(exception);
                     }
 
@@ -164,32 +165,50 @@ public class DemoActivity extends AppCompatActivity {
     }
 
     /**
-     * listen notify1
+     * 扫描出周围指定地址的设备、并连接
+     */
+    private void scanAndConnect2() {
+        bleManager.connectMac(
+                DEVICE_MAC,
+                TIME_OUT,
+                false,
+                new BleGattCallback() {
+                    @Override
+                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+                        Log.i(TAG, "连接成功！");
+                        gatt.discoverServices();
+                    }
+
+                    @Override
+                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                        Log.i(TAG, "服务被发现！");
+                        bleManager.getBluetoothState();
+                    }
+
+                    @Override
+                    public void onConnectFailure(BleException exception) {
+                        Log.i(TAG, "连接失败或连接中断：" + exception.toString());
+                        bleManager.handleException(exception);
+                    }
+
+                });
+    }
+
+    /**
+     * listen notify
      */
     private void notify_1() {
-        bleManager.notifyDevice(UUID_SERVICE, UUID_NOTIFY_1, notifyCallback_1);
+        bleManager.notifyDevice(UUID_SERVICE, UUID_NOTIFY, notifyCallback);
     }
 
-    /**
-     * listen notify2
-     */
-    private void notify_2() {
-        bleManager.notifyDevice(UUID_SERVICE, UUID_NOTIFY_2, notifyCallback_2);
-    }
 
     /**
-     * stop listen notify1
+     * stop listen notify
      */
     private void stop_notify_1() {
-        bleManager.stopListenCharacterCallback(UUID_NOTIFY_1);
+        bleManager.stopListenCharacterCallback(UUID_NOTIFY);
     }
 
-    /**
-     * stop listen notify2
-     */
-    private void stop_notify_2() {
-        bleManager.stopListenCharacterCallback(UUID_NOTIFY_2);
-    }
 
     /**
      * indicate
@@ -201,12 +220,12 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "indicate： " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                        Log.d(TAG, "indicate： " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
                     public void onFailure(BleException exception) {
-                        Log.e(TAG, "indicate: " + '\n' + exception.toString());
+                        Log.e(TAG, "indicate: " + exception.toString());
                         bleManager.handleException(exception);
                     }
                 });
@@ -223,12 +242,12 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "write: " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                        Log.d(TAG, "write: " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
                     public void onFailure(BleException exception) {
-                        Log.e(TAG, "write: " + '\n' + exception.toString());
+                        Log.e(TAG, "write: " + exception.toString());
                         bleManager.handleException(exception);
                     }
                 });
@@ -244,12 +263,12 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "read: " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                        Log.d(TAG, "read: " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
                     public void onFailure(BleException exception) {
-                        Log.e(TAG, "read: " + '\n' + exception.toString());
+                        Log.e(TAG, "read: " + exception.toString());
                         bleManager.handleException(exception);
                     }
                 });
@@ -259,7 +278,7 @@ public class DemoActivity extends AppCompatActivity {
      * stop notify
      */
     private boolean stopNotify1() {
-        return bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY_1);
+        return bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
     }
 
     /**
@@ -272,27 +291,12 @@ public class DemoActivity extends AppCompatActivity {
     /*****************************************callback********************************************/
 
     /**
-     * 特征值1的回调函数
+     * 构造某一character的callback
      */
-    BleCharacterCallback notifyCallback_1 = new BleCharacterCallback() {
+    BleCharacterCallback notifyCallback = new BleCharacterCallback() {
         @Override
         public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "notifyCallback_1 success： " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-        }
-
-        @Override
-        public void onFailure(BleException exception) {
-            bleManager.handleException(exception);
-        }
-    };
-
-    /**
-     * 特征值2的回调函数
-     */
-    BleCharacterCallback notifyCallback_2 = new BleCharacterCallback() {
-        @Override
-        public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "notifyCallback_2 success： " + '\n' + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+            Log.d(TAG, "notifyCallback success： " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
         }
 
         @Override

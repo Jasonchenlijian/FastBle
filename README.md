@@ -4,6 +4,9 @@ Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect
 ***
 
 ## Update log
+- 2016-12-08
+	1. 增加直连指定mac地址设备的方法。
+
 - 2016-11-16
 	1. 优化关闭机制，在关闭连接前先移除回调。
 
@@ -69,13 +72,13 @@ Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect
 
             @Override
             public void onConnectFailure(BleException exception) {
-                Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
+                Log.i(TAG, "连接失败或连接中断：" + exception.toString());
                 bleManager.handleException(exception);
             }
         });
             
 
-- ####扫描指定名称设备、并连接
+- ####扫描指定名称的设备、并连接
 	如果你确定周围有已知名称的蓝牙设备，或只需要连接指定名称的蓝牙设备，而忽略其他名称的设备，可以选择直接对指定名称进行搜索，搜索到即连接，搜索不到则回调超时接口。
 
         bleManager.connectDevice(
@@ -96,17 +99,46 @@ Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect
 
                     @Override
                     public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接失败或连接中断：" + '\n' + exception.toString());
+                        Log.i(TAG, "连接失败或连接中断：" + exception.toString());
                         bleManager.handleException(exception);
                     }
 
                 });
 
+- ####扫描指定MAC地址的设备、并连接
+	如果你确定周围有已知地址的蓝牙设备，或只需要连接指定地址的蓝牙设备，而忽略其他地址的设备，可以选择直接对指定名称进行搜索，搜索到即连接，搜索不到则回调超时接口。
+
+        bleManager.connectMac(
+                DEVICE_MAC,
+                TIME_OUT,
+                false,
+                new BleGattCallback() {
+                    @Override
+                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+                        Log.i(TAG, "连接成功！");
+                        gatt.discoverServices();
+                    }
+
+                    @Override
+                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                        Log.i(TAG, "服务被发现！");
+                        bleManager.getBluetoothState();
+                    }
+
+                    @Override
+                    public void onConnectFailure(BleException exception) {
+                        Log.i(TAG, "连接失败或连接中断：" + exception.toString());
+                        bleManager.handleException(exception);
+                    }
+
+                });
+
+
 - ####构造某一character的callback
     	BleCharacterCallback notifyCallback = new BleCharacterCallback() {
         	@Override
         	public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            	Log.d(TAG, "notifyCallback success： " + '\n' + Arrays.toString(characteristic.getValue()));
+            	Log.d(TAG, "notifyCallback success： " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
         	}
 
         	@Override

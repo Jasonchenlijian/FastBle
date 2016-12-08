@@ -41,8 +41,8 @@ public class BleManager {
      */
     public void init(Context context) {
 
-        // mContext = context;
-           mContext = context.getApplicationContext();
+        mContext = context.getApplicationContext();
+
         if (bleBluetooth == null) {
             bleBluetooth = new BleBluetooth(context);
         }
@@ -68,8 +68,9 @@ public class BleManager {
      * 直接连接某一设备
      */
     public void connectDevice(BluetoothDevice device,
+                              boolean autoConnect,
                               BleGattCallback callback) {
-        connect(device, callback);
+        connect(device, autoConnect, callback);
     }
 
     /**
@@ -77,8 +78,19 @@ public class BleManager {
      */
     public boolean connectDevice(String deviceName,
                                  long time_out,
+                                 boolean autoConnect,
                                  BleGattCallback callback) {
-        return scanNameAndConnect(deviceName, time_out, callback);
+        return scanNameAndConnect(deviceName, time_out, autoConnect, callback);
+    }
+
+    /**
+     * 扫描连接符合地址的设备，并监听数据变化
+     */
+    public boolean connectMac(String mac,
+                              long time_out,
+                              boolean autoConnect,
+                              BleGattCallback callback) {
+        return scanMacAndConnect(mac, time_out, autoConnect, callback);
     }
 
     /**
@@ -245,7 +257,7 @@ public class BleManager {
     }
 
 
-    /*************************************inner method****************************************************/
+    /*************************************inner method**************************************/
 
     /**
      * 扫描周围设备
@@ -258,18 +270,26 @@ public class BleManager {
 
     /**
      * 与某一指定的设备连接
-     * (与 scanSpecifiedDevicePeriod方法 配合使用)
+     * (可以与 scanSpecifiedDevicePeriod方法 配合使用)
      */
-    private void connect(BluetoothDevice device, BleGattCallback callback) {
-        bleBluetooth.connect(device, true, callback);
+    private void connect(BluetoothDevice device, boolean autoConnect, BleGattCallback callback) {
+        bleBluetooth.connect(device, autoConnect, callback);
     }
 
     /**
      * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
      */
-    private boolean scanNameAndConnect(String deviceName, long time_out, BleGattCallback callback) {
+    private boolean scanNameAndConnect(String deviceName, long time_out, boolean autoConnect,
+                                       BleGattCallback callback) {
+        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
+    }
 
-        return bleBluetooth.scanNameAndConnect(deviceName, time_out, false, callback);
+    /**
+     * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
+     */
+    private boolean scanMacAndConnect(String deviceName, long time_out, boolean autoConnect,
+                                      BleGattCallback callback) {
+        return bleBluetooth.scanMacAndConnect(deviceName, time_out, autoConnect, callback);
     }
 
     /**
@@ -311,5 +331,4 @@ public class BleManager {
                 .withUUIDString(uuid_service, uuid_read, null)
                 .readCharacteristic(callback, uuid_read);
     }
-
 }

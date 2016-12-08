@@ -19,6 +19,7 @@ import com.clj.fastble.conn.BleConnector;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.log.BleLog;
+import com.clj.fastble.scan.MacScanCallback;
 import com.clj.fastble.scan.NameScanCallback;
 import com.clj.fastble.scan.PeriodScanCallback;
 import com.clj.fastble.utils.BluetoothUtil;
@@ -32,6 +33,7 @@ import java.util.Map;
 public class BleBluetooth {
     private static final String TAG = BleBluetooth.class.getSimpleName();
     public static final String CONNECT_CALLBACK_KEY = "connect_key";
+    public static final String READ_RSSI_KEY = "rssi_key";
 
     public static final int STATE_DISCONNECTED = 0;
     public static final int STATE_SCANNING = 1;
@@ -156,6 +158,41 @@ public class BleBluetooth {
             throw new IllegalArgumentException("非法设备名 ! ");
         }
         startLeScan(new NameScanCallback(name, time_out) {
+
+            @Override
+            public void onScanTimeout() {
+                if (callback != null) {
+                    callback.onConnectFailure(BleException.TIMEOUT_EXCEPTION);
+                }
+            }
+
+            @Override
+            public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        connect(device, autoConnect, callback);
+                    }
+                });
+            }
+        });
+        return true;
+    }
+
+    /**
+     * 搜索指定设备地址
+     *
+     * @param mac         设备地址
+     * @param time_out    超时时间
+     * @param autoConnect
+     * @param callback
+     * @return
+     */
+    public boolean scanMacAndConnect(String mac, long time_out, final boolean autoConnect, final BleGattCallback callback) {
+        if (TextUtils.isEmpty(mac)) {
+            throw new IllegalArgumentException("非法设备地址 ! ");
+        }
+        startLeScan(new MacScanCallback(mac, time_out) {
 
             @Override
             public void onScanTimeout() {

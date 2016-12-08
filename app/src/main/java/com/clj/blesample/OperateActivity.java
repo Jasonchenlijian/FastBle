@@ -24,8 +24,6 @@ import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.HexUtil;
 
-import java.util.Arrays;
-
 
 /**
  * Created by 陈利健 on 2016/9/20.
@@ -154,7 +152,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
      */
     private void connectSpecialDevice(final BluetoothDevice device) {
         progressDialog.show();
-        bleManager.connectDevice(device, new BleGattCallback() {
+        bleManager.connectDevice(device, true, new BleGattCallback() {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();
@@ -190,7 +188,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
      */
     private void connectNameDevice(final String deviceName) {
         progressDialog.show();
-        bleManager.connectDevice(deviceName, 10000, new BleGattCallback() {
+        bleManager.connectDevice(deviceName, 10000, false, new BleGattCallback() {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();

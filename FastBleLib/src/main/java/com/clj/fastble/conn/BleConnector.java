@@ -287,6 +287,15 @@ public class BleConnector {
         }
     }
 
+    /**
+     * rssi
+     */
+    public boolean readRemoteRssi(BleRssiCallback bleCallback) {
+        handleRSSIReadCallback(bleCallback);
+        return handleAfterInitialed(getBluetoothGatt().readRemoteRssi(), bleCallback);
+    }
+
+
     private boolean handleAfterInitialed(boolean initiated, BleCallback bleCallback) {
         if (bleCallback != null) {
 
@@ -446,6 +455,23 @@ public class BleConnector {
                         if (characteristic.getUuid().equals(UUID.fromString(uuid_read))) {
                             bleCallback.onSuccess(characteristic);
                         }
+                    } else {
+                        bleCallback.onFailure(new GattException(status));
+                    }
+                }
+            });
+        }
+    }
+
+    private void handleRSSIReadCallback(final BleRssiCallback bleCallback) {
+
+        if (bleCallback != null) {
+            listenAndTimer(bleCallback, MSG_READ_RSSI, BleBluetooth.READ_RSSI_KEY, new BluetoothGattCallback() {
+                @Override
+                public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+                    handler.removeMessages(MSG_READ_RSSI, this);
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        bleCallback.onSuccess(rssi);
                     } else {
                         bleCallback.onFailure(new GattException(status));
                     }
