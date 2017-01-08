@@ -1,5 +1,6 @@
 # FastBle
-Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect、notify、indicate、write、read等一系列蓝牙操作。每一个characteristic会与一个callback形成一一对应的监听关系。
+Android Bluetooth Low Energy快速开发框架。
+使用回调方式处理：scan、connect、notify、indicate、write、read等一系列蓝牙操作。每一个characteristic会与一个callback形成一一对应的监听关系。
 
 ***
 
@@ -26,6 +27,18 @@ Android BLE 蓝牙快速开发框架，使用回调方式处理：scan、connect
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble2.png) 
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble3.png)
 
+## Gradle
+	dependencies {
+    	compile 'com.clj:fastble:1.0.1'
+	}
+
+## Maven
+	<dependency>
+    	<groupId>com.clj.fastble</groupId>
+    	<artifactId>FastBleLib</artifactId>
+    	<version>1.0.1</version>
+		<type>pom</type>
+	</dependency>
 
 
 ## Usage
