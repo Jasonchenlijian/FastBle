@@ -1,7 +1,6 @@
 
 package com.clj.fastble.conn;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -45,12 +44,11 @@ public class BleConnector {
     private BluetoothGattService service;
     private BluetoothGattCharacteristic characteristic;
     private BluetoothGattDescriptor descriptor;
-    private BleBluetooth liteBluetooth;
+    private BleBluetooth bleBluetooth;
     private int timeOutMillis = 20000;
     private Handler handler = new MyHandler();
 
-    @SuppressLint("HandlerLeak")
-    private class MyHandler extends Handler {
+    private static final class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
 
@@ -62,31 +60,31 @@ public class BleConnector {
         }
     }
 
-    public BleConnector(BleBluetooth liteBluetooth) {
-        this.liteBluetooth = liteBluetooth;
-        this.bluetoothGatt = liteBluetooth.getBluetoothGatt();
+    public BleConnector(BleBluetooth bleBluetooth) {
+        this.bleBluetooth = bleBluetooth;
+        this.bluetoothGatt = bleBluetooth.getBluetoothGatt();
         this.handler = new Handler(Looper.getMainLooper());
     }
 
-    public BleConnector(BleBluetooth liteBluetooth, BluetoothGattService service,
+    public BleConnector(BleBluetooth bleBluetooth, BluetoothGattService service,
                         BluetoothGattCharacteristic characteristic, BluetoothGattDescriptor descriptor) {
-        this(liteBluetooth);
+        this(bleBluetooth);
         this.service = service;
         this.characteristic = characteristic;
         this.descriptor = descriptor;
     }
 
-    public BleConnector(BleBluetooth liteBluetooth,
+    public BleConnector(BleBluetooth bleBluetooth,
                         UUID serviceUUID, UUID charactUUID,
                         UUID descriptorUUID, UUID client_characteristic_conifgUUID) {
-        this(liteBluetooth);
+        this(bleBluetooth);
         withUUID(serviceUUID, charactUUID, descriptorUUID);
     }
 
-    public BleConnector(BleBluetooth liteBluetooth,
+    public BleConnector(BleBluetooth bleBluetooth,
                         String serviceUUID, String charactUUID,
                         String descriptorUUID, String client_characteristic_conifgUUID) {
-        this(liteBluetooth);
+        this(bleBluetooth);
         withUUIDString(serviceUUID, charactUUID, descriptorUUID);
     }
 
@@ -486,7 +484,7 @@ public class BleConnector {
      */
     private void listenAndTimer(final BleCallback bleCallback, int what, String uuid, BluetoothGattCallback callback) {
         bleCallback.setBluetoothGattCallback(callback);
-        liteBluetooth.addGattCallback(uuid, callback);
+        bleBluetooth.addGattCallback(uuid, callback);
 
         Message msg = handler.obtainMessage(what, bleCallback);
         handler.sendMessageDelayed(msg, timeOutMillis);

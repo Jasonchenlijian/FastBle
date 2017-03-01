@@ -61,8 +61,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         txt_device_name = (TextView) findViewById(R.id.txt_device_name);
         layout_character_list = (LinearLayout) findViewById(R.id.layout_character_list);
 
-        bleManager = BleManager.getInstance();
-        bleManager.init(this);
+        bleManager = new BleManager(this);
+        bleManager.enableBluetooth();
 
         showDisConnectState();
         progressDialog = new ProgressDialog(this);
@@ -188,7 +188,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
      */
     private void connectNameDevice(final String deviceName) {
         progressDialog.show();
-        bleManager.connectDevice(deviceName, 10000, false, new BleGattCallback() {
+        bleManager.scanNameAndConnect(deviceName, 10000, false, new BleGattCallback() {
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();

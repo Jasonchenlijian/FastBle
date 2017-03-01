@@ -1,6 +1,5 @@
 package com.clj.fastble;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -19,34 +18,19 @@ import com.clj.fastble.scan.ListScanCallback;
  */
 public class BleManager {
 
-    private static final String TAG = "BleManager";
+    private static final String TAG = BleManager.class.getSimpleName();
 
     private Context mContext;
-
-    private static BleManager manager;
-
-    private static BleBluetooth bleBluetooth;
-
+    private BleBluetooth bleBluetooth;
     private DefaultBleExceptionHandler bleExceptionHandler;
 
-    public static BleManager getInstance() {
-        if (manager == null) {
-            manager = new BleManager();
-        }
-        return manager;
-    }
-
-    /**
-     * 初始化
-     */
-    public void init(Context context) {
-
-        mContext = context.getApplicationContext();
+    public BleManager(Context context) {
+        this.mContext = context;
 
         if (bleBluetooth == null) {
             bleBluetooth = new BleBluetooth(context);
         }
-        bleBluetooth.enableBluetoothIfDisabled((Activity) context, 1);
+
         bleExceptionHandler = new DefaultBleExceptionHandler(context);
     }
 
@@ -61,73 +45,118 @@ public class BleManager {
      * 扫描周围所有设备
      */
     public boolean scanDevice(ListScanCallback callback) {
-        return scanAllDevice(callback);
+        return bleBluetooth.startLeScan(callback);
     }
 
     /**
-     * 直接连接某一设备
+     * 已知周围某一设备，直接连接
+     *
+     * @param device      已知设备
+     * @param autoConnect
+     * @param callback
      */
     public void connectDevice(BluetoothDevice device,
                               boolean autoConnect,
                               BleGattCallback callback) {
-        connect(device, autoConnect, callback);
+        bleBluetooth.connect(device, autoConnect, callback);
     }
 
     /**
-     * 扫描连接符合名称的设备，并监听数据变化
+     * 扫描连接符合名称的设备，并持续监听连接状态
+     *
+     * @param deviceName  需要搜索的设备名称
+     * @param time_out    搜索超时时间
+     * @param autoConnect
+     * @param callback
+     * @return
      */
-    public boolean connectDevice(String deviceName,
-                                 long time_out,
-                                 boolean autoConnect,
-                                 BleGattCallback callback) {
-        return scanNameAndConnect(deviceName, time_out, autoConnect, callback);
+    public boolean scanNameAndConnect(String deviceName,
+                                      long time_out,
+                                      boolean autoConnect,
+                                      BleGattCallback callback) {
+        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
     }
 
     /**
-     * 扫描连接符合地址的设备，并监听数据变化
+     * 扫描连接符合地址的设备，并持续监听连接状态
+     *
+     * @param deviceMac   需要搜索的设备地址
+     * @param time_out    搜索超时时间
+     * @param autoConnect
+     * @param callback
+     * @return
      */
-    public boolean connectMac(String mac,
-                              long time_out,
-                              boolean autoConnect,
-                              BleGattCallback callback) {
-        return scanMacAndConnect(mac, time_out, autoConnect, callback);
+    public boolean scanMacAndConnect(String deviceMac,
+                                     long time_out,
+                                     boolean autoConnect,
+                                     BleGattCallback callback) {
+        return bleBluetooth.scanMacAndConnect(deviceMac, time_out, autoConnect, callback);
     }
 
     /**
      * notify
+     *
+     * @param uuid_service
+     * @param uuid_notify
+     * @param callback
+     * @return
      */
     public boolean notifyDevice(String uuid_service,
-                                String uuid_notification,
+                                String uuid_notify,
                                 BleCharacterCallback callback) {
-        return enableNotifyOfCharacteristic(uuid_service, uuid_notification, callback);
+        return bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_notify, null)
+                .enableCharacteristicNotify(callback, uuid_notify);
     }
 
     /**
      * indicate
+     *
+     * @param uuid_service
+     * @param uuid_indicate
+     * @param callback
+     * @return
      */
     public boolean indicateDevice(String uuid_service,
-                                  String uuid_indication,
+                                  String uuid_indicate,
                                   BleCharacterCallback callback) {
-        return enableIndicateOfCharacteristic(uuid_service, uuid_indication, callback);
+        return bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_indicate, null)
+                .enableCharacteristicIndicate(callback, uuid_indicate);
     }
 
     /**
-     * 向设备写特征值
+     * write
+     *
+     * @param uuid_service
+     * @param uuid_write
+     * @param data
+     * @param callback
+     * @return
      */
     public boolean writeDevice(String uuid_service,
                                String uuid_write,
                                byte[] data,
                                BleCharacterCallback callback) {
-        return writeDataToCharacteristic(uuid_service, uuid_write, data, callback);
+        return bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_write, null)
+                .writeCharacteristic(data, callback, uuid_write);
     }
 
     /**
-     * 向设备读特征值
+     * read
+     *
+     * @param uuid_service
+     * @param uuid_read
+     * @param callback
+     * @return
      */
     public boolean readDevice(String uuid_service,
                               String uuid_read,
                               BleCharacterCallback callback) {
-        return readDataFromCharacteristic(uuid_service, uuid_read, callback);
+        return bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_read, null)
+                .readCharacteristic(callback, uuid_read);
     }
 
     /**
@@ -165,7 +194,8 @@ public class BleManager {
      * 当前设备是否支持BLE
      */
     public boolean isSupportBle() {
-        return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+        return mContext.getApplicationContext()
+                .getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
     /**
@@ -173,7 +203,7 @@ public class BleManager {
      */
     public void enableBluetooth() {
         if (bleBluetooth != null) {
-            bleBluetooth.enableBluetooth();
+            bleBluetooth.enableBluetoothIfDisabled();
         }
     }
 
@@ -190,10 +220,7 @@ public class BleManager {
      * 本机蓝牙是否打开
      */
     public boolean isBlueEnable() {
-        if (bleBluetooth != null) {
-            return bleBluetooth.isBlueEnable();
-        }
-        return false;
+        return bleBluetooth != null && bleBluetooth.isBlueEnable();
     }
 
     /**
@@ -256,79 +283,4 @@ public class BleManager {
                 .disableCharacteristicIndicate();
     }
 
-
-    /*************************************inner method**************************************/
-
-    /**
-     * 扫描周围设备
-     * （获取周围所有的设备后，可以供用户自行选择与哪一个连接）
-     */
-    private boolean scanAllDevice(ListScanCallback callback) {
-
-        return bleBluetooth.startLeScan(callback);
-    }
-
-    /**
-     * 与某一指定的设备连接
-     * (可以与 scanSpecifiedDevicePeriod方法 配合使用)
-     */
-    private void connect(BluetoothDevice device, boolean autoConnect, BleGattCallback callback) {
-        bleBluetooth.connect(device, autoConnect, callback);
-    }
-
-    /**
-     * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
-     */
-    private boolean scanNameAndConnect(String deviceName, long time_out, boolean autoConnect,
-                                       BleGattCallback callback) {
-        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
-    }
-
-    /**
-     * 扫描到周围第一个符合名称的设备即连接，并持续监听与这个设备的连接状态
-     */
-    private boolean scanMacAndConnect(String deviceName, long time_out, boolean autoConnect,
-                                      BleGattCallback callback) {
-        return bleBluetooth.scanMacAndConnect(deviceName, time_out, autoConnect, callback);
-    }
-
-    /**
-     * notify
-     */
-    private boolean enableNotifyOfCharacteristic(String uuid_service, String uuid_notify,
-                                                 BleCharacterCallback callback) {
-        return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_notify, null)
-                .enableCharacteristicNotify(callback, uuid_notify);
-    }
-
-    /**
-     * indicate
-     */
-    private boolean enableIndicateOfCharacteristic(String uuid_service, String uuid_indicate,
-                                                   BleCharacterCallback callback) {
-        return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_indicate, null)
-                .enableCharacteristicIndicate(callback, uuid_indicate);
-    }
-
-    /**
-     * write
-     */
-    private boolean writeDataToCharacteristic(String uuid_service, String uuid_write,
-                                              byte[] data, BleCharacterCallback callback) {
-        return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_write, null)
-                .writeCharacteristic(data, callback, uuid_write);
-    }
-
-    /**
-     * read
-     */
-    private boolean readDataFromCharacteristic(String uuid_service, String uuid_read,
-                                               BleCharacterCallback callback) {
-        return bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_read, null)
-                .readCharacteristic(callback, uuid_read);
-    }
 }

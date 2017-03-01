@@ -41,4 +41,5 @@ public abstract class ListScanCallback extends PeriodScanCallback {
     }
 
     public abstract void onDeviceFound(BluetoothDevice[] devices);
+
 }

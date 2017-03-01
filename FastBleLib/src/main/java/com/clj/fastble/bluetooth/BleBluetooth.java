@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -115,13 +116,13 @@ public class BleBluetooth {
 
     public boolean startLeScan(PeriodScanCallback callback) {
         callback.setBleBluetooth(this).notifyScanStarted();
-        boolean suc = bluetoothAdapter.startLeScan(callback);
-        if (suc) {
+        boolean success = bluetoothAdapter.startLeScan(callback);
+        if (success) {
             connectionState = STATE_SCANNING;
         } else {
             callback.removeHandlerMsg();
         }
-        return suc;
+        return success;
     }
 
     public void stopScan(BluetoothAdapter.LeScanCallback callback) {
@@ -248,9 +249,9 @@ public class BleBluetooth {
     /**
      * 检查蓝牙是否关闭，如果关闭则开启
      */
-    public void enableBluetoothIfDisabled(Activity activity, int requestCode) {
+    public void enableBluetoothIfDisabled() {
         if (!isBlueEnable()) {
-            BluetoothUtil.enableBluetooth(activity, requestCode);
+            enableBluetooth();
         }
     }
 
@@ -259,6 +260,20 @@ public class BleBluetooth {
      */
     public boolean isBlueEnable() {
         return bluetoothAdapter.isEnabled();
+    }
+
+    /**
+     * 打开蓝牙
+     */
+    public void enableBluetooth() {
+        bluetoothAdapter.enable();
+    }
+
+    /**
+     * 关闭蓝牙
+     */
+    public void disableBluetooth() {
+        bluetoothAdapter.disable();
     }
 
     public static boolean isMainThread() {
@@ -276,14 +291,6 @@ public class BleBluetooth {
     public void enableBluetooth(Activity activity, int requestCode) {
         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         activity.startActivityForResult(intent, requestCode);
-    }
-
-    public void enableBluetooth() {
-        bluetoothAdapter.enable();
-    }
-
-    public void disableBluetooth() {
-        bluetoothAdapter.disable();
     }
 
     public Context getContext() {
@@ -318,21 +325,6 @@ public class BleBluetooth {
     private BleGattCallback coreGattCallback = new BleGattCallback() {
 
         @Override
-        public void onConnectFailure(BleException exception) {
-            BleLog.w(TAG, "coreGattCallback：onConnectFailure ");
-
-            bluetoothGatt = null;
-            Iterator iterator = callbackHashMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object call = entry.getValue();
-                if (call instanceof BleGattCallback) {
-                    ((BleGattCallback) call).onConnectFailure(exception);
-                }
-            }
-        }
-
-        @Override
         public void onConnectSuccess(BluetoothGatt gatt, int status) {
             BleLog.w(TAG, "coreGattCallback：onConnectSuccess ");
 
@@ -343,6 +335,21 @@ public class BleBluetooth {
                 Object call = entry.getValue();
                 if (call instanceof BleGattCallback) {
                     ((BleGattCallback) call).onConnectSuccess(gatt, status);
+                }
+            }
+        }
+
+        @Override
+        public void onConnectFailure(BleException exception) {
+            BleLog.w(TAG, "coreGattCallback：onConnectFailure ");
+
+            bluetoothGatt = null;
+            Iterator iterator = callbackHashMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Object call = entry.getValue();
+                if (call instanceof BleGattCallback) {
+                    ((BleGattCallback) call).onConnectFailure(exception);
                 }
             }
         }

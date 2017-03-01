@@ -43,14 +43,26 @@ Android Bluetooth Low Energy快速开发框架。
 
 ## Usage
 
-- ####初始化 (默认开启蓝牙)
-        bleManager = BleManager.getInstance();
-        bleManager.init(this);
+- ####初始化
+        bleManager = new BleManager(this);
+
+- ####判断设备是否支持BLE
+		bleManager.isSupportBle();
+
+- ####开启或关闭蓝牙
+		bleManager.enableBluetooth();
+		bleManager.disableBluetooth();
 
 - #### 扫描出周围所有蓝牙可连接设备
 	可获得周围蓝牙设备BluetoothDevice对象数组
 
         bleManager.scanDevice(new ListScanCallback(TIME_OUT) {
+            @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                super.onLeScan(device, rssi, scanRecord);
+                Log.i(TAG, "发现设备：" + device.getName());
+            }
+
             @Override
             public void onDeviceFound(BluetoothDevice[] devices) {
                 Log.i(TAG, "共发现" + devices.length + "台设备");
@@ -58,12 +70,6 @@ Android Bluetooth Low Energy快速开发框架。
                     Log.i(TAG, "name:" + devices[i].getName() + "------mac:" + devices[i].getAddress());
                 }
                 bluetoothDevices = devices;
-            }
-
-            @Override
-            public void onScanTimeout() {
-                super.onScanTimeout();
-                Log.i(TAG, "Time Out");
             }
         });
 
@@ -94,7 +100,7 @@ Android Bluetooth Low Energy快速开发框架。
 - ####扫描指定名称的设备、并连接
 	如果你确定周围有已知名称的蓝牙设备，或只需要连接指定名称的蓝牙设备，而忽略其他名称的设备，可以选择直接对指定名称进行搜索，搜索到即连接，搜索不到则回调超时接口。
 
-        bleManager.connectDevice(
+        bleManager.scanNameAndConnect(
                 DEVICE_NAME,
                 TIME_OUT,
                 new BleGattCallback() {
@@ -121,7 +127,7 @@ Android Bluetooth Low Energy快速开发框架。
 - ####扫描指定MAC地址的设备、并连接
 	如果你确定周围有已知地址的蓝牙设备，或只需要连接指定地址的蓝牙设备，而忽略其他地址的设备，可以选择直接对指定名称进行搜索，搜索到即连接，搜索不到则回调超时接口。
 
-        bleManager.connectMac(
+        bleManager.scanMacAndConnect(
                 DEVICE_MAC,
                 TIME_OUT,
                 false,
@@ -203,12 +209,6 @@ Android Bluetooth Low Energy快速开发框架。
 - ####复位（断开此次蓝牙连接，移除所有回调）
         bleManager.closeBluetoothGatt();
 
-- ####判断设备是否支持ble
-		bleManager.isSupportBle();
-
-- ####开启或关闭蓝牙
-		bleManager.enableBluetooth();
-		bleManager.disableBluetooth();
 
 - ####其他
     其他蓝牙操作可参考示例代码，或从BleManager这个类中开放的方法中找到。

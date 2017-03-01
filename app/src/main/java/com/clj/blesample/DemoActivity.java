@@ -42,8 +42,8 @@ public class DemoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_demo);
 
-        bleManager = BleManager.getInstance();
-        bleManager.init(this);
+        bleManager = new BleManager(this);
+        bleManager.enableBluetooth();
     }
 
     /**************************************user's operate****************************************/
@@ -88,6 +88,13 @@ public class DemoActivity extends AppCompatActivity {
      */
     private void scanDevice() {
         bleManager.scanDevice(new ListScanCallback(TIME_OUT) {
+
+            @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                super.onLeScan(device, rssi, scanRecord);
+                Log.i(TAG, "发现设备：" + device.getName());
+            }
+
             @Override
             public void onDeviceFound(BluetoothDevice[] devices) {
                 Log.i(TAG, "共发现" + devices.length + "台设备");
@@ -97,11 +104,6 @@ public class DemoActivity extends AppCompatActivity {
                 bluetoothDevices = devices;
             }
 
-            @Override
-            public void onScanTimeout() {
-                super.onScanTimeout();
-                Log.i(TAG, "Time Out");
-            }
         });
     }
 
@@ -138,7 +140,7 @@ public class DemoActivity extends AppCompatActivity {
      * 扫描出周围指定名称设备、并连接
      */
     private void scanAndConnect() {
-        bleManager.connectDevice(
+        bleManager.scanNameAndConnect(
                 DEVICE_NAME,
                 TIME_OUT,
                 false,
@@ -168,7 +170,7 @@ public class DemoActivity extends AppCompatActivity {
      * 扫描出周围指定地址的设备、并连接
      */
     private void scanAndConnect2() {
-        bleManager.connectMac(
+        bleManager.scanMacAndConnect(
                 DEVICE_MAC,
                 TIME_OUT,
                 false,
