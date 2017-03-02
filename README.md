@@ -170,7 +170,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                 });
 
 
-- ####notify，listen data changes by callback
+- ####notify，listen data changes through callback
 	参数中的callback和uuid将会形成关联，一旦设备的此uuid对应的character发生数据变化，此callback将会回调结果。此callbak将会唯一存在，和uuid是一一对应的关系。
 
         bleManager.notify(
@@ -192,7 +192,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 - ####stop notify，remove callback
 		bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
 
-- ####indicate，listen data changes by callback
+- ####indicate，listen data changes through callback
         bleManager.indicate(
                 UUID_SERVICE,
                 UUID_INDICATE,
@@ -218,14 +218,38 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                 UUID_SERVICE,
                 UUID_WRITE,
                 HexUtil.hexStringToBytes(SAMPLE_WRITE_DATA),
-                writeCallback);
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "write result: "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                    }
+
+                    @Override
+                    public void onFailure(BleException exception) {
+                        Log.e(TAG, "write: " + exception.toString());
+                        bleManager.handleException(exception);
+                    }
+                });
 - ####read
         bleManager.readDevice(
                 UUID_SERVICE,
-                UUID_READ,
-                readCallback);
+                UUID_WRITE,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "read result: "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                    }
 
-- ####手动移除这个character上的监听回调
+                    @Override
+                    public void onFailure(BleException exception) {
+                        Log.e(TAG, "read: " + exception.toString());
+                        bleManager.handleException(exception);
+                    }
+                });
+
+- ####manual remove callback 
     uuid作为参数，即不再监听这个uuid对应的character的数据变化，适用于移除notify、indicate、write、read对应的callback。
 
         bleManager.stopListenCharacterCallback(UUID_NOTIFY);

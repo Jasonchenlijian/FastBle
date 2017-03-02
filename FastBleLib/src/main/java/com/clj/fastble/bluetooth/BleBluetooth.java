@@ -16,10 +16,10 @@ import com.clj.fastble.conn.BleConnector;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.ConnectException;
-import com.clj.fastble.utils.BleLog;
 import com.clj.fastble.scan.MacScanCallback;
 import com.clj.fastble.scan.NameScanCallback;
 import com.clj.fastble.scan.PeriodScanCallback;
+import com.clj.fastble.utils.BleLog;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -54,12 +54,9 @@ public class BleBluetooth {
     }
 
 
-
     public BleConnector newBleConnector() {
         return new BleConnector(this);
     }
-
-
 
 
     public boolean isInScanning() {
@@ -77,8 +74,6 @@ public class BleBluetooth {
     public boolean isServiceDiscovered() {
         return connectionState == STATE_SERVICES_DISCOVERED;
     }
-
-
 
 
     private void addConnectGattCallback(BleGattCallback callback) {
@@ -106,8 +101,6 @@ public class BleBluetooth {
             return null;
         return callbackHashMap.get(uuid);
     }
-
-
 
 
     public boolean startLeScan(BluetoothAdapter.LeScanCallback callback) {
@@ -140,7 +133,6 @@ public class BleBluetooth {
     }
 
 
-
     public synchronized BluetoothGatt connect(final BluetoothDevice device,
                                               final boolean autoConnect,
                                               final BleGattCallback callback) {
@@ -150,7 +142,6 @@ public class BleBluetooth {
         addConnectGattCallback(callback);
         return device.connectGatt(context, autoConnect, coreGattCallback);
     }
-
 
 
     /**
@@ -164,7 +155,10 @@ public class BleBluetooth {
      */
     public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("illegal name ! ");
+            if (callback != null) {
+                callback.onNotFoundDevice();
+            }
+            return false;
         }
         startLeScan(new NameScanCallback(name, time_out) {
 
@@ -199,7 +193,10 @@ public class BleBluetooth {
      */
     public boolean scanMacAndConnect(String mac, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(mac)) {
-            throw new IllegalArgumentException("illegal mac ! ");
+            if (callback != null) {
+                callback.onNotFoundDevice();
+            }
+            return false;
         }
         startLeScan(new MacScanCallback(mac, time_out) {
 

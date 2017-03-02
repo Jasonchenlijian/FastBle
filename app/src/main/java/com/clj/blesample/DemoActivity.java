@@ -279,7 +279,7 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "write: "
+                        Log.d(TAG, "write result: "
                                 + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
@@ -301,7 +301,7 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "read: "
+                        Log.d(TAG, "read result: "
                                 + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 

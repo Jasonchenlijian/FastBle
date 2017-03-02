@@ -56,7 +56,13 @@ public class BleManager {
     public void connectDevice(BluetoothDevice device,
                               boolean autoConnect,
                               BleGattCallback callback) {
-        bleBluetooth.connect(device, autoConnect, callback);
+        if (device == null) {
+            if (callback != null) {
+                callback.onNotFoundDevice();
+            }
+        } else {
+            bleBluetooth.connect(device, autoConnect, callback);
+        }
     }
 
     /**
