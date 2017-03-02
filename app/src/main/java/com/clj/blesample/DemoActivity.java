@@ -221,7 +221,7 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "notifyCallback success： "
+                        Log.d(TAG, "notify result： "
                                 + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
@@ -249,7 +249,7 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "indicate： "
+                        Log.d(TAG, "indicate result： "
                                 + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 

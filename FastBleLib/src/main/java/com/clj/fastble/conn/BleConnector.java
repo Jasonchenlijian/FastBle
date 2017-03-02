@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Ble Device Connector.
- * 确保在主线程中调用
+ * be sure main thread
  */
 public class BleConnector {
     private static final String TAG = BleConnector.class.getSimpleName();
@@ -133,7 +133,7 @@ public class BleConnector {
 
         } else {
             if (bleCallback != null) {
-                bleCallback.onFailure(new OtherException("Characteristic not support notify!"));
+                bleCallback.onFailure(new OtherException("this characteristic not support notify!"));
             }
             return false;
         }
@@ -171,8 +171,9 @@ public class BleConnector {
         }
 
         boolean success = gatt.setCharacteristicNotification(characteristic, enable);
-        BleLog.d(TAG, "setCharacteristicNotification----" + enable + "----success： " + success
-                + '\n' + "characteristic.getUuid() :  " + characteristic.getUuid());
+        BleLog.d(TAG, "setCharacteristicNotification:" + enable
+                + "\nsuccess： " + success
+                + "\ncharacteristic.getUuid():" + characteristic.getUuid());
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                 formUUID(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
@@ -198,7 +199,7 @@ public class BleConnector {
 
         } else {
             if (bleCallback != null) {
-                bleCallback.onFailure(new OtherException("Characteristic not support indicate!"));
+                bleCallback.onFailure(new OtherException("this characteristic not support indicate!"));
             }
             return false;
         }
@@ -233,13 +234,14 @@ public class BleConnector {
 
         int properties = characteristic.getProperties();
         if ((properties & BluetoothGattCharacteristic.PROPERTY_INDICATE) == 0) {
-            Log.w(TAG, "Check characteristic property: false");
+            Log.w(TAG, "check characteristic property: false");
             return false;
         }
 
         boolean success = gatt.setCharacteristicNotification(characteristic, enable);
-        BleLog.d(TAG, "setCharacteristicIndication----" + enable + "----success： " + success
-                + '\n' + "characteristic.getUuid() :  " + characteristic.getUuid());
+        BleLog.d(TAG, "setCharacteristicIndication:" + enable
+                + "\nsuccess:" + success
+                + "\ncharacteristic.getUuid():" + characteristic.getUuid());
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                 formUUID(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
@@ -263,16 +265,16 @@ public class BleConnector {
                 || (getCharacteristic().getProperties()
                 & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) == 0) {
             if (bleCallback != null) {
-                bleCallback.onFailure(new OtherException("Characteristic not support write!"));
+                bleCallback.onFailure(new OtherException("this characteristic not support write!"));
             }
             return false;
         }
 
         BleLog.d(TAG, getCharacteristic().getUuid()
                 + "\ncharacteristic.getProperties():" + getCharacteristic().getProperties()
-                + "\n characteristic.getValue(): " + Arrays.toString(getCharacteristic().getValue())
-                + "\n characteristic write bytes: " + Arrays.toString(data)
-                + "\n hex: " + HexUtil.encodeHexStr(data));
+                + "\ncharacteristic.getValue(): " + Arrays.toString(getCharacteristic().getValue())
+                + "\ncharacteristic write bytes: " + Arrays.toString(data)
+                + "\nhex: " + HexUtil.encodeHexStr(data));
 
         handleCharacteristicWriteCallback(bleCallback, uuid_write);
 
@@ -289,8 +291,8 @@ public class BleConnector {
                 && (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
 
             BleLog.d(TAG, getCharacteristic().getUuid()
-                    + "\ncharacteristic.getProperties():" + getCharacteristic().getProperties()
-                    + "\n characteristic.getValue(): " + Arrays.toString(getCharacteristic().getValue()));
+                    + "\ncharacteristic.getProperties(): " + getCharacteristic().getProperties()
+                    + "\ncharacteristic.getValue(): " + Arrays.toString(getCharacteristic().getValue()));
 
             setCharacteristicNotification(getBluetoothGatt(), getCharacteristic(), false);
             handleCharacteristicReadCallback(bleCallback, uuid_read);
@@ -299,7 +301,7 @@ public class BleConnector {
 
         } else {
             if (bleCallback != null) {
-                bleCallback.onFailure(new OtherException("Characteristic not support read!"));
+                bleCallback.onFailure(new OtherException("this characteristic not support read!"));
             }
             return false;
         }
@@ -441,7 +443,7 @@ public class BleConnector {
     private boolean handleAfterInitialed(boolean initiated, BleCallback bleCallback) {
         if (bleCallback != null) {
 
-            BleLog.d(TAG, "initiated： " + initiated);
+            BleLog.d(TAG, "initiated: " + initiated);
 
             if (initiated) {
                 bleCallback.onInitiatedSuccess();

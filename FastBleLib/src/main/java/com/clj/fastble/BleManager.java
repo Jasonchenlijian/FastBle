@@ -13,8 +13,8 @@ import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.BleLog;
 
 /**
- * Created by 陈利健 on 2016/8/17.
- * 蓝牙管理类
+ * Created by chenlijian on 2016/8/17.
+ * BLE Manager
  */
 public class BleManager {
 
@@ -33,23 +33,23 @@ public class BleManager {
     }
 
     /**
-     * 显示异常信息
+     * handle Exception Information
      */
     public void handleException(BleException exception) {
         bleExceptionHandler.handleException(exception);
     }
 
     /**
-     * 扫描周围所有设备
+     * scan device around
      */
     public boolean scanDevice(ListScanCallback callback) {
         return bleBluetooth.startLeScan(callback);
     }
 
     /**
-     * 已知周围某一设备，直接连接
+     * connect a searched device
      *
-     * @param device      已知设备
+     * @param device      searched device
      * @param autoConnect
      * @param callback
      */
@@ -60,10 +60,10 @@ public class BleManager {
     }
 
     /**
-     * 扫描连接符合名称的设备，并持续监听连接状态
+     * scan a known name device, then connect
      *
-     * @param deviceName  需要搜索的设备名称
-     * @param time_out    搜索超时时间
+     * @param deviceName  known name
+     * @param time_out    timeout
      * @param autoConnect
      * @param callback
      * @return
@@ -76,10 +76,10 @@ public class BleManager {
     }
 
     /**
-     * 扫描连接符合地址的设备，并持续监听连接状态
+     * scan a known mca device, then connect
      *
-     * @param deviceMac   需要搜索的设备地址
-     * @param time_out    搜索超时时间
+     * @param deviceMac   known mac
+     * @param time_out    timeout
      * @param autoConnect
      * @param callback
      * @return
@@ -158,7 +158,7 @@ public class BleManager {
     }
 
     /**
-     * 获取当前状态
+     * get state
      */
     public void getBluetoothState() {
         BleLog.i("ConnectionState:  " + bleBluetooth.getConnectionState()
@@ -168,14 +168,14 @@ public class BleManager {
     }
 
     /**
-     * 刷新蓝牙设备缓存
+     * refresh Device Cache
      */
     public void refreshDeviceCache() {
         bleBluetooth.refreshDeviceCache();
     }
 
     /**
-     * 关闭连接
+     * close gatt
      */
     public void closeBluetoothGatt() {
         if (bleBluetooth != null) {
@@ -189,7 +189,7 @@ public class BleManager {
     }
 
     /**
-     * 当前设备是否支持BLE
+     * is support ble?
      */
     public boolean isSupportBle() {
         return mContext.getApplicationContext()
@@ -197,7 +197,7 @@ public class BleManager {
     }
 
     /**
-     * 开启蓝牙
+     * open bluetooth
      */
     public void enableBluetooth() {
         if (bleBluetooth != null) {
@@ -206,7 +206,7 @@ public class BleManager {
     }
 
     /**
-     * 关闭蓝牙
+     * close bluetooth
      */
     public void disableBluetooth() {
         if (bleBluetooth != null) {
@@ -215,56 +215,45 @@ public class BleManager {
     }
 
     /**
-     * 本机蓝牙是否打开
+     * is bluetooth enable?
      */
     public boolean isBlueEnable() {
         return bleBluetooth != null && bleBluetooth.isBlueEnable();
     }
 
-    /**
-     * 是否在扫描状态
-     */
+
     public boolean isInScanning() {
         return bleBluetooth.isInScanning();
     }
 
-    /**
-     * 是否在连接或已连接状态
-     */
     public boolean isConnectingOrConnected() {
         return bleBluetooth.isConnectingOrConnected();
     }
 
-    /**
-     * 是否已连接
-     */
     public boolean isConnected() {
         return bleBluetooth.isConnected();
     }
 
-    /**
-     * 服务是否已发现
-     */
     public boolean isServiceDiscovered() {
         return bleBluetooth.isServiceDiscovered();
     }
 
     /**
-     * 移除某一特征值的监听回调
+     * remove callback form a character
      */
     public void stopListenCharacterCallback(String uuid) {
         bleBluetooth.removeGattCallback(uuid);
     }
 
     /**
-     * 移除连接状态监听
+     * remove callback for gatt connect
      */
     public void stopListenConnectCallback() {
         bleBluetooth.removeConnectGattCallback();
     }
 
     /**
-     * 停止notify,并移除监听
+     * stop notify, remove callback
      */
     public boolean stopNotify(String uuid_service, String uuid_notify) {
         boolean success = bleBluetooth.newBleConnector()
@@ -277,7 +266,7 @@ public class BleManager {
     }
 
     /**
-     * 停止indicate,并移除监听
+     * stop indicate, remove callback
      */
     public boolean stopIndicate(String uuid_service, String uuid_indicate) {
         boolean success = bleBluetooth.newBleConnector()

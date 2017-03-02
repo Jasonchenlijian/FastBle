@@ -29,7 +29,7 @@ import java.util.Map;
 
 public class BleBluetooth {
 
-    public static final String CONNECT_CALLBACK_KEY = "connect_key";
+    private static final String CONNECT_CALLBACK_KEY = "connect_key";
     public static final String READ_RSSI_KEY = "rssi_key";
 
     public static final int STATE_DISCONNECTED = 0;
@@ -144,9 +144,9 @@ public class BleBluetooth {
     public synchronized BluetoothGatt connect(final BluetoothDevice device,
                                               final boolean autoConnect,
                                               final BleGattCallback callback) {
-        BleLog.i("connect name：" + device.getName()
-                + " mac:" + device.getAddress()
-                + " autoConnect：" + autoConnect);
+        BleLog.i("connect name: " + device.getName()
+                + "\nmac: " + device.getAddress()
+                + "\nautoConnect: " + autoConnect);
         addConnectGattCallback(callback);
         return device.connectGatt(context, autoConnect, coreGattCallback);
     }
@@ -164,7 +164,7 @@ public class BleBluetooth {
      */
     public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("非法设备名 ! ");
+            throw new IllegalArgumentException("illegal name ! ");
         }
         startLeScan(new NameScanCallback(name, time_out) {
 
@@ -199,7 +199,7 @@ public class BleBluetooth {
      */
     public boolean scanMacAndConnect(String mac, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(mac)) {
-            throw new IllegalArgumentException("非法设备地址 ! ");
+            throw new IllegalArgumentException("illegal mac ! ");
         }
         startLeScan(new MacScanCallback(mac, time_out) {
 

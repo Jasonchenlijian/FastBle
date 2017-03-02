@@ -1,10 +1,13 @@
 # FastBle
-Android Bluetooth Low Energy快速开发框架。
+Android Bluetooth Low Energy 蓝牙快速开发框架。
 使用回调方式处理：scan、connect、notify、indicate、write、read等一系列蓝牙操作。每一个characteristic会与一个callback形成一一对应的监听关系。
 
 ***
 
 ## Update log
+- 2017-03-02
+	1. 优化notify、indicate监听机制。
+	
 - 2016-12-08
 	1. 增加直连指定mac地址设备的方法。
 
@@ -29,14 +32,14 @@ Android Bluetooth Low Energy快速开发框架。
 
 ## Gradle
 	dependencies {
-    	compile 'com.clj.fastble:FastBleLib:1.0.2'
+    	compile 'com.clj.fastble:FastBleLib:1.0.3'
 	}
 
 ## Maven
 	<dependency>
     	<groupId>com.clj.fastble</groupId>
     	<artifactId>FastBleLib</artifactId>
-    	<version>1.0.1</version>
+    	<version>1.0.3</version>
 		<type>pom</type>
 	</dependency>
 
@@ -77,6 +80,11 @@ Android Bluetooth Low Energy快速开发框架。
 	当搜索到周围设备之后，可以选择选择某一个设备和其连接，传入的参数即为这个BluetoothDevice对象
 
         bleManager.connectDevice(sampleDevice, new BleGattCallback() {
+			@Override
+            public void onNotFoundDevice() {
+                Log.i(TAG, "未发现设备！");
+            }
+
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "连接成功！");
@@ -104,6 +112,11 @@ Android Bluetooth Low Energy快速开发框架。
                 DEVICE_NAME,
                 TIME_OUT,
                 new BleGattCallback() {
+					@Override
+            		public void onNotFoundDevice() {
+                		Log.i(TAG, "未发现设备！");
+            		}
+
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
@@ -132,6 +145,10 @@ Android Bluetooth Low Energy快速开发框架。
                 TIME_OUT,
                 false,
                 new BleGattCallback() {
+            		public void onNotFoundDevice() {
+                		Log.i(TAG, "未发现设备！");
+            		}
+
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
@@ -153,33 +170,47 @@ Android Bluetooth Low Energy快速开发框架。
                 });
 
 
-- ####构造某一character的callback
-    	BleCharacterCallback notifyCallback = new BleCharacterCallback() {
-        	@Override
-        	public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            	Log.d(TAG, "notifyCallback success： " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-        	}
-
-        	@Override
-        	public void onFailure(BleException exception) {
-            	bleManager.handleException(exception);
-        	}
-    	};
-
-- ####对这个character进行notify，并添加监听回调
+- ####notify，listen data changes by callback
 	参数中的callback和uuid将会形成关联，一旦设备的此uuid对应的character发生数据变化，此callback将会回调结果。此callbak将会唯一存在，和uuid是一一对应的关系。
 
-        bleManager.notifyDevice(UUID_SERVICE, UUID_NOTIFY, notifyCallback);
+        bleManager.notify(
+                UUID_SERVICE,
+                UUID_NOTIFY,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "notify result： "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                    }
 
-- ####停止对这个character的notify
-	可以与stopListenCharacterCallback配合使用。
+                    @Override
+                    public void onFailure(BleException exception) {
+                        bleManager.handleException(exception);
+                    }
+                });
 
+- ####stop notify，remove callback
 		bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
 
-- ####indicate
-        bleManager.indicateDevice(UUID_SERVICE, UUID_INDICATE, indicateCallback);
+- ####indicate，listen data changes by callback
+        bleManager.indicate(
+                UUID_SERVICE,
+                UUID_INDICATE,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "indicate result： "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                    }
 
-- ####停止对这个character的indicate
+                    @Override
+                    public void onFailure(BleException exception) {
+                        Log.e(TAG, "indicate: " + exception.toString());
+                        bleManager.handleException(exception);
+                    }
+                });
+
+- ####stop indicate，remove callback
 		bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
 
 - ####write
@@ -194,17 +225,17 @@ Android Bluetooth Low Energy快速开发框架。
                 UUID_READ,
                 readCallback);
 
-- ####移除这个character上的监听回调
-    uuid作为参数，即不再监听这个uuid对应的character。此方法适用于移除notify、indicate、write、read对应的callback。与stopNotify、stopIndicate两者不同的是：stopListenCharacterCallback的功能仅仅是：移除回调监听；而后两者的功能是：中心设备停止对外围设备的制定character的Data变化的监听。前者是方法层面上的，后者设备交互上的。可以配合同时使用。
+- ####手动移除这个character上的监听回调
+    uuid作为参数，即不再监听这个uuid对应的character的数据变化，适用于移除notify、indicate、write、read对应的callback。
 
         bleManager.stopListenCharacterCallback(UUID_NOTIFY);
 
 
 - #### 获取当前连接的状态
-		boolean a = bleManager.isInScanning();
-		boolean b = bleManager.isConnectingOrConnected();
-		boolean c = bleManager.isConnected();
-		boolean d = bleManager.isServiceDiscovered();
+		bleManager.isInScanning();
+		bleManager.isConnectingOrConnected();
+		bleManager.isConnected();
+		bleManager.isServiceDiscovered();
 
 - ####复位（断开此次蓝牙连接，移除所有回调）
         bleManager.closeBluetoothGatt();
