@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.bluetooth.*;
 import android.content.Intent;
 import android.util.Log;
-import com.clj.fastble.log.BleLog;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

@@ -8,8 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.clj.fastble.BleManager;
-import com.clj.fastble.bluetooth.BleGattCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
+import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.HexUtil;
@@ -117,6 +117,11 @@ public class DemoActivity extends AppCompatActivity {
 
         bleManager.connectDevice(sampleDevice, true, new BleGattCallback() {
             @Override
+            public void onNotFoundDevice() {
+                Log.i(TAG, "未发现设备！");
+            }
+
+            @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "连接成功！");
                 gatt.discoverServices();
@@ -146,6 +151,11 @@ public class DemoActivity extends AppCompatActivity {
                 false,
                 new BleGattCallback() {
                     @Override
+                    public void onNotFoundDevice() {
+                        Log.i(TAG, "未发现设备！");
+                    }
+
+                    @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
                         gatt.discoverServices();
@@ -159,7 +169,7 @@ public class DemoActivity extends AppCompatActivity {
 
                     @Override
                     public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接失败或连接中断：" + exception.toString());
+                        Log.i(TAG, "断开连接：" + exception.toString());
                         bleManager.handleException(exception);
                     }
 
@@ -176,6 +186,11 @@ public class DemoActivity extends AppCompatActivity {
                 false,
                 new BleGattCallback() {
                     @Override
+                    public void onNotFoundDevice() {
+                        Log.i(TAG, "未发现设备！");
+                    }
+
+                    @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
                         gatt.discoverServices();
@@ -197,32 +212,45 @@ public class DemoActivity extends AppCompatActivity {
     }
 
     /**
-     * listen notify
+     * notify
      */
-    private void notify_1() {
-        bleManager.notifyDevice(UUID_SERVICE, UUID_NOTIFY, notifyCallback);
-    }
+    private void listen_notify() {
+        bleManager.notify(
+                UUID_SERVICE,
+                UUID_NOTIFY,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+                        Log.d(TAG, "notifyCallback success： "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                    }
 
+                    @Override
+                    public void onFailure(BleException exception) {
+                        bleManager.handleException(exception);
+                    }
+                });
+    }
 
     /**
-     * stop listen notify
+     * stop notify
      */
-    private void stop_notify_1() {
-        bleManager.stopListenCharacterCallback(UUID_NOTIFY);
+    private boolean stop_notify() {
+        return bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
     }
-
 
     /**
      * indicate
      */
-    private void indicate() {
-        bleManager.indicateDevice(
+    private void listen_indicate() {
+        bleManager.indicate(
                 UUID_SERVICE,
                 UUID_INDICATE,
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "indicate： " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                        Log.d(TAG, "indicate： "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
@@ -231,6 +259,13 @@ public class DemoActivity extends AppCompatActivity {
                         bleManager.handleException(exception);
                     }
                 });
+    }
+
+    /**
+     * stop indicate
+     */
+    private boolean stop_indicate() {
+        return bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
     }
 
     /**
@@ -244,7 +279,8 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "write: " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                        Log.d(TAG, "write: "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
@@ -265,7 +301,8 @@ public class DemoActivity extends AppCompatActivity {
                 new BleCharacterCallback() {
                     @Override
                     public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        Log.d(TAG, "read: " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                        Log.d(TAG, "read: "
+                                + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
                     }
 
                     @Override
@@ -275,37 +312,6 @@ public class DemoActivity extends AppCompatActivity {
                     }
                 });
     }
-
-    /**
-     * stop notify
-     */
-    private boolean stopNotify1() {
-        return bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
-    }
-
-    /**
-     * stop indicate
-     */
-    private boolean stopIndicate() {
-        return bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
-    }
-
-    /*****************************************callback********************************************/
-
-    /**
-     * 构造某一character的callback
-     */
-    BleCharacterCallback notifyCallback = new BleCharacterCallback() {
-        @Override
-        public void onSuccess(BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "notifyCallback success： " + String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-        }
-
-        @Override
-        public void onFailure(BleException exception) {
-            bleManager.handleException(exception);
-        }
-    };
 
 
 }

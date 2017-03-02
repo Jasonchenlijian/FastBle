@@ -18,7 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.clj.fastble.BleManager;
-import com.clj.fastble.bluetooth.BleGattCallback;
+import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
@@ -154,6 +154,11 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         progressDialog.show();
         bleManager.connectDevice(device, true, new BleGattCallback() {
             @Override
+            public void onNotFoundDevice() {
+
+            }
+
+            @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();
             }
@@ -189,6 +194,11 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
     private void connectNameDevice(final String deviceName) {
         progressDialog.show();
         bleManager.scanNameAndConnect(deviceName, 10000, false, new BleGattCallback() {
+            @Override
+            public void onNotFoundDevice() {
+
+            }
+
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();
@@ -258,7 +268,9 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     TextView txt_value = (TextView) characterView.findViewById(R.id.txt_value);
 
                     txt_character.setText(characteristic.getUuid().toString());
-                    txt_value.setText(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                    if(characteristic.getValue() != null) {
+                        txt_value.setText(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                    }
                     switch (characteristic.getProperties()) {
                         case 2:
                             btn_properties.setText(String.valueOf("read"));
@@ -343,7 +355,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
     private void startNotify(String serviceUUID, final String characterUUID) {
         Log.i(TAG, "startNotify");
-        boolean suc = bleManager.notifyDevice(
+        boolean suc = bleManager.notify(
                 serviceUUID,
                 characterUUID,
                 new BleCharacterCallback() {
@@ -382,7 +394,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
     private void startIndicate(String serviceUUID, final String characterUUID) {
         Log.i(TAG, "startIndicate");
-        boolean suc = bleManager.indicateDevice(
+        boolean suc = bleManager.indicate(
                 serviceUUID,
                 characterUUID,
                 new BleCharacterCallback() {

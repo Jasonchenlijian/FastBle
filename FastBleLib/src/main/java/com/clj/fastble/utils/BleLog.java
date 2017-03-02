@@ -1,4 +1,4 @@
-package com.clj.fastble.log;
+package com.clj.fastble.utils;
 
 
 public final class BleLog {
@@ -66,7 +66,7 @@ public final class BleLog {
 		if (msg != null && msg.length > 0) {
 			StringBuilder sb = new StringBuilder();
 			for (Object s : msg) {
-				if (msg != null) sb.append(s.toString());
+				sb.append(s.toString());
 			}
 			return sb.toString();
 		}
