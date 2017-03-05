@@ -143,16 +143,6 @@ public class BleBluetooth {
         return device.connectGatt(context, autoConnect, coreGattCallback);
     }
 
-
-    /**
-     * 搜索指定设备名
-     *
-     * @param name        设备名
-     * @param time_out    超时时间
-     * @param autoConnect
-     * @param callback
-     * @return
-     */
     public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(name)) {
             if (callback != null) {
@@ -160,14 +150,7 @@ public class BleBluetooth {
             }
             return false;
         }
-        startLeScan(new NameScanCallback(name, time_out) {
-
-            @Override
-            public void onScanTimeout() {
-                if (callback != null) {
-                    callback.onNotFoundDevice();
-                }
-            }
+        return startLeScan(new NameScanCallback(name, time_out) {
 
             @Override
             public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
@@ -178,19 +161,16 @@ public class BleBluetooth {
                     }
                 });
             }
+
+            @Override
+            public void onDeviceNotFound() {
+                if (callback != null) {
+                    callback.onNotFoundDevice();
+                }
+            }
         });
-        return true;
     }
 
-    /**
-     * 搜索指定设备地址
-     *
-     * @param mac         设备地址
-     * @param time_out    超时时间
-     * @param autoConnect
-     * @param callback
-     * @return
-     */
     public boolean scanMacAndConnect(String mac, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(mac)) {
             if (callback != null) {
@@ -198,14 +178,7 @@ public class BleBluetooth {
             }
             return false;
         }
-        startLeScan(new MacScanCallback(mac, time_out) {
-
-            @Override
-            public void onScanTimeout() {
-                if (callback != null) {
-                    callback.onConnectFailure(BleException.TIMEOUT_EXCEPTION);
-                }
-            }
+        return startLeScan(new MacScanCallback(mac, time_out) {
 
             @Override
             public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
@@ -216,8 +189,14 @@ public class BleBluetooth {
                     }
                 });
             }
+
+            @Override
+            public void onDeviceNotFound() {
+                if (callback != null) {
+                    callback.onNotFoundDevice();
+                }
+            }
         });
-        return true;
     }
 
     public boolean refreshDeviceCache() {
@@ -234,9 +213,6 @@ public class BleBluetooth {
         return false;
     }
 
-    /**
-     * 断开、刷新、关闭 bluetooth gatt.
-     */
     public void closeBluetoothGatt() {
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
@@ -251,41 +227,24 @@ public class BleBluetooth {
         }
     }
 
-    /**
-     * 检查蓝牙是否关闭，如果关闭则开启
-     */
     public void enableBluetoothIfDisabled() {
         if (!isBlueEnable()) {
             enableBluetooth();
         }
     }
 
-    /**
-     * 蓝牙是否打开
-     */
     public boolean isBlueEnable() {
         return bluetoothAdapter.isEnabled();
     }
 
-    /**
-     * 打开蓝牙
-     */
     public void enableBluetooth() {
         bluetoothAdapter.enable();
     }
 
-    /**
-     * 关闭蓝牙
-     */
     public void disableBluetooth() {
         bluetoothAdapter.disable();
     }
 
-    /**
-     * 切换到主线程
-     *
-     * @param runnable
-     */
     private void runOnMainThread(Runnable runnable) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             runnable.run();

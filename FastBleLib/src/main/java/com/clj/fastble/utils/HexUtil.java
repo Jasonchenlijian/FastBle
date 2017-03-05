@@ -170,4 +170,8 @@ public class HexUtil {
         return (byte) "0123456789ABCDEF".indexOf(c);
     }
 
+    public static String extractData(byte[] data, int position) {
+        return HexUtil.encodeHexStr(new byte[]{data[position]});
+    }
+
 }

@@ -171,9 +171,9 @@ public class BleConnector {
         }
 
         boolean success = gatt.setCharacteristicNotification(characteristic, enable);
-        BleLog.d(TAG, "setCharacteristicNotification:" + enable
-                + "\nsuccess： " + success
-                + "\ncharacteristic.getUuid():" + characteristic.getUuid());
+        BleLog.d(TAG, "setCharacteristicNotification: " + enable
+                + "\nsuccess: " + success
+                + "\ncharacteristic.getUuid(): " + characteristic.getUuid());
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                 formUUID(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));

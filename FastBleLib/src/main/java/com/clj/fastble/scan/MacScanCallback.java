@@ -47,5 +47,12 @@ public abstract class MacScanCallback extends PeriodScanCallback{
         }
     }
 
+    @Override
+    public void onScanTimeout() {
+        onDeviceNotFound();
+    }
+
     public abstract void onDeviceFound(BluetoothDevice device, int rssi, byte[] scanRecord);
+
+    public abstract void onDeviceNotFound();
 }

@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleGattCallback;
@@ -105,20 +106,22 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
         bleManager.scanDevice(new ListScanCallback(10000) {
             @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                super.onLeScan(device, rssi, scanRecord);
+                Log.i(TAG, "发现设备：" + device.getName());
+            }
+
+            @Override
             public void onDeviceFound(final BluetoothDevice[] devices) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        progressDialog.dismiss();
                         showDeviceList(devices);
                     }
                 });
             }
 
-            @Override
-            public void onScanTimeout() {
-                super.onScanTimeout();
-                progressDialog.dismiss();
-            }
         });
     }
 
@@ -155,7 +158,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         bleManager.connectDevice(device, true, new BleGattCallback() {
             @Override
             public void onNotFoundDevice() {
-
+                progressDialog.dismiss();
+                Toast.makeText(OperateActivity.this, "onNotFoundDevice", Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -196,7 +200,8 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
         bleManager.scanNameAndConnect(deviceName, 10000, false, new BleGattCallback() {
             @Override
             public void onNotFoundDevice() {
-
+                progressDialog.dismiss();
+                Toast.makeText(OperateActivity.this, "onNotFoundDevice", Toast.LENGTH_LONG).show();
             }
 
             @Override

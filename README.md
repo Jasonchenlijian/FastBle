@@ -32,14 +32,14 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Gradle
 	dependencies {
-    	compile 'com.clj.fastble:FastBleLib:1.0.3'
+    	compile 'com.clj.fastble:FastBleLib:1.0.4'
 	}
 
 ## Maven
 	<dependency>
     	<groupId>com.clj.fastble</groupId>
     	<artifactId>FastBleLib</artifactId>
-    	<version>1.0.3</version>
+    	<version>1.0.4</version>
 		<type>pom</type>
 	</dependency>
 
