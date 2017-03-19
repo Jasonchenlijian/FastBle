@@ -32,14 +32,14 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Gradle
 	dependencies {
-    	compile 'com.clj.fastble:FastBleLib:1.0.4'
+    	compile 'com.clj.fastble:FastBleLib:1.0.5'
 	}
 
 ## Maven
 	<dependency>
     	<groupId>com.clj.fastble</groupId>
     	<artifactId>FastBleLib</artifactId>
-    	<version>1.0.4</version>
+    	<version>1.0.5</version>
 		<type>pom</type>
 	</dependency>
 
@@ -106,7 +106,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
             
 
 - ####扫描指定名称的设备、并连接
-	如果你确定周围有已知名称的蓝牙设备，或只需要连接指定名称的蓝牙设备，而忽略其他名称的设备，可以选择直接对指定名称进行搜索，搜索到即连接，搜索不到则回调超时接口。
+	如果你确定周围有已知名称的蓝牙设备，或只需要连接指定名称的蓝牙设备，而忽略其他名称的设备，可以选择直接对指定名称进行搜索，搜索到即连接。
 
         bleManager.scanNameAndConnect(
                 DEVICE_NAME,
@@ -138,7 +138,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                 });
 
 - ####扫描指定MAC地址的设备、并连接
-	如果你确定周围有已知地址的蓝牙设备，或只需要连接指定地址的蓝牙设备，而忽略其他地址的设备，可以选择直接对指定名称进行搜索，搜索到即连接，搜索不到则回调超时接口。
+	如果你确定周围有已知地址的蓝牙设备，或只需要连接指定地址的蓝牙设备，而忽略其他地址的设备，可以选择直接对指定名称进行搜索，搜索到即连接。
 
         bleManager.scanMacAndConnect(
                 DEVICE_MAC,
@@ -254,12 +254,6 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
         bleManager.stopListenCharacterCallback(UUID_NOTIFY);
 
-
-- #### 获取当前连接的状态
-		bleManager.isInScanning();
-		bleManager.isConnectingOrConnected();
-		bleManager.isConnected();
-		bleManager.isServiceDiscovered();
 
 - ####复位（断开此次蓝牙连接，移除所有回调）
         bleManager.closeBluetoothGatt();

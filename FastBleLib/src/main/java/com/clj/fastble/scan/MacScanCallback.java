@@ -7,26 +7,19 @@ import android.text.TextUtils;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by 陈利健 on 2016/11/25.
- * 一段限制时间内搜索符合mac的设备，取第一个搜索到的设备
+ * scan a known mac device, then connect
  */
-public abstract class MacScanCallback extends PeriodScanCallback{
+public abstract class MacScanCallback extends PeriodScanCallback {
 
-    /**
-     * 设备名
-     */
-    private String mac;
-    /**
-     * 是否发现
-     */
+
+    private String mMac;
     private AtomicBoolean hasFound = new AtomicBoolean(false);
-
 
     public MacScanCallback(String mac, long timeoutMillis) {
         super(timeoutMillis);
-        this.mac = mac;
+        this.mMac = mac;
         if (mac == null) {
-            throw new IllegalArgumentException("start scan, mac can not be null!");
+            onDeviceNotFound();
         }
     }
 
@@ -39,7 +32,7 @@ public abstract class MacScanCallback extends PeriodScanCallback{
         }
 
         if (!hasFound.get()) {
-            if (mac.equalsIgnoreCase(device.getAddress())) {
+            if (mMac.equalsIgnoreCase(device.getAddress())) {
                 hasFound.set(true);
                 bleBluetooth.stopScan(MacScanCallback.this);
                 onDeviceFound(device, rssi, scanRecord);

@@ -98,6 +98,22 @@ public class BleManager {
     }
 
     /**
+     * fuzzy search name
+     *
+     * @param fuzzyName
+     * @param time_out
+     * @param autoConnect
+     * @param callback
+     * @return
+     */
+    public boolean fuzzySearchNameAndConnect(String fuzzyName,
+                                             long time_out,
+                                             boolean autoConnect,
+                                             BleGattCallback callback) {
+        return bleBluetooth.fuzzySearchNameAndConnect(fuzzyName, time_out, autoConnect, callback);
+    }
+
+    /**
      * notify
      *
      * @param uuid_service
@@ -226,7 +242,6 @@ public class BleManager {
     public boolean isBlueEnable() {
         return bleBluetooth != null && bleBluetooth.isBlueEnable();
     }
-
 
     public boolean isInScanning() {
         return bleBluetooth.isInScanning();

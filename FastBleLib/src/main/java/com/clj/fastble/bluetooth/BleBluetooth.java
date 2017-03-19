@@ -150,7 +150,7 @@ public class BleBluetooth {
             }
             return false;
         }
-        return startLeScan(new NameScanCallback(name, time_out) {
+        return startLeScan(new NameScanCallback(name, time_out, false) {
 
             @Override
             public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
@@ -198,6 +198,35 @@ public class BleBluetooth {
             }
         });
     }
+
+    public boolean fuzzySearchNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
+        if (TextUtils.isEmpty(name)) {
+            if (callback != null) {
+                callback.onNotFoundDevice();
+            }
+            return false;
+        }
+        return startLeScan(new NameScanCallback(name, time_out, true) {
+
+            @Override
+            public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        connect(device, autoConnect, callback);
+                    }
+                });
+            }
+
+            @Override
+            public void onDeviceNotFound() {
+                if (callback != null) {
+                    callback.onNotFoundDevice();
+                }
+            }
+        });
+    }
+
 
     public boolean refreshDeviceCache() {
         try {

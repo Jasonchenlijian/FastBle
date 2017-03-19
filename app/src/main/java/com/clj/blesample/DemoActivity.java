@@ -27,7 +27,7 @@ public class DemoActivity extends AppCompatActivity {
     private static final String UUID_WRITE = "0000fff1-0000-1000-8000-00805f9b34fb";
     private static final String SAMPLE_WRITE_DATA = "000000000000000";                  // 要写入设备某一个character的指令
 
-    private static final long TIME_OUT = 10000;                                         // 扫描超时时间
+    private static final long TIME_OUT = 5000;                                          // 扫描超时时间
     private static final String DEVICE_NAME = "这里写你的设备名";                         // 符合连接规则的蓝牙设备名
     private static final String DEVICE_MAC = "这里写你的设备地址";                        // 符合连接规则的蓝牙设备地址
     private static final String TAG = "ble_sample";

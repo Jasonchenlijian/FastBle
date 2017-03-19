@@ -104,7 +104,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
         progressDialog.show();
 
-        bleManager.scanDevice(new ListScanCallback(10000) {
+        bleManager.scanDevice(new ListScanCallback(5000) {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
                 super.onLeScan(device, rssi, scanRecord);

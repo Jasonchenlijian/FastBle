@@ -7,14 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by 陈利健 on 2016/9/2.
- * 一段限制时间内搜索所有设备
+ * scan for a period of time
  */
 public abstract class ListScanCallback extends PeriodScanCallback {
 
-    /**
-     * 所有被发现的设备集合
-     */
     private List<BluetoothDevice> deviceList = new ArrayList<>();
 
     public ListScanCallback(long timeoutMillis) {

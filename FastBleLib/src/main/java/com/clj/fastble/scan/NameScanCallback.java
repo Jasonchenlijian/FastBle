@@ -6,26 +6,21 @@ import android.text.TextUtils;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by 陈利健 on 2016/8/12.
- * 一段限制时间内搜索符合name的设备，取第一个搜索到的设备
+ * scan a known name device, then connect
  */
 public abstract class NameScanCallback extends PeriodScanCallback {
 
-    /**
-     * 设备名
-     */
-    private String name;
-    /**
-     * 是否发现
-     */
+
+    private String mName;
+    private boolean mFuzzy;
     private AtomicBoolean hasFound = new AtomicBoolean(false);
 
-
-    public NameScanCallback(String name, long timeoutMillis) {
+    public NameScanCallback(String name, long timeoutMillis, boolean fuzzy) {
         super(timeoutMillis);
-        this.name = name;
+        this.mName = name;
+        this.mFuzzy = fuzzy;
         if (name == null) {
-            throw new IllegalArgumentException("start scan, name can not be null!");
+            onDeviceNotFound();
         }
     }
 
@@ -38,7 +33,7 @@ public abstract class NameScanCallback extends PeriodScanCallback {
         }
 
         if (!hasFound.get()) {
-            if (name.equalsIgnoreCase(device.getName())) {
+            if (mFuzzy ? mName.contains(device.getName()) : mName.equalsIgnoreCase(device.getName())) {
                 hasFound.set(true);
                 bleBluetooth.stopScan(NameScanCallback.this);
                 onDeviceFound(device, rssi, scanRecord);
