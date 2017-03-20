@@ -6,24 +6,24 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Update log
 - 2017-03-02
-	1. 优化notify、indicate监听机制。
+	- 优化notify、indicate监听机制。
 	
 - 2016-12-08
-	1. 增加直连指定mac地址设备的方法。
+	- 增加直连指定mac地址设备的方法。
 
 - 2016-11-16
-	1. 优化关闭机制，在关闭连接前先移除回调。
+	- 优化关闭机制，在关闭连接前先移除回调。
 
 - 2016-09-23
-	1. 添加stopNotify和stopIndicate的方法，与stopListenCharacterCallback方法作区分。
+	- 添加stopNotify和stopIndicate的方法，与stopListenCharacterCallback方法作区分。
 
 - 2016-09-20
-    1. 优化callback机制，一个character有且只会存在一个callback，并可以手动移除。
-    2. 示例代码中添加DemoActivity和OperateActivity。前者示范如何使用本框架，后者可以作为蓝牙调试工具，测试蓝牙设备。
+    - 优化callback机制，一个character有且只会存在一个callback，并可以手动移除。
+    - 示例代码中添加DemoActivity和OperateActivity。前者示范如何使用本框架，后者可以作为蓝牙调试工具，测试蓝牙设备。
 
 - 2016-09-08 
-	1. 增加设备是否支持ble的判断。
-	2. 修正监听不同character的时候，当其中一个character发生变化,与该character无关的callback也会回调结果的bug。
+	- 增加设备是否支持ble的判断。
+	- 修正监听不同character的时候，当其中一个character发生变化,与该character无关的callback也会回调结果的bug。
 
 ## Preview
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble1.png) 
@@ -105,7 +105,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
         });
             
 
-- ####扫描指定名称的设备、并连接
+- #### 扫描指定名称的设备、并连接
 	如果你确定周围有已知名称的蓝牙设备，或只需要连接指定名称的蓝牙设备，而忽略其他名称的设备，可以选择直接对指定名称进行搜索，搜索到即连接。
 
         bleManager.scanNameAndConnect(
@@ -137,7 +137,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
                 });
 
-- ####扫描指定MAC地址的设备、并连接
+- #### 扫描指定MAC地址的设备、并连接
 	如果你确定周围有已知地址的蓝牙设备，或只需要连接指定地址的蓝牙设备，而忽略其他地址的设备，可以选择直接对指定名称进行搜索，搜索到即连接。
 
         bleManager.scanMacAndConnect(
@@ -170,7 +170,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                 });
 
 
-- ####notify，listen data changes through callback
+- #### notify，listen data changes through callback
 	参数中的callback和uuid将会形成关联，一旦设备的此uuid对应的character发生数据变化，此callback将会回调结果。此callbak将会唯一存在，和uuid是一一对应的关系。
 
         bleManager.notify(
@@ -189,10 +189,10 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                     }
                 });
 
-- ####stop notify，remove callback
+- #### stop notify，remove callback
 		bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
 
-- ####indicate，listen data changes through callback
+- #### indicate，listen data changes through callback
         bleManager.indicate(
                 UUID_SERVICE,
                 UUID_INDICATE,
@@ -210,10 +210,10 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                     }
                 });
 
-- ####stop indicate，remove callback
+- #### stop indicate，remove callback
 		bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
 
-- ####write
+- #### write
         bleManager.writeDevice(
                 UUID_SERVICE,
                 UUID_WRITE,
@@ -231,7 +231,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                         bleManager.handleException(exception);
                     }
                 });
-- ####read
+- #### read
         bleManager.readDevice(
                 UUID_SERVICE,
                 UUID_WRITE,
@@ -249,16 +249,16 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                     }
                 });
 
-- ####manual remove callback 
+- #### manual remove callback 
     uuid作为参数，即不再监听这个uuid对应的character的数据变化，适用于移除notify、indicate、write、read对应的callback。
 
         bleManager.stopListenCharacterCallback(UUID_NOTIFY);
 
 
-- ####复位（断开此次蓝牙连接，移除所有回调）
+- #### 复位（断开此次蓝牙连接，移除所有回调）
         bleManager.closeBluetoothGatt();
 
 
-- ####其他
+- #### 其他
     其他蓝牙操作可参考示例代码，或从BleManager这个类中开放的方法中找到。
 
