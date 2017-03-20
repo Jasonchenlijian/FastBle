@@ -46,13 +46,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Usage
 
-- ####初始化
+- #### 初始化
         bleManager = new BleManager(this);
 
-- ####判断设备是否支持BLE
+- #### 判断设备是否支持BLE
 		bleManager.isSupportBle();
 
-- ####开启或关闭蓝牙
+- #### 开启或关闭蓝牙
 		bleManager.enableBluetooth();
 		bleManager.disableBluetooth();
 
