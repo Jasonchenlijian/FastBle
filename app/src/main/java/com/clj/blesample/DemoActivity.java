@@ -92,7 +92,7 @@ public class DemoActivity extends AppCompatActivity {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
                 super.onLeScan(device, rssi, scanRecord);
-                Log.i(TAG, "发现设备：" + device.getName());
+                Log.i(TAG, "发现设备: " + device.getAddress());
             }
 
             @Override
@@ -123,7 +123,7 @@ public class DemoActivity extends AppCompatActivity {
 
             @Override
             public void onFoundDevice(BluetoothDevice device) {
-                Log.i(TAG, "发现设备！");
+                Log.i(TAG, "发现设备: " + device.getAddress());
             }
 
             @Override
@@ -162,7 +162,7 @@ public class DemoActivity extends AppCompatActivity {
 
                     @Override
                     public void onFoundDevice(BluetoothDevice device) {
-                        Log.i(TAG, "发现设备！");
+                        Log.i(TAG, "发现设备: " + device.getAddress());
                     }
 
                     @Override
@@ -202,7 +202,7 @@ public class DemoActivity extends AppCompatActivity {
 
                     @Override
                     public void onFoundDevice(BluetoothDevice device) {
-                        Log.i(TAG, "发现设备！");
+                        Log.i(TAG, "发现设备: " + device.getAddress());
                     }
 
                     @Override

@@ -5,6 +5,9 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 ***
 
 ## Update log
+- 2017-03-21
+	- 在1.0.6版本中加入对设备名模糊搜索的功能。
+	
 - 2017-03-02
 	- 优化notify、indicate监听机制。
 	
@@ -32,14 +35,14 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Gradle
 	dependencies {
-    	compile 'com.clj.fastble:FastBleLib:1.0.5'
+    	compile 'com.clj.fastble:FastBleLib:1.0.6'
 	}
 
 ## Maven
 	<dependency>
     	<groupId>com.clj.fastble</groupId>
     	<artifactId>FastBleLib</artifactId>
-    	<version>1.0.5</version>
+    	<version>1.0.6</version>
 		<type>pom</type>
 	</dependency>
 
@@ -72,7 +75,6 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
                 for (int i = 0; i < devices.length; i++) {
                     Log.i(TAG, "name:" + devices[i].getName() + "------mac:" + devices[i].getAddress());
                 }
-                bluetoothDevices = devices;
             }
         });
 
@@ -83,6 +85,11 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 			@Override
             public void onNotFoundDevice() {
                 Log.i(TAG, "未发现设备！");
+            }
+
+			@Override
+            public void onFoundDevice(BluetoothDevice device) {
+                Log.i(TAG, "发现设备: " + device.getAddress());
             }
 
             @Override
@@ -118,6 +125,11 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
             		}
 
                     @Override
+                    public void onFoundDevice(BluetoothDevice device) {
+                        Log.i(TAG, "发现设备: " + device.getAddress());
+                    }
+
+                    @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
                         Log.i(TAG, "连接成功！");
                         gatt.discoverServices();
@@ -148,6 +160,11 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
             		public void onNotFoundDevice() {
                 		Log.i(TAG, "未发现设备！");
             		}
+
+                    @Override
+                    public void onFoundDevice(BluetoothDevice device) {
+                        Log.i(TAG, "发现设备: " + device.getAddress());
+                    }
 
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {

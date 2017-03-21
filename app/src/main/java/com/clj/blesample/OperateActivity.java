@@ -163,6 +163,11 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
             }
 
             @Override
+            public void onFoundDevice(BluetoothDevice device) {
+
+            }
+
+            @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 gatt.discoverServices();
             }
@@ -197,11 +202,16 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
      */
     private void connectNameDevice(final String deviceName) {
         progressDialog.show();
-        bleManager.scanNameAndConnect(deviceName, 10000, false, new BleGattCallback() {
+        bleManager.scanNameAndConnect(deviceName, 5000, false, new BleGattCallback() {
             @Override
             public void onNotFoundDevice() {
                 progressDialog.dismiss();
                 Toast.makeText(OperateActivity.this, "onNotFoundDevice", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFoundDevice(BluetoothDevice device) {
+
             }
 
             @Override
