@@ -329,6 +329,21 @@ public class BleBluetooth {
         }
 
         @Override
+        public void onFoundDevice(BluetoothDevice device) {
+            BleLog.i("coreGattCallback：onFoundDevice ");
+
+            bluetoothGatt = null;
+            Iterator iterator = callbackHashMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Object call = entry.getValue();
+                if (call instanceof BleGattCallback) {
+                    ((BleGattCallback) call).onFoundDevice(device);
+                }
+            }
+        }
+
+        @Override
         public void onConnectSuccess(BluetoothGatt gatt, int status) {
             BleLog.i("coreGattCallback：onConnectSuccess ");
 

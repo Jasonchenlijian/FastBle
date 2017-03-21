@@ -122,6 +122,11 @@ public class DemoActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onFoundDevice(BluetoothDevice device) {
+                Log.i(TAG, "发现设备！");
+            }
+
+            @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
                 Log.i(TAG, "连接成功！");
                 gatt.discoverServices();
@@ -153,6 +158,11 @@ public class DemoActivity extends AppCompatActivity {
                     @Override
                     public void onNotFoundDevice() {
                         Log.i(TAG, "未发现设备！");
+                    }
+
+                    @Override
+                    public void onFoundDevice(BluetoothDevice device) {
+                        Log.i(TAG, "发现设备！");
                     }
 
                     @Override
@@ -188,6 +198,11 @@ public class DemoActivity extends AppCompatActivity {
                     @Override
                     public void onNotFoundDevice() {
                         Log.i(TAG, "未发现设备！");
+                    }
+
+                    @Override
+                    public void onFoundDevice(BluetoothDevice device) {
+                        Log.i(TAG, "发现设备！");
                     }
 
                     @Override
