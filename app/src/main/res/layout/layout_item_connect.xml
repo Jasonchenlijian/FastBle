@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:padding="10dp"
-        android:text="方式一：scan then select one device to connect" />
+        android:text="方式一：扫描周围的设备并选择其一连接" />
 
     <Button
         android:id="@+id/btn_scan"
@@ -36,11 +36,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="160dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:padding="10dp"
-        android:text="方式二：input a known device name to connect" />
+        android:text="方式二：输入想要连接的设备的名称扫描并连接" />
 
     <EditText
         android:id="@+id/et_device_name"

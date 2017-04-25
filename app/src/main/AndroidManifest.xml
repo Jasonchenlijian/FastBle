@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="com.clj.blesample.MainActivity">
+        <activity android:name="com.clj.blesample.OperateActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,9 +24,6 @@
         </activity>
 
         <activity android:name="com.clj.blesample.DemoActivity" />
-
-        <activity android:name="com.clj.blesample.OperateActivity" />
-
 
     </application>
 

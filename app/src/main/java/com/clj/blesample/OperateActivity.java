@@ -27,7 +27,6 @@ import com.clj.fastble.utils.HexUtil;
 
 
 /**
- * Created by 陈利健 on 2016/9/20.
  * 可作为工具测试
  */
 public class OperateActivity extends AppCompatActivity implements View.OnClickListener {

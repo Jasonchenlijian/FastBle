@@ -15,8 +15,7 @@ import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.HexUtil;
 
 /**
- * Created by 陈利健 on 2016/9/20.
- * 如何按照此框架编写代码
+ * 示例代码
  */
 public class DemoActivity extends AppCompatActivity {
 
