@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="com.clj.blesample.OperateActivity">
+        <activity android:name=".tool.OperateActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,7 +23,16 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.clj.blesample.DemoActivity" />
+        <activity android:name=".demo.CodeDemoActivity" />
+
+        <activity android:name=".tool.MainActivity"></activity>
+
+
+        <activity android:name=".tool.scan.AnyDeviceActivity" />
+        <activity android:name=".tool.operation.DeviceServiceActivity" />
+        <activity android:name=".tool.operation.DeviceCharacteristicActivity" />
+
+        <service android:name=".tool.BluetoothService" />
 
     </application>
 

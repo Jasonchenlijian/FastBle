@@ -1,7 +1,6 @@
 package com.clj.fastble.scan;
 
 import android.bluetooth.BluetoothDevice;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +22,7 @@ public abstract class ListScanCallback extends PeriodScanCallback {
             return;
 
         if (!deviceList.contains(device)) {
+            onDeviceScan(device);
             deviceList.add(device);
         }
     }
@@ -35,6 +35,8 @@ public abstract class ListScanCallback extends PeriodScanCallback {
         }
         onDeviceFound(devices);
     }
+
+    public abstract void onDeviceScan(BluetoothDevice device);
 
     public abstract void onDeviceFound(BluetoothDevice[] devices);
 

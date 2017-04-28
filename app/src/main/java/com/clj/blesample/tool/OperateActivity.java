@@ -1,4 +1,4 @@
-package com.clj.blesample;
+package com.clj.blesample.tool;
 
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.clj.blesample.R;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
@@ -105,8 +106,7 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
 
         bleManager.scanDevice(new ListScanCallback(5000) {
             @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                super.onLeScan(device, rssi, scanRecord);
+            public void onDeviceScan(BluetoothDevice device) {
                 Log.i(TAG, "发现设备：" + device.getName());
             }
 
@@ -120,7 +120,6 @@ public class OperateActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 });
             }
-
         });
     }
 

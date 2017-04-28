@@ -1,4 +1,4 @@
-package com.clj.blesample;
+package com.clj.blesample.demo;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.clj.blesample.R;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
@@ -15,15 +16,15 @@ import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.HexUtil;
 
 /**
- * 示例代码
+ * 代码示范
  */
-public class DemoActivity extends AppCompatActivity {
+public class CodeDemoActivity extends AppCompatActivity {
 
     // 下面的所有UUID及指令请根据实际设备替换
     private static final String UUID_SERVICE = "00000000-0000-1000-8000-00805f9b34fb";
     private static final String UUID_INDICATE = "0000000-0000-1000-8000-00805f9b34fb";
     private static final String UUID_NOTIFY = "00000000-0000-1000-8000-00805f9b34fb";
-    private static final String UUID_WRITE = "0000fff1-0000-1000-8000-00805f9b34fb";
+    private static final String UUID_WRITE = "00000000-0000-1000-8000-00805f9b34fb";
     private static final String SAMPLE_WRITE_DATA = "000000000000000";                  // 要写入设备某一个character的指令
 
     private static final long TIME_OUT = 5000;                                          // 扫描超时时间
@@ -87,10 +88,8 @@ public class DemoActivity extends AppCompatActivity {
      */
     private void scanDevice() {
         bleManager.scanDevice(new ListScanCallback(TIME_OUT) {
-
             @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                super.onLeScan(device, rssi, scanRecord);
+            public void onDeviceScan(BluetoothDevice device) {
                 Log.i(TAG, "发现设备: " + device.getAddress());
             }
 
