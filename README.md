@@ -52,7 +52,8 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 		<type>pom</type>
 	</dependency>
 
-
+## Demo
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[fastble_1.0.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE_1.0.apk)
 
 ## Usage
 
