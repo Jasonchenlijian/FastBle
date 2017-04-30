@@ -4,6 +4,8 @@ package com.clj.fastble.scan;
 import android.bluetooth.BluetoothDevice;
 import android.text.TextUtils;
 
+import com.clj.fastble.data.ScanResult;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -11,14 +13,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class MacScanCallback extends PeriodScanCallback {
 
-
     private String mMac;
     private AtomicBoolean hasFound = new AtomicBoolean(false);
 
     public MacScanCallback(String mac, long timeoutMillis) {
         super(timeoutMillis);
         this.mMac = mac;
-        if (mac == null) {
+        if (TextUtils.isEmpty(mac)) {
             onDeviceNotFound();
         }
     }
@@ -32,10 +33,14 @@ public abstract class MacScanCallback extends PeriodScanCallback {
         }
 
         if (!hasFound.get()) {
+
+            ScanResult scanResult = new ScanResult(device, rssi, scanRecord,
+                    System.currentTimeMillis());
+
             if (mMac.equalsIgnoreCase(device.getAddress())) {
                 hasFound.set(true);
                 bleBluetooth.stopScan(MacScanCallback.this);
-                onDeviceFound(device, rssi, scanRecord);
+                onDeviceFound(scanResult);
             }
         }
     }
@@ -45,7 +50,12 @@ public abstract class MacScanCallback extends PeriodScanCallback {
         onDeviceNotFound();
     }
 
-    public abstract void onDeviceFound(BluetoothDevice device, int rssi, byte[] scanRecord);
+    @Override
+    public void onScanCancel() {
+
+    }
+
+    public abstract void onDeviceFound(ScanResult scanResult);
 
     public abstract void onDeviceNotFound();
 }

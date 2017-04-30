@@ -18,6 +18,8 @@ public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallb
 
     public abstract void onScanTimeout();
 
+    public abstract void onScanCancel();
+
     public void notifyScanStarted() {
         if (timeoutMillis > 0) {
             removeHandlerMsg();
@@ -29,6 +31,11 @@ public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallb
                 }
             }, timeoutMillis);
         }
+    }
+
+    public void notifyScanCancel() {
+        bleBluetooth.stopScan(PeriodScanCallback.this);
+        onScanCancel();
     }
 
     public void removeHandlerMsg() {

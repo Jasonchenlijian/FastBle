@@ -10,8 +10,8 @@
 
         <ImageView
             android:id="@+id/img_scan"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
             android:src="@mipmap/ic_scan" />
@@ -22,15 +22,18 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginLeft="15dp"
+            android:layout_toLeftOf="@+id/img_next"
             android:layout_toRightOf="@id/img_scan"
             android:text="mode"
-            android:textSize="14sp" />
+            android:textSize="13sp" />
 
         <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:id="@+id/img_next"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:src="@mipmap/ic_enter" />
 

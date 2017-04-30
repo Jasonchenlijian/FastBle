@@ -1,7 +1,6 @@
 package com.clj.fastble.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -14,6 +13,7 @@ import android.text.TextUtils;
 
 import com.clj.fastble.conn.BleConnector;
 import com.clj.fastble.conn.BleGattCallback;
+import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.scan.MacScanCallback;
@@ -45,6 +45,7 @@ public class BleBluetooth {
     private BluetoothGatt bluetoothGatt;
     private Handler handler = new Handler(Looper.getMainLooper());
     private HashMap<String, BluetoothGattCallback> callbackHashMap = new HashMap<>();
+    private PeriodScanCallback periodScanCallback;
 
 
     public BleBluetooth(Context context) {
@@ -102,16 +103,8 @@ public class BleBluetooth {
         return callbackHashMap.get(uuid);
     }
 
-
-    public boolean startLeScan(BluetoothAdapter.LeScanCallback callback) {
-        boolean success = bluetoothAdapter.startLeScan(callback);
-        if (success) {
-            connectionState = STATE_SCANNING;
-        }
-        return success;
-    }
-
     public boolean startLeScan(PeriodScanCallback callback) {
+        this.periodScanCallback = callback;
         callback.setBleBluetooth(this).notifyScanStarted();
         boolean success = bluetoothAdapter.startLeScan(callback);
         if (success) {
@@ -120,6 +113,11 @@ public class BleBluetooth {
             callback.removeHandlerMsg();
         }
         return success;
+    }
+
+    public void cancelScan() {
+        if (periodScanCallback != null && connectionState == STATE_SCANNING)
+            periodScanCallback.notifyScanCancel();
     }
 
     public void stopScan(BluetoothAdapter.LeScanCallback callback) {
@@ -132,41 +130,92 @@ public class BleBluetooth {
         }
     }
 
-
-    public synchronized BluetoothGatt connect(final BluetoothDevice device,
-                                              final boolean autoConnect,
-                                              final BleGattCallback callback) {
-        BleLog.i("connect name: " + device.getName()
-                + "\nmac: " + device.getAddress()
+    public synchronized BluetoothGatt connect(ScanResult scanResult,
+                                              boolean autoConnect,
+                                              BleGattCallback callback) {
+        BleLog.i("connect name: " + scanResult.getDevice().getName()
+                + "\nmac: " + scanResult.getDevice().getAddress()
                 + "\nautoConnect: " + autoConnect);
         addConnectGattCallback(callback);
-        return device.connectGatt(context, autoConnect, coreGattCallback);
+        return scanResult.getDevice().connectGatt(context, autoConnect, coreGattCallback);
     }
 
     public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
+        return scanNameAndConnect(name, time_out, autoConnect, false, callback);
+    }
+
+    public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, boolean fuzzy, final BleGattCallback callback) {
         if (TextUtils.isEmpty(name)) {
             if (callback != null) {
                 callback.onNotFoundDevice();
             }
             return false;
         }
-        return startLeScan(new NameScanCallback(name, time_out, false) {
+        return startLeScan(new NameScanCallback(name, time_out, fuzzy) {
 
             @Override
-            public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+            public void onDeviceFound(final ScanResult scanResult) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        connect(device, autoConnect, callback);
+                        if (callback != null) {
+                            callback.onFoundDevice(scanResult);
+                        }
+                        connect(scanResult, autoConnect, callback);
                     }
                 });
             }
 
             @Override
             public void onDeviceNotFound() {
-                if (callback != null) {
-                    callback.onNotFoundDevice();
-                }
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (callback != null) {
+                            callback.onNotFoundDevice();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    public boolean scanNameAndConnect(String[] names, long time_out, final boolean autoConnect, final BleGattCallback callback) {
+        return scanNameAndConnect(names, time_out, autoConnect, false, callback);
+    }
+
+    public boolean scanNameAndConnect(String[] names, long time_out, final boolean autoConnect, boolean fuzzy, final BleGattCallback callback) {
+        if (names == null || names.length < 1) {
+            if (callback != null) {
+                callback.onNotFoundDevice();
+            }
+            return false;
+        }
+        return startLeScan(new NameScanCallback(names, time_out, fuzzy) {
+
+            @Override
+            public void onDeviceFound(final ScanResult scanResult) {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (callback != null) {
+                            callback.onFoundDevice(scanResult);
+                        }
+                        connect(scanResult, autoConnect, callback);
+                    }
+                });
+            }
+
+            @Override
+            public void onDeviceNotFound() {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (callback != null) {
+                            callback.onNotFoundDevice();
+                        }
+                    }
+                });
             }
         });
     }
@@ -181,55 +230,31 @@ public class BleBluetooth {
         return startLeScan(new MacScanCallback(mac, time_out) {
 
             @Override
-            public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+            public void onDeviceFound(final ScanResult scanResult) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        connect(device, autoConnect, callback);
+                        if (callback != null) {
+                            callback.onFoundDevice(scanResult);
+                        }
+                        connect(scanResult, autoConnect, callback);
                     }
                 });
             }
 
             @Override
             public void onDeviceNotFound() {
-                if (callback != null) {
-                    callback.onNotFoundDevice();
-                }
-            }
-        });
-    }
-
-    public boolean fuzzySearchNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
-        if (TextUtils.isEmpty(name)) {
-            if (callback != null) {
-                callback.onNotFoundDevice();
-            }
-            return false;
-        }
-        return startLeScan(new NameScanCallback(name, time_out, true) {
-
-            @Override
-            public void onDeviceFound(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                if (callback != null) {
-                    callback.onFoundDevice(device);
-                }
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        connect(device, autoConnect, callback);
+                        if (callback != null) {
+                            callback.onNotFoundDevice();
+                        }
                     }
                 });
             }
-
-            @Override
-            public void onDeviceNotFound() {
-                if (callback != null) {
-                    callback.onNotFoundDevice();
-                }
-            }
         });
     }
-
 
     public boolean refreshDeviceCache() {
         try {
@@ -240,7 +265,8 @@ public class BleBluetooth {
                 return success;
             }
         } catch (Exception e) {
-            BleLog.i("An exception occured while refreshing device", e);
+            BleLog.i("An exception occur while refreshing device", e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
@@ -313,7 +339,7 @@ public class BleBluetooth {
         }
 
         @Override
-        public void onFoundDevice(BluetoothDevice device) {
+        public void onFoundDevice(ScanResult scanResult) {
             BleLog.i("coreGattCallback：onFoundDevice ");
         }
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -12,7 +13,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.clj.blesample.R;
-import com.clj.blesample.tool.scan.AnyDeviceActivity;
+import com.clj.blesample.tool.scan.AnyScanActivity;
+import com.clj.blesample.tool.scan.MacScanActivity;
+import com.clj.blesample.tool.scan.NameFuzzyScanActivity;
+import com.clj.blesample.tool.scan.NameScanActivity;
+import com.clj.blesample.tool.scan.NamesFuzzyScanActivity;
+import com.clj.blesample.tool.scan.NamesScanActivity;
 
 
 /**
@@ -21,11 +27,12 @@ import com.clj.blesample.tool.scan.AnyDeviceActivity;
 public class MainActivity extends AppCompatActivity {
 
     private String[] modes = new String[]{
-            "扫描周围所有设备，并展示",
-            "扫描指定广播名的设备并连接（唯一广播名）",
-            "扫描指定广播名的设备并连接（模糊广播名）",
-            "扫描指定广播名的设备并连接（多个广播名）",
-            "扫描周围指定物理地址的设备并连接"};
+            "扫描所有设备，并显示",
+            "扫描指定广播名的设备，并连接（唯一广播名）",
+            "扫描指定广播名的设备，并连接（模糊广播名）",
+            "扫描指定广播名的设备，并连接（多个广播名）",
+            "扫描指定广播名的设备，并连接（模糊、多个广播名）",
+            "扫描指定物理地址的设备，并连接"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         ListView mListView = (ListView) findViewById(R.id.list);
         mListView.setAdapter(new ConnectModeAdapter(this, modes));
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -43,23 +53,27 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        startActivity(new Intent(MainActivity.this, AnyDeviceActivity.class));
+                        startActivity(new Intent(MainActivity.this, AnyScanActivity.class));
                         break;
 
                     case 1:
-
+                        startActivity(new Intent(MainActivity.this, NameScanActivity.class));
                         break;
 
                     case 2:
-
+                        startActivity(new Intent(MainActivity.this, NameFuzzyScanActivity.class));
                         break;
 
                     case 3:
-
+                        startActivity(new Intent(MainActivity.this, NamesScanActivity.class));
                         break;
 
                     case 4:
+                        startActivity(new Intent(MainActivity.this, NamesFuzzyScanActivity.class));
+                        break;
 
+                    case 5:
+                        startActivity(new Intent(MainActivity.this, MacScanActivity.class));
                         break;
                 }
             }

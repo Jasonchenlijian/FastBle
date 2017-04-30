@@ -1,12 +1,12 @@
 package com.clj.fastble;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
+import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
 import com.clj.fastble.scan.ListScanCallback;
@@ -49,19 +49,22 @@ public class BleManager {
     /**
      * connect a searched device
      *
-     * @param device      searched device
+     * @param scanResult  searched device
      * @param autoConnect
      * @param callback
      */
-    public void connectDevice(BluetoothDevice device,
+    public void connectDevice(ScanResult scanResult,
                               boolean autoConnect,
                               BleGattCallback callback) {
-        if (device == null) {
+        if (scanResult == null || scanResult.getDevice() == null) {
             if (callback != null) {
                 callback.onNotFoundDevice();
             }
         } else {
-            bleBluetooth.connect(device, autoConnect, callback);
+            if (callback != null) {
+                callback.onFoundDevice(scanResult);
+            }
+            bleBluetooth.connect(scanResult, autoConnect, callback);
         }
     }
 
@@ -78,7 +81,55 @@ public class BleManager {
                                       long time_out,
                                       boolean autoConnect,
                                       BleGattCallback callback) {
-        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
+        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, false, callback);
+    }
+
+    /**
+     * scan known names device, then connect
+     *
+     * @param deviceNames known name
+     * @param time_out    timeout
+     * @param autoConnect
+     * @param callback
+     * @return
+     */
+    public boolean scanNamesAndConnect(String[] deviceNames,
+                                       long time_out,
+                                       boolean autoConnect,
+                                       BleGattCallback callback) {
+        return bleBluetooth.scanNameAndConnect(deviceNames, time_out, autoConnect, false, callback);
+    }
+
+    /**
+     * fuzzy search name
+     *
+     * @param fuzzyName
+     * @param time_out
+     * @param autoConnect
+     * @param callback
+     * @return
+     */
+    public boolean scanfuzzyNameAndConnect(String fuzzyName,
+                                           long time_out,
+                                           boolean autoConnect,
+                                           BleGattCallback callback) {
+        return bleBluetooth.scanNameAndConnect(fuzzyName, time_out, autoConnect, true, callback);
+    }
+
+    /**
+     * fuzzy search name
+     *
+     * @param fuzzyNames
+     * @param time_out
+     * @param autoConnect
+     * @param callback
+     * @return
+     */
+    public boolean scanfuzzyNamesAndConnect(String[] fuzzyNames,
+                                            long time_out,
+                                            boolean autoConnect,
+                                            BleGattCallback callback) {
+        return bleBluetooth.scanNameAndConnect(fuzzyNames, time_out, autoConnect, true, callback);
     }
 
     /**
@@ -98,19 +149,10 @@ public class BleManager {
     }
 
     /**
-     * fuzzy search name
-     *
-     * @param fuzzyName
-     * @param time_out
-     * @param autoConnect
-     * @param callback
-     * @return
+     * cancel scan
      */
-    public boolean fuzzySearchNameAndConnect(String fuzzyName,
-                                             long time_out,
-                                             boolean autoConnect,
-                                             BleGattCallback callback) {
-        return bleBluetooth.fuzzySearchNameAndConnect(fuzzyName, time_out, autoConnect, callback);
+    public void cancelScan() {
+        bleBluetooth.cancelScan();
     }
 
     /**
@@ -236,9 +278,6 @@ public class BleManager {
         }
     }
 
-    /**
-     * is bluetooth enable?
-     */
     public boolean isBlueEnable() {
         return bleBluetooth != null && bleBluetooth.isBlueEnable();
     }
