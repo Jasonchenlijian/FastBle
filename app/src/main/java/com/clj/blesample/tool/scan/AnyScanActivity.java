@@ -53,7 +53,8 @@ public class AnyScanActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService();
+        if (mBluetoothService != null)
+            unbindService();
     }
 
     private void initView() {

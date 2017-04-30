@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.clj.blesample.R;
+import com.clj.blesample.tool.other.UserActivity;
 import com.clj.blesample.tool.scan.AnyScanActivity;
 import com.clj.blesample.tool.scan.MacScanActivity;
 import com.clj.blesample.tool.scan.NameFuzzyScanActivity;
@@ -45,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        findViewById(R.id.txt_user).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, UserActivity.class));
+            }
+        });
 
         ListView mListView = (ListView) findViewById(R.id.list);
         mListView.setAdapter(new ConnectModeAdapter(this, modes));

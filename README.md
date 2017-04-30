@@ -6,7 +6,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Update Log
 - 2017-04-30
-    - 发布1.1.0版本，部分api稍作改变，增加测试工具。
+    - 1.1.0版本，扫描设备相关部分api稍作优化及改动，完善Demo测试工具。
 
 - 2017-03-21
 	- 在1.0.6版本中加入对设备名模糊搜索的功能。
@@ -37,6 +37,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble2.png) 
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble3.png)
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble4.png)
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble5.png)
 
 ## Gradle
 	dependencies {

@@ -25,6 +25,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".tool.other.UserActivity"/>
         <activity android:name=".tool.scan.AnyScanActivity" />
         <activity android:name=".tool.scan.NameScanActivity" />
         <activity android:name=".tool.scan.NameFuzzyScanActivity" />

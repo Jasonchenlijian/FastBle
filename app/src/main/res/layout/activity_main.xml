@@ -22,17 +22,34 @@
         android:textSize="15sp"
         android:textStyle="bold" />
 
-    <ListView
-        android:id="@+id/list"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="0.5dp"
-        android:paddingEnd="10dp"
-        android:paddingStart="10dp"
-        android:footerDividersEnabled="true"
-        android:scrollbars="none" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp">
+
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="0.5dp"
+            android:footerDividersEnabled="true"
+            android:paddingEnd="10dp"
+            android:paddingStart="10dp"
+            android:scrollbars="none" />
+
+        <TextView
+            android:id="@+id/txt_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:padding="20dp"
+            android:text="联系作者"
+            android:textColor="@color/colorPrimary"
+            android:textSize="14sp" />
+
+    </RelativeLayout>
+
 
 </LinearLayout>
 
