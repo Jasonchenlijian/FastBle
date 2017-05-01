@@ -72,9 +72,9 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	`ListScanCallback(long timeoutMillis)`，传参扫描的时间；`onScanning`表示当前正在扫描状态，且搜索到一个外围设备的回调；`onScanComplete`表示扫描时间到或手动取消扫描后的回调。
 
 	`ScanResult`表示返回的扫描结果对象。
-	`BluetoothDevice` `getDevice()`: 蓝牙设备对象
-	`byte[]` `getScanRecord()`: 广播数据
-	`int` `getRssi()`: 信号强度
+	`BluetoothDevice` `getDevice()`: 蓝牙设备对象;
+	`byte[]` `getScanRecord()`: 广播数据;
+	`int` `getRssi()`: 信号强度.
 
 
         bleManager.scanDevice(new ListScanCallback(TIME_OUT) {

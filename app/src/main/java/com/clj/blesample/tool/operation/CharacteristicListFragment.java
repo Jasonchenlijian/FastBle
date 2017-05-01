@@ -81,8 +81,8 @@ public class CharacteristicListFragment extends Fragment {
                             .setItems(propNameList.toArray(new String[propNameList.size()]), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    mBluetoothService.setCharaProp(propList.get(which));
                                     mBluetoothService.setCharacteristic(characteristic);
+                                    mBluetoothService.setCharaProp(propList.get(which));
                                     ((OperationActivity) getActivity()).changePage(2);
                                 }
                             })

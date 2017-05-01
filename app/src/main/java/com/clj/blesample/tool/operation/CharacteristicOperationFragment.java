@@ -33,7 +33,7 @@ public class CharacteristicOperationFragment extends Fragment {
 
     private LinearLayout layout_container;
 
-    private List<BluetoothGattCharacteristic> characteristicList = new ArrayList<>();
+    private List<String> childList = new ArrayList<>();
 
     private BluetoothService mBluetoothService;
 
@@ -59,14 +59,15 @@ public class CharacteristicOperationFragment extends Fragment {
     public void showData() {
         final BluetoothGattCharacteristic characteristic = mBluetoothService.getCharacteristic();
         final int charaProp = mBluetoothService.getCharaProp();
+        String child = characteristic.getUuid().toString() + String.valueOf(charaProp);
 
         for (int i = 0; i < layout_container.getChildCount(); i++) {
             layout_container.getChildAt(i).setVisibility(View.GONE);
         }
-        if (characteristicList.contains(characteristic)) {
+        if (childList.contains(child)) {
             layout_container.findViewWithTag(characteristic.getUuid().toString()).setVisibility(View.VISIBLE);
         } else {
-            characteristicList.add(characteristic);
+            childList.add(child);
 
             View view = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation, null);
             view.setTag(characteristic.getUuid().toString());
