@@ -18,6 +18,14 @@
         android:layout_height="wrap_content"
         android:paddingLeft="25dp"
         android:paddingTop="10dp"
+        android:text="作者QQ： 1033526540"
+        android:textSize="15sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="25dp"
+        android:paddingTop="10dp"
         android:text="作者微信："
         android:textSize="15sp" />
 
@@ -28,23 +36,6 @@
         android:layout_marginTop="10dp"
         android:scaleType="centerInside"
         android:src="@drawable/ic_wx" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingLeft="25dp"
-        android:paddingTop="10dp"
-        android:text="捐赠："
-        android:textSize="15sp" />
-
-    <ImageView
-        android:layout_width="180dp"
-        android:layout_height="180dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="10dp"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_donate" />
-
 
 </LinearLayout>
 
