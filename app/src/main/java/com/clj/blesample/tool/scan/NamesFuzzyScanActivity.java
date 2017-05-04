@@ -110,7 +110,7 @@ public class NamesFuzzyScanActivity extends AppCompatActivity implements View.On
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setCallback(callback);
+            mBluetoothService.setScanCallback(callback);
             String str = et.getText().toString();
             if (!TextUtils.isEmpty(str)) {
                 String[] arr = str.split(",");

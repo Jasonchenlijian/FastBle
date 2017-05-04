@@ -83,11 +83,11 @@ public class ServiceListFragment extends Fragment {
             bluetoothGattServices = new ArrayList<>();
         }
 
-        public void addResult(BluetoothGattService service) {
+        void addResult(BluetoothGattService service) {
             bluetoothGattServices.add(service);
         }
 
-        public void clear() {
+        void clear() {
             bluetoothGattServices.clear();
         }
 

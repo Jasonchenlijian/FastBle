@@ -37,7 +37,6 @@ public class CharacteristicOperationFragment extends Fragment {
 
     private BluetoothService mBluetoothService;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

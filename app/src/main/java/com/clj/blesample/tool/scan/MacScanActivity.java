@@ -110,7 +110,7 @@ public class MacScanActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setCallback(callback);
+            mBluetoothService.setScanCallback(callback);
             mBluetoothService.scanAndConnect5(et.getText().toString());
         }
 

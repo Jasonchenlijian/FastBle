@@ -111,7 +111,7 @@ public class NamesScanActivity extends AppCompatActivity implements View.OnClick
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setCallback(callback);
+            mBluetoothService.setScanCallback(callback);
             String str = et.getText().toString();
             if (!TextUtils.isEmpty(str)) {
                 String[] arr = str.split(",");

@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -122,11 +121,11 @@ public class AnyScanActivity extends AppCompatActivity implements View.OnClickLi
             scanResultList = new ArrayList<>();
         }
 
-        public void addResult(ScanResult result) {
+        void addResult(ScanResult result) {
             scanResultList.add(result);
         }
 
-        public void clear() {
+        void clear() {
             scanResultList.clear();
         }
 
@@ -192,7 +191,7 @@ public class AnyScanActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setCallback(callback);
+            mBluetoothService.setScanCallback(callback);
             mBluetoothService.scanDevice();
         }
 
@@ -244,7 +243,6 @@ public class AnyScanActivity extends AppCompatActivity implements View.OnClickLi
             progressDialog.dismiss();
             mResultAdapter.clear();
             mResultAdapter.notifyDataSetChanged();
-            Log.e("===", mResultAdapter.getCount() + "==");
             img_loading.clearAnimation();
             btn_start.setEnabled(true);
             btn_stop.setVisibility(View.INVISIBLE);

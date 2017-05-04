@@ -32,15 +32,14 @@ public class BleBluetooth {
     private static final String CONNECT_CALLBACK_KEY = "connect_key";
     public static final String READ_RSSI_KEY = "rssi_key";
 
-    public static final int STATE_DISCONNECTED = 0;
-    public static final int STATE_SCANNING = 1;
-    public static final int STATE_CONNECTING = 2;
-    public static final int STATE_CONNECTED = 3;
-    public static final int STATE_SERVICES_DISCOVERED = 4;
+    private static final int STATE_DISCONNECTED = 0;
+    private static final int STATE_SCANNING = 1;
+    private static final int STATE_CONNECTING = 2;
+    private static final int STATE_CONNECTED = 3;
+    private static final int STATE_SERVICES_DISCOVERED = 4;
 
     private int connectionState = STATE_DISCONNECTED;
     private Context context;
-    private BluetoothManager bluetoothManager;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothGatt bluetoothGatt;
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -50,7 +49,8 @@ public class BleBluetooth {
 
     public BleBluetooth(Context context) {
         this.context = context = context.getApplicationContext();
-        bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager bluetoothManager = (BluetoothManager) context
+                .getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
     }
 
@@ -261,11 +261,11 @@ public class BleBluetooth {
             final Method refresh = BluetoothGatt.class.getMethod("refresh");
             if (refresh != null) {
                 final boolean success = (Boolean) refresh.invoke(getBluetoothGatt());
-                BleLog.i("Refreshing result: " + success);
+                BleLog.i("refreshDeviceCache, is success:  " + success);
                 return success;
             }
         } catch (Exception e) {
-            BleLog.i("An exception occur while refreshing device", e.getMessage());
+            BleLog.i("exception occur while refreshing device: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -315,10 +315,6 @@ public class BleBluetooth {
         return context;
     }
 
-    public BluetoothManager getBluetoothManager() {
-        return bluetoothManager;
-    }
-
     public BluetoothAdapter getBluetoothAdapter() {
         return bluetoothAdapter;
     }
@@ -335,17 +331,17 @@ public class BleBluetooth {
 
         @Override
         public void onNotFoundDevice() {
-            BleLog.i("coreGattCallback：onNotFoundDevice ");
+            BleLog.i("BleGattCallback：onNotFoundDevice ");
         }
 
         @Override
         public void onFoundDevice(ScanResult scanResult) {
-            BleLog.i("coreGattCallback：onFoundDevice ");
+            BleLog.i("BleGattCallback：onFoundDevice ");
         }
 
         @Override
         public void onConnectSuccess(BluetoothGatt gatt, int status) {
-            BleLog.i("coreGattCallback：onConnectSuccess ");
+            BleLog.i("BleGattCallback：onConnectSuccess ");
 
             bluetoothGatt = gatt;
             Iterator iterator = callbackHashMap.entrySet().iterator();
@@ -360,8 +356,9 @@ public class BleBluetooth {
 
         @Override
         public void onConnectFailure(BleException exception) {
-            BleLog.i("coreGattCallback：onConnectFailure ");
+            BleLog.i("BleGattCallback：onConnectFailure ");
 
+            closeBluetoothGatt();
             bluetoothGatt = null;
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -375,7 +372,7 @@ public class BleBluetooth {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            BleLog.i("coreGattCallback：onConnectionStateChange "
+            BleLog.i("BleGattCallback：onConnectionStateChange "
                     + '\n' + "status: " + status
                     + '\n' + "newState: " + newState
                     + '\n' + "thread: " + Thread.currentThread().getId());
@@ -404,7 +401,7 @@ public class BleBluetooth {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            BleLog.i("coreGattCallback：onServicesDiscovered ");
+            BleLog.i("BleGattCallback：onServicesDiscovered ");
 
             connectionState = STATE_SERVICES_DISCOVERED;
             Iterator iterator = callbackHashMap.entrySet().iterator();
@@ -419,7 +416,7 @@ public class BleBluetooth {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            BleLog.i("coreGattCallback：onCharacteristicRead ");
+            BleLog.i("BleGattCallback：onCharacteristicRead ");
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -433,7 +430,7 @@ public class BleBluetooth {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            BleLog.i("coreGattCallback：onCharacteristicWrite ");
+            BleLog.i("BleGattCallback：onCharacteristicWrite ");
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -447,7 +444,7 @@ public class BleBluetooth {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            BleLog.i("coreGattCallback：onCharacteristicChanged ");
+            BleLog.i("BleGattCallback：onCharacteristicChanged ");
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -461,7 +458,7 @@ public class BleBluetooth {
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            BleLog.i("coreGattCallback：onDescriptorRead ");
+            BleLog.i("BleGattCallback：onDescriptorRead ");
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -475,7 +472,7 @@ public class BleBluetooth {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            BleLog.i("coreGattCallback：onDescriptorWrite ");
+            BleLog.i("BleGattCallback：onDescriptorWrite ");
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -489,7 +486,7 @@ public class BleBluetooth {
 
         @Override
         public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
-            BleLog.i("coreGattCallback：onReliableWriteCompleted ");
+            BleLog.i("BleGattCallback：onReliableWriteCompleted ");
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -503,7 +500,7 @@ public class BleBluetooth {
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            BleLog.i("coreGattCallback：onReadRemoteRssi ");
+            BleLog.i("BleGattCallback：onReadRemoteRssi ");
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {

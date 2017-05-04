@@ -81,7 +81,7 @@ public class BleManager {
                                       long time_out,
                                       boolean autoConnect,
                                       BleGattCallback callback) {
-        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, false, callback);
+        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
     }
 
     /**
@@ -97,7 +97,7 @@ public class BleManager {
                                        long time_out,
                                        boolean autoConnect,
                                        BleGattCallback callback) {
-        return bleBluetooth.scanNameAndConnect(deviceNames, time_out, autoConnect, false, callback);
+        return bleBluetooth.scanNameAndConnect(deviceNames, time_out, autoConnect, callback);
     }
 
     /**

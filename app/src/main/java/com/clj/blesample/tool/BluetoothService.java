@@ -25,6 +25,7 @@ public class BluetoothService extends Service {
     private BleManager bleManager;
     private Handler threadHandler = new Handler(Looper.getMainLooper());
     private Callback mCallback = null;
+    private Callback2 mCallback2 = null;
 
     private String name;
     private String mac;
@@ -44,6 +45,7 @@ public class BluetoothService extends Service {
         super.onDestroy();
         bleManager = null;
         mCallback = null;
+        mCallback2 = null;
     }
 
     @Override
@@ -63,8 +65,12 @@ public class BluetoothService extends Service {
         }
     }
 
-    public void setCallback(Callback callback) {
+    public void setScanCallback(Callback callback) {
         mCallback = callback;
+    }
+
+    public void setConnectCallback(Callback2 callback) {
+        mCallback2 = callback;
     }
 
     public interface Callback {
@@ -82,6 +88,11 @@ public class BluetoothService extends Service {
         void onDisConnected();
 
         void onServicesDiscovered();
+    }
+
+    public interface Callback2 {
+
+        void onDisConnected();
     }
 
     public void scanDevice() {
@@ -178,6 +189,9 @@ public class BluetoothService extends Service {
                         if (mCallback != null) {
                             mCallback.onDisConnected();
                         }
+                        if (mCallback2 != null) {
+                            mCallback2.onDisConnected();
+                        }
                     }
                 });
             }
@@ -255,6 +269,9 @@ public class BluetoothService extends Service {
                             public void run() {
                                 if (mCallback != null) {
                                     mCallback.onDisConnected();
+                                }
+                                if (mCallback2 != null) {
+                                    mCallback2.onDisConnected();
                                 }
                             }
                         });
@@ -340,6 +357,9 @@ public class BluetoothService extends Service {
                                 if (mCallback != null) {
                                     mCallback.onDisConnected();
                                 }
+                                if (mCallback2 != null) {
+                                    mCallback2.onDisConnected();
+                                }
                             }
                         });
                     }
@@ -423,6 +443,9 @@ public class BluetoothService extends Service {
                             public void run() {
                                 if (mCallback != null) {
                                     mCallback.onDisConnected();
+                                }
+                                if (mCallback2 != null) {
+                                    mCallback2.onDisConnected();
                                 }
                             }
                         });
@@ -508,6 +531,9 @@ public class BluetoothService extends Service {
                                 if (mCallback != null) {
                                     mCallback.onDisConnected();
                                 }
+                                if (mCallback2 != null) {
+                                    mCallback2.onDisConnected();
+                                }
                             }
                         });
                     }
@@ -591,6 +617,9 @@ public class BluetoothService extends Service {
                             public void run() {
                                 if (mCallback != null) {
                                     mCallback.onDisConnected();
+                                }
+                                if (mCallback2 != null) {
+                                    mCallback2.onDisConnected();
                                 }
                             }
                         });

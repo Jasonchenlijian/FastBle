@@ -5,29 +5,24 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 ***
 
 ## Update Log
-- 2017-04-30
-    - 1.1.0版本，扫描设备相关部分api稍作优化及改动，完善Demo测试工具。
-
-- 2017-03-21
-	- 在1.0.6版本中加入对设备名模糊搜索的功能。
-	
-- 2017-03-02
+- v1.1.1（2017-05-04）
+    - 修复因连接异常中断后，影响下次重新扫描连接的bug；优化测试工具。
+- v1.1.0（2017-04-30）
+    - 扫描设备相关部分api稍作优化及改动，完善Demo测试工具。
+- v1.0.6（2017-03-21）
+	- 加入对设备名模糊搜索的功能。
+- v1.0.5（2017-03-02）
 	- 优化notify、indicate监听机制。
-	
-- 2016-12-08
+- v1.0.4（2016-12-08）
 	- 增加直连指定mac地址设备的方法。
-
-- 2016-11-16
+- v1.0.3（2016-11-16）
 	- 优化关闭机制，在关闭连接前先移除回调。
-
-- 2016-09-23
+- v1.0.2（2016-09-23）
 	- 添加stopNotify和stopIndicate的方法，与stopListenCharacterCallback方法作区分。
-
-- 2016-09-20
+- v1.0.1（2016-09-20）
     - 优化callback机制，一个character有且只会存在一个callback，并可以手动移除。
     - 示例代码中添加DemoActivity和OperateActivity。前者示范如何使用本框架，后者可以作为蓝牙调试工具，测试蓝牙设备。
-
-- 2016-09-08 
+- v1.0.0（2016-09-08) 
 	- 增加设备是否支持ble的判断。
 	- 修正监听不同character的时候，当其中一个character发生变化,与该character无关的callback也会回调结果的bug。
 
@@ -41,19 +36,19 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Gradle
 	dependencies {
-    	compile 'com.clj.fastble:FastBleLib:1.1.0'
+    	compile 'com.clj.fastble:FastBleLib:1.1.1'
 	}
 
 ## Maven
 	<dependency>
     	<groupId>com.clj.fastble</groupId>
     	<artifactId>FastBleLib</artifactId>
-    	<version>1.1.0</version>
+    	<version>1.1.1</version>
 		<type>pom</type>
 	</dependency>
 
 ## Demo
-   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[fastble_1.0.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE_1.0.apk)
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[fastble_1.0.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
 
 ## Usage
 

@@ -16,7 +16,6 @@ import android.view.View;
 
 import com.clj.blesample.R;
 import com.clj.blesample.tool.BluetoothService;
-import com.clj.fastble.data.ScanResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +137,7 @@ public class OperationActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setCallback(callback);
+            mBluetoothService.setConnectCallback(callback);
             initPage();
         }
 
@@ -148,34 +147,11 @@ public class OperationActivity extends AppCompatActivity {
         }
     };
 
-    private BluetoothService.Callback callback = new BluetoothService.Callback() {
-        @Override
-        public void onStartScan() {
-        }
-
-        @Override
-        public void onScanning(ScanResult result) {
-        }
-
-        @Override
-        public void onScanComplete() {
-        }
-
-        @Override
-        public void onConnecting() {
-        }
-
-        @Override
-        public void onConnectFail() {
-        }
+    private BluetoothService.Callback2 callback = new BluetoothService.Callback2() {
 
         @Override
         public void onDisConnected() {
             finish();
-        }
-
-        @Override
-        public void onServicesDiscovered() {
         }
     };
 }

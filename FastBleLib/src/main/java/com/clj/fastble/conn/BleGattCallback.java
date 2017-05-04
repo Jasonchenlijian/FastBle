@@ -1,7 +1,6 @@
 
 package com.clj.fastble.conn;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 

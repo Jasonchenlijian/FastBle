@@ -110,7 +110,7 @@ public class NameScanActivity extends AppCompatActivity implements View.OnClickL
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setCallback(callback);
+            mBluetoothService.setScanCallback(callback);
             mBluetoothService.scanAndConnect1(et.getText().toString());
         }
 

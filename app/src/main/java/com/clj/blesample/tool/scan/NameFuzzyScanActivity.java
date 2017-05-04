@@ -110,7 +110,7 @@ public class NameFuzzyScanActivity extends AppCompatActivity implements View.OnC
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setCallback(callback);
+            mBluetoothService.setScanCallback(callback);
             mBluetoothService.scanAndConnect2(et.getText().toString());
         }
 
