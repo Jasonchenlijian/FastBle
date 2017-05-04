@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -240,11 +241,10 @@ public class AnyScanActivity extends AppCompatActivity implements View.OnClickLi
 
         @Override
         public void onDisConnected() {
-            mResultAdapter.clear();
-            mResultAdapter.notifyDataSetChanged();
             progressDialog.dismiss();
             mResultAdapter.clear();
             mResultAdapter.notifyDataSetChanged();
+            Log.e("===", mResultAdapter.getCount() + "==");
             img_loading.clearAnimation();
             btn_start.setEnabled(true);
             btn_stop.setVisibility(View.INVISIBLE);

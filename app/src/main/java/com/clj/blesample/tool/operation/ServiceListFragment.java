@@ -63,11 +63,8 @@ public class ServiceListFragment extends Fragment {
         String name = mBluetoothService.getName();
         String mac = mBluetoothService.getMac();
         BluetoothGatt gatt = mBluetoothService.getGatt();
-//        txt_name.setText(String.valueOf("设备广播名：" + name));
-//        txt_mac.setText(String.valueOf("MAC地址: " + mac));
-
-        txt_name.setText(String.valueOf("设备广播名：" + "TEST-123"));
-        txt_mac.setText(String.valueOf("MAC地址: " + "5C:f8:21:ab:10:24"));
+        txt_name.setText(String.valueOf("设备广播名：" + name));
+        txt_mac.setText(String.valueOf("MAC地址: " + mac));
 
         mResultAdapter.clear();
         for (final BluetoothGattService service : gatt.getServices()) {
