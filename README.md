@@ -6,7 +6,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ## Update Log
 - v1.1.1（2017-05-04）
-    - 修复因连接异常中断后，影响下次重新扫描连接的bug；优化测试工具。
+    - 优化连接异常中断后的扫描及重连机制；优化测试工具。
 - v1.1.0（2017-04-30）
     - 扫描设备相关部分api稍作优化及改动，完善Demo测试工具。
 - v1.0.6（2017-03-21）
@@ -48,7 +48,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	</dependency>
 
 ## Demo
-   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[fastble_1.0.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
 
 ## Usage
 
