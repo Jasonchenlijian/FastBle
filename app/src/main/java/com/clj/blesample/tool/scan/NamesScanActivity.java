@@ -1,12 +1,17 @@
 package com.clj.blesample.tool.scan;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -24,6 +29,9 @@ import com.clj.blesample.tool.BluetoothService;
 import com.clj.blesample.tool.operation.OperationActivity;
 import com.clj.fastble.data.ScanResult;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class NamesScanActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -32,6 +40,7 @@ public class NamesScanActivity extends AppCompatActivity implements View.OnClick
     private ImageView img_loading;
     private Animation operatingAnim;
     private ProgressDialog progressDialog;
+    private String[] names;
 
     private BluetoothService mBluetoothService;
 
@@ -81,12 +90,8 @@ public class NamesScanActivity extends AppCompatActivity implements View.OnClick
                 if (TextUtils.isEmpty(str)) {
                     Toast.makeText(this, "请先输入蓝牙广播名", Toast.LENGTH_LONG).show();
                 } else {
-                    String[] arr = str.split(",");
-                    if (mBluetoothService == null) {
-                        bindService();
-                    } else {
-                        mBluetoothService.scanAndConnect3(arr);
-                    }
+                    names = str.split(",");
+                    checkPermissions();
                 }
                 break;
 
@@ -174,5 +179,52 @@ public class NamesScanActivity extends AppCompatActivity implements View.OnClick
             startActivity(new Intent(NamesScanActivity.this, OperationActivity.class));
         }
     };
+
+    @Override
+    public final void onRequestPermissionsResult(int requestCode,
+                                                 @NonNull String[] permissions,
+                                                 @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 12:
+                if (grantResults.length > 0) {
+                    for (int i = 0; i < grantResults.length; i++) {
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            onPermissionGranted(permissions[i]);
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    private void checkPermissions() {
+        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
+        List<String> permissionDeniedList = new ArrayList<>();
+        for (String permission : permissions) {
+            int permissionCheck = ContextCompat.checkSelfPermission(this, permission);
+            if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                onPermissionGranted(permission);
+            } else {
+                permissionDeniedList.add(permission);
+            }
+        }
+        if (!permissionDeniedList.isEmpty()) {
+            String[] deniedPermissions = permissionDeniedList.toArray(new String[permissionDeniedList.size()]);
+            ActivityCompat.requestPermissions(this, deniedPermissions, 12);
+        }
+    }
+
+    private void onPermissionGranted(String permission) {
+        switch (permission) {
+            case Manifest.permission.ACCESS_FINE_LOCATION:
+                if (mBluetoothService == null) {
+                    bindService();
+                } else {
+                    mBluetoothService.scanAndConnect3(names);
+                }
+                break;
+        }
+    }
 
 }

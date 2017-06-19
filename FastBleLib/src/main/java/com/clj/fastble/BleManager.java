@@ -43,6 +43,8 @@ public class BleManager {
      * scan device around
      */
     public boolean scanDevice(ListScanCallback callback) {
+        if (!isBlueEnable())
+            return false;
         return bleBluetooth.startLeScan(callback);
     }
 
@@ -81,6 +83,8 @@ public class BleManager {
                                       long time_out,
                                       boolean autoConnect,
                                       BleGattCallback callback) {
+        if (!isBlueEnable())
+            return false;
         return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
     }
 
