@@ -8,6 +8,8 @@ import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
+import com.clj.fastble.exception.BlueToothNotEnableException;
+import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
 import com.clj.fastble.scan.ListScanCallback;
 import com.clj.fastble.utils.BleLog;
@@ -25,11 +27,13 @@ public class BleManager {
     public BleManager(Context context) {
         this.mContext = context;
 
-        if (bleBluetooth == null) {
-            bleBluetooth = new BleBluetooth(context);
+        if (isSupportBle()) {
+            if (bleBluetooth == null) {
+                bleBluetooth = new BleBluetooth(context);
+            }
         }
 
-        bleExceptionHandler = new DefaultBleExceptionHandler(context);
+        bleExceptionHandler = new DefaultBleExceptionHandler();
     }
 
     /**
@@ -60,7 +64,7 @@ public class BleManager {
                               BleGattCallback callback) {
         if (scanResult == null || scanResult.getDevice() == null) {
             if (callback != null) {
-                callback.onNotFoundDevice();
+                callback.onConnectError(new NotFoundDeviceException());
             }
         } else {
             if (callback != null) {
@@ -79,13 +83,15 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean scanNameAndConnect(String deviceName,
-                                      long time_out,
-                                      boolean autoConnect,
-                                      BleGattCallback callback) {
-        if (!isBlueEnable())
-            return false;
-        return bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
+    public void scanNameAndConnect(String deviceName,
+                                   long time_out,
+                                   boolean autoConnect,
+                                   BleGattCallback callback) {
+        if (!isBlueEnable() && callback != null) {
+            callback.onConnectError(new BlueToothNotEnableException());
+        } else {
+            bleBluetooth.scanNameAndConnect(deviceName, time_out, autoConnect, callback);
+        }
     }
 
     /**
@@ -97,11 +103,15 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean scanNamesAndConnect(String[] deviceNames,
-                                       long time_out,
-                                       boolean autoConnect,
-                                       BleGattCallback callback) {
-        return bleBluetooth.scanNameAndConnect(deviceNames, time_out, autoConnect, callback);
+    public void scanNamesAndConnect(String[] deviceNames,
+                                    long time_out,
+                                    boolean autoConnect,
+                                    BleGattCallback callback) {
+        if (!isBlueEnable() && callback != null) {
+            callback.onConnectError(new BlueToothNotEnableException());
+        } else {
+            bleBluetooth.scanNameAndConnect(deviceNames, time_out, autoConnect, callback);
+        }
     }
 
     /**
@@ -113,11 +123,15 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean scanfuzzyNameAndConnect(String fuzzyName,
-                                           long time_out,
-                                           boolean autoConnect,
-                                           BleGattCallback callback) {
-        return bleBluetooth.scanNameAndConnect(fuzzyName, time_out, autoConnect, true, callback);
+    public void scanfuzzyNameAndConnect(String fuzzyName,
+                                        long time_out,
+                                        boolean autoConnect,
+                                        BleGattCallback callback) {
+        if (!isBlueEnable() && callback != null) {
+            callback.onConnectError(new BlueToothNotEnableException());
+        } else {
+            bleBluetooth.scanNameAndConnect(fuzzyName, time_out, autoConnect, true, callback);
+        }
     }
 
     /**
@@ -129,11 +143,15 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean scanfuzzyNamesAndConnect(String[] fuzzyNames,
-                                            long time_out,
-                                            boolean autoConnect,
-                                            BleGattCallback callback) {
-        return bleBluetooth.scanNameAndConnect(fuzzyNames, time_out, autoConnect, true, callback);
+    public void scanfuzzyNamesAndConnect(String[] fuzzyNames,
+                                         long time_out,
+                                         boolean autoConnect,
+                                         BleGattCallback callback) {
+        if (!isBlueEnable() && callback != null) {
+            callback.onConnectError(new BlueToothNotEnableException());
+        } else {
+            bleBluetooth.scanNameAndConnect(fuzzyNames, time_out, autoConnect, true, callback);
+        }
     }
 
     /**
@@ -145,11 +163,15 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean scanMacAndConnect(String deviceMac,
-                                     long time_out,
-                                     boolean autoConnect,
-                                     BleGattCallback callback) {
-        return bleBluetooth.scanMacAndConnect(deviceMac, time_out, autoConnect, callback);
+    public void scanMacAndConnect(String deviceMac,
+                                  long time_out,
+                                  boolean autoConnect,
+                                  BleGattCallback callback) {
+        if (!isBlueEnable() && callback != null) {
+            callback.onConnectError(new BlueToothNotEnableException());
+        } else {
+            bleBluetooth.scanMacAndConnect(deviceMac, time_out, autoConnect, callback);
+        }
     }
 
     /**

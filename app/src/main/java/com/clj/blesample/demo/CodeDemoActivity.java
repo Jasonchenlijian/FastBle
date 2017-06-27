@@ -1,11 +1,9 @@
 package com.clj.blesample.demo;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.clj.blesample.R;
 import com.clj.fastble.BleManager;
@@ -33,9 +31,8 @@ public class CodeDemoActivity extends AppCompatActivity {
     private static final String DEVICE_NAME = "这里写你的设备名";                         // 符合连接规则的蓝牙设备名
     private static final String[] DEVICE_NAMES = new String[]{};                        // 符合连接规则的蓝牙设备名
     private static final String DEVICE_MAC = "这里写你的设备地址";                        // 符合连接规则的蓝牙设备地址
-    private static final String TAG = "ble_sample";
 
-    private BleManager bleManager;                                                      // Ble核心管理类
+    private BleManager bleManager;
     private ScanResult scanResult;
 
     @Override
@@ -106,33 +103,37 @@ public class CodeDemoActivity extends AppCompatActivity {
      */
     private void connectDevice() {
         bleManager.connectDevice(scanResult, true, new BleGattCallback() {
-            @Override
-            public void onNotFoundDevice() {
-                Log.i(TAG, "未发现设备");
-            }
 
             @Override
             public void onFoundDevice(ScanResult scanResult) {
-                Log.i(TAG, "发现设备: " + scanResult.getDevice().getAddress());
+
+            }
+
+            @Override
+            public void onConnecting(BluetoothGatt gatt, int status) {
+
+            }
+
+            @Override
+            public void onConnectError(BleException exception) {
+
             }
 
             @Override
             public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                Log.i(TAG, "连接成功");
-                gatt.discoverServices();
+
             }
 
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                Log.i(TAG, "发现服务");
-                bleManager.getBluetoothState();
+
             }
 
             @Override
-            public void onConnectFailure(BleException exception) {
-                Log.i(TAG, "连接断开：" + exception.toString());
-                bleManager.handleException(exception);
+            public void onDisConnected(BleException exception) {
+
             }
+
         });
     }
 
@@ -145,30 +146,35 @@ public class CodeDemoActivity extends AppCompatActivity {
                 TIME_OUT,
                 false,
                 new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                        Log.i(TAG, "未发现设备");
-                    }
 
                     @Override
                     public void onFoundDevice(ScanResult scanResult) {
-                        Log.i(TAG, "发现设备: " + scanResult.getDevice().getAddress());
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
                     }
 
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                        Log.i(TAG, "连接成功");
+
                     }
 
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                        Log.i(TAG, "发现服务");
+
                     }
 
                     @Override
-                    public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接中断：" + exception.toString());
+                    public void onDisConnected(BleException exception) {
+
                     }
 
                 });
@@ -183,31 +189,37 @@ public class CodeDemoActivity extends AppCompatActivity {
                 TIME_OUT,
                 false,
                 new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                        Log.i(TAG, "未发现设备");
-                    }
 
                     @Override
                     public void onFoundDevice(ScanResult scanResult) {
-                        Log.i(TAG, "发现设备: " + scanResult.getDevice().getAddress());
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
                     }
 
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                        Log.i(TAG, "连接成功");
+
                     }
 
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                        Log.i(TAG, "发现服务");
+
                     }
 
                     @Override
-                    public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接中断：" + exception.toString());
+                    public void onDisConnected(BleException exception) {
+
                     }
+
                 });
     }
 
@@ -220,31 +232,37 @@ public class CodeDemoActivity extends AppCompatActivity {
                 TIME_OUT,
                 false,
                 new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                        Log.i(TAG, "未发现设备");
-                    }
 
                     @Override
                     public void onFoundDevice(ScanResult scanResult) {
-                        Log.i(TAG, "发现设备: " + scanResult.getDevice().getAddress());
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
                     }
 
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                        Log.i(TAG, "连接成功");
+
                     }
 
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                        Log.i(TAG, "发现服务");
+
                     }
 
                     @Override
-                    public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接中断：" + exception.toString());
+                    public void onDisConnected(BleException exception) {
+
                     }
+
                 });
     }
 
@@ -257,31 +275,37 @@ public class CodeDemoActivity extends AppCompatActivity {
                 TIME_OUT,
                 false,
                 new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                        Log.i(TAG, "未发现设备");
-                    }
 
                     @Override
                     public void onFoundDevice(ScanResult scanResult) {
-                        Log.i(TAG, "发现设备: " + scanResult.getDevice().getAddress());
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
                     }
 
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                        Log.i(TAG, "连接成功");
+
                     }
 
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                        Log.i(TAG, "发现服务");
+
                     }
 
                     @Override
-                    public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接中断：" + exception.toString());
+                    public void onDisConnected(BleException exception) {
+
                     }
+
                 });
     }
 
@@ -294,31 +318,37 @@ public class CodeDemoActivity extends AppCompatActivity {
                 TIME_OUT,
                 false,
                 new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                        Log.i(TAG, "未发现设备");
-                    }
 
                     @Override
                     public void onFoundDevice(ScanResult scanResult) {
-                        Log.i(TAG, "发现设备: " + scanResult.getDevice().getAddress());
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
                     }
 
                     @Override
                     public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                        Log.i(TAG, "连接成功");
+
                     }
 
                     @Override
                     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                        Log.i(TAG, "发现服务");
+
                     }
 
                     @Override
-                    public void onConnectFailure(BleException exception) {
-                        Log.i(TAG, "连接中断：" + exception.toString());
+                    public void onDisConnected(BleException exception) {
+
                     }
+
                 });
     }
 
@@ -332,8 +362,8 @@ public class CodeDemoActivity extends AppCompatActivity {
     /**
      * notify
      */
-    private void listen_notify() {
-        bleManager.notify(
+    private boolean addNotify() {
+        return bleManager.notify(
                 UUID_SERVICE,
                 UUID_NOTIFY,
                 new BleCharacterCallback() {
@@ -352,15 +382,15 @@ public class CodeDemoActivity extends AppCompatActivity {
     /**
      * stop notify
      */
-    private boolean stop_notify() {
+    private boolean stopNotify() {
         return bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
     }
 
     /**
      * indicate
      */
-    private void listen_indicate() {
-        bleManager.indicate(
+    private boolean addIndicate() {
+        return bleManager.indicate(
                 UUID_SERVICE,
                 UUID_INDICATE,
                 new BleCharacterCallback() {
@@ -379,15 +409,15 @@ public class CodeDemoActivity extends AppCompatActivity {
     /**
      * stop indicate
      */
-    private boolean stop_indicate() {
+    private boolean stopIndicate() {
         return bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
     }
 
     /**
      * write
      */
-    private void write() {
-        bleManager.writeDevice(
+    private boolean write() {
+        return bleManager.writeDevice(
                 UUID_SERVICE,
                 UUID_WRITE,
                 HexUtil.hexStringToBytes(SAMPLE_WRITE_DATA),
@@ -407,8 +437,8 @@ public class CodeDemoActivity extends AppCompatActivity {
     /**
      * read
      */
-    private void read() {
-        bleManager.readDevice(
+    private boolean read() {
+        return bleManager.readDevice(
                 UUID_SERVICE,
                 UUID_READ,
                 new BleCharacterCallback() {

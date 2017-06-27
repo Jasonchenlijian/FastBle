@@ -12,10 +12,10 @@ import android.os.Message;
 import android.util.Log;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
-import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.InitiatedException;
 import com.clj.fastble.exception.OtherException;
+import com.clj.fastble.exception.TimeoutException;
 import com.clj.fastble.utils.BleLog;
 import com.clj.fastble.utils.HexUtil;
 
@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * be sure main thread
  */
 public class BleConnector {
+
     private static final String TAG = BleConnector.class.getSimpleName();
     private static final String UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
 
@@ -45,7 +46,7 @@ public class BleConnector {
     private BluetoothGattCharacteristic characteristic;
     private BluetoothGattDescriptor descriptor;
     private BleBluetooth bleBluetooth;
-    private int timeOutMillis = 20000;
+    private static int timeOutMillis = 10000;
     private Handler handler = new MyHandler();
 
     private static final class MyHandler extends Handler {
@@ -54,7 +55,7 @@ public class BleConnector {
 
             BleCallback call = (BleCallback) msg.obj;
             if (call != null) {
-                call.onFailure(BleException.TIMEOUT_EXCEPTION);
+                call.onFailure(new TimeoutException());
             }
             msg.obj = null;
         }
@@ -116,7 +117,10 @@ public class BleConnector {
     }
 
 
-    /***************************************main operation************************************************/
+
+
+     /*------------------------------- main operation ----------------------------------- */
+
 
     /**
      * notify
@@ -467,9 +471,9 @@ public class BleConnector {
     }
 
 
-    /*****************************
-     * getter and setter
-     ***********************************/
+
+    /*------------------------------- getter and setter ----------------------------------- */
+
 
     public BluetoothGatt getBluetoothGatt() {
         return bluetoothGatt;

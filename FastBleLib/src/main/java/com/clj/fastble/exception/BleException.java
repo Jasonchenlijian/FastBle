@@ -7,11 +7,13 @@ public abstract class BleException implements Serializable {
     private static final long serialVersionUID = 8004414918500865564L;
 
     public static final int ERROR_CODE_TIMEOUT = 1;
-    public static final int ERROR_CODE_INITIAL = 101;
-    public static final int ERROR_CODE_GATT = 201;
-    public static final int GATT_CODE_OTHER = 301;
+    public static final int ERROR_CODE_INITIAL = 2;
+    public static final int ERROR_CODE_GATT = 3;
+    public static final int ERROR_CODE_OTHER = 4;
+    public static final int ERROR_CODE_NOT_FOUND_DEVICE = 5;
+    public static final int ERROR_CODE_BLUETOOTH_NOT_ENABLE = 6;
+    public static final int ERROR_CODE_SCAN_FAILED = 7;
 
-    public static final TimeoutException TIMEOUT_EXCEPTION = new TimeoutException();
 
     private int code;
     private String description;

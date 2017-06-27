@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCallback;
 import com.clj.fastble.exception.BleException;
 
 public abstract class BleCallback {
+
     private BluetoothGattCallback bluetoothGattCallback;
 
     public BleCallback setBluetoothGattCallback(BluetoothGattCallback bluetoothGattCallback) {

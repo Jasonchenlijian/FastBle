@@ -16,6 +16,8 @@ import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.ConnectException;
+import com.clj.fastble.exception.NotFoundDeviceException;
+import com.clj.fastble.exception.ScanFailedException;
 import com.clj.fastble.scan.MacScanCallback;
 import com.clj.fastble.scan.NameScanCallback;
 import com.clj.fastble.scan.PeriodScanCallback;
@@ -140,18 +142,18 @@ public class BleBluetooth {
         return scanResult.getDevice().connectGatt(context, autoConnect, coreGattCallback);
     }
 
-    public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
-        return scanNameAndConnect(name, time_out, autoConnect, false, callback);
+    public void scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
+        scanNameAndConnect(name, time_out, autoConnect, false, callback);
     }
 
-    public boolean scanNameAndConnect(String name, long time_out, final boolean autoConnect, boolean fuzzy, final BleGattCallback callback) {
+    public void scanNameAndConnect(String name, long time_out, final boolean autoConnect, boolean fuzzy, final BleGattCallback callback) {
         if (TextUtils.isEmpty(name)) {
             if (callback != null) {
-                callback.onNotFoundDevice();
+                callback.onConnectError(new NotFoundDeviceException());
             }
-            return false;
+            return;
         }
-        return startLeScan(new NameScanCallback(name, time_out, fuzzy) {
+        boolean success = startLeScan(new NameScanCallback(name, time_out, fuzzy) {
 
             @Override
             public void onDeviceFound(final ScanResult scanResult) {
@@ -172,26 +174,29 @@ public class BleBluetooth {
                     @Override
                     public void run() {
                         if (callback != null) {
-                            callback.onNotFoundDevice();
+                            callback.onConnectError(new NotFoundDeviceException());
                         }
                     }
                 });
             }
         });
+        if (!success && callback != null) {
+            callback.onConnectError(new ScanFailedException());
+        }
     }
 
-    public boolean scanNameAndConnect(String[] names, long time_out, final boolean autoConnect, final BleGattCallback callback) {
-        return scanNameAndConnect(names, time_out, autoConnect, false, callback);
+    public void scanNameAndConnect(String[] names, long time_out, final boolean autoConnect, final BleGattCallback callback) {
+        scanNameAndConnect(names, time_out, autoConnect, false, callback);
     }
 
-    public boolean scanNameAndConnect(String[] names, long time_out, final boolean autoConnect, boolean fuzzy, final BleGattCallback callback) {
+    public void scanNameAndConnect(String[] names, long time_out, final boolean autoConnect, boolean fuzzy, final BleGattCallback callback) {
         if (names == null || names.length < 1) {
             if (callback != null) {
-                callback.onNotFoundDevice();
+                callback.onConnectError(new NotFoundDeviceException());
             }
-            return false;
+            return;
         }
-        return startLeScan(new NameScanCallback(names, time_out, fuzzy) {
+        boolean success = startLeScan(new NameScanCallback(names, time_out, fuzzy) {
 
             @Override
             public void onDeviceFound(final ScanResult scanResult) {
@@ -212,22 +217,25 @@ public class BleBluetooth {
                     @Override
                     public void run() {
                         if (callback != null) {
-                            callback.onNotFoundDevice();
+                            callback.onConnectError(new NotFoundDeviceException());
                         }
                     }
                 });
             }
         });
+        if (!success && callback != null) {
+            callback.onConnectError(new ScanFailedException());
+        }
     }
 
-    public boolean scanMacAndConnect(String mac, long time_out, final boolean autoConnect, final BleGattCallback callback) {
+    public void scanMacAndConnect(String mac, long time_out, final boolean autoConnect, final BleGattCallback callback) {
         if (TextUtils.isEmpty(mac)) {
             if (callback != null) {
-                callback.onNotFoundDevice();
+                callback.onConnectError(new NotFoundDeviceException());
             }
-            return false;
+            return;
         }
-        return startLeScan(new MacScanCallback(mac, time_out) {
+        boolean success = startLeScan(new MacScanCallback(mac, time_out) {
 
             @Override
             public void onDeviceFound(final ScanResult scanResult) {
@@ -248,19 +256,22 @@ public class BleBluetooth {
                     @Override
                     public void run() {
                         if (callback != null) {
-                            callback.onNotFoundDevice();
+                            callback.onConnectError(new NotFoundDeviceException());
                         }
                     }
                 });
             }
         });
+        if (!success && callback != null) {
+            callback.onConnectError(new ScanFailedException());
+        }
     }
 
     public boolean refreshDeviceCache() {
         try {
             final Method refresh = BluetoothGatt.class.getMethod("refresh");
             if (refresh != null) {
-                final boolean success = (Boolean) refresh.invoke(getBluetoothGatt());
+                boolean success = (Boolean) refresh.invoke(getBluetoothGatt());
                 BleLog.i("refreshDeviceCache, is success:  " + success);
                 return success;
             }
@@ -330,13 +341,23 @@ public class BleBluetooth {
     private BleGattCallback coreGattCallback = new BleGattCallback() {
 
         @Override
-        public void onNotFoundDevice() {
-            BleLog.i("BleGattCallback：onNotFoundDevice ");
+        public void onFoundDevice(ScanResult scanResult) {
+            BleLog.i("BleGattCallback：onFoundDevice ");
         }
 
         @Override
-        public void onFoundDevice(ScanResult scanResult) {
-            BleLog.i("BleGattCallback：onFoundDevice ");
+        public void onConnecting(BluetoothGatt gatt, int status) {
+            BleLog.i("BleGattCallback：onConnectSuccess ");
+
+            bluetoothGatt = gatt;
+            Iterator iterator = callbackHashMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Object call = entry.getValue();
+                if (call instanceof BleGattCallback) {
+                    ((BleGattCallback) call).onConnecting(gatt, status);
+                }
+            }
         }
 
         @Override
@@ -350,12 +371,13 @@ public class BleBluetooth {
                 Object call = entry.getValue();
                 if (call instanceof BleGattCallback) {
                     ((BleGattCallback) call).onConnectSuccess(gatt, status);
+                    gatt.discoverServices();
                 }
             }
         }
 
         @Override
-        public void onConnectFailure(BleException exception) {
+        public void onDisConnected(BleException exception) {
             BleLog.i("BleGattCallback：onConnectFailure ");
 
             closeBluetoothGatt();
@@ -365,9 +387,14 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 Object call = entry.getValue();
                 if (call instanceof BleGattCallback) {
-                    ((BleGattCallback) call).onConnectFailure(exception);
+                    ((BleGattCallback) call).onDisConnected(exception);
                 }
             }
+        }
+
+        @Override
+        public void onConnectError(BleException exception) {
+            BleLog.i("BleGattCallback：onConnectError ");
         }
 
         @Override
@@ -375,7 +402,7 @@ public class BleBluetooth {
             BleLog.i("BleGattCallback：onConnectionStateChange "
                     + '\n' + "status: " + status
                     + '\n' + "newState: " + newState
-                    + '\n' + "thread: " + Thread.currentThread().getId());
+                    + '\n' + "currentThread: " + Thread.currentThread().getId());
 
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 connectionState = STATE_CONNECTED;
@@ -383,10 +410,11 @@ public class BleBluetooth {
 
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 connectionState = STATE_DISCONNECTED;
-                onConnectFailure(new ConnectException(gatt, status));
+                onDisConnected(new ConnectException(gatt, status));
 
             } else if (newState == BluetoothGatt.STATE_CONNECTING) {
                 connectionState = STATE_CONNECTING;
+                onConnecting(gatt, status);
             }
 
             Iterator iterator = callbackHashMap.entrySet().iterator();
