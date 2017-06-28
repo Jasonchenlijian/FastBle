@@ -6,13 +6,12 @@ import java.io.Serializable;
 public abstract class BleException implements Serializable {
     private static final long serialVersionUID = 8004414918500865564L;
 
-    public static final int ERROR_CODE_TIMEOUT = 1;
-    public static final int ERROR_CODE_INITIAL = 2;
-    public static final int ERROR_CODE_GATT = 3;
-    public static final int ERROR_CODE_OTHER = 4;
-    public static final int ERROR_CODE_NOT_FOUND_DEVICE = 5;
-    public static final int ERROR_CODE_BLUETOOTH_NOT_ENABLE = 6;
-    public static final int ERROR_CODE_SCAN_FAILED = 7;
+    public static final int ERROR_CODE_TIMEOUT = 100;
+    public static final int ERROR_CODE_GATT = 101;
+    public static final int ERROR_CODE_OTHER = 102;
+    public static final int ERROR_CODE_NOT_FOUND_DEVICE = 103;
+    public static final int ERROR_CODE_BLUETOOTH_NOT_ENABLE = 104;
+    public static final int ERROR_CODE_SCAN_FAILED = 105;
 
 
     private int code;

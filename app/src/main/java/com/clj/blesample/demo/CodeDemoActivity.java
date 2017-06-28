@@ -105,11 +105,6 @@ public class CodeDemoActivity extends AppCompatActivity {
         bleManager.connectDevice(scanResult, true, new BleGattCallback() {
 
             @Override
-            public void onFoundDevice(ScanResult scanResult) {
-
-            }
-
-            @Override
             public void onConnecting(BluetoothGatt gatt, int status) {
 
             }
@@ -376,6 +371,11 @@ public class CodeDemoActivity extends AppCompatActivity {
                     public void onFailure(BleException exception) {
 
                     }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
+
+                    }
                 });
     }
 
@@ -401,6 +401,11 @@ public class CodeDemoActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
 
                     }
                 });
@@ -431,6 +436,11 @@ public class CodeDemoActivity extends AppCompatActivity {
                     public void onFailure(BleException exception) {
 
                     }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
+
+                    }
                 });
     }
 
@@ -449,6 +459,11 @@ public class CodeDemoActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
 
                     }
                 });

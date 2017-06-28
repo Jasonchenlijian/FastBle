@@ -4,7 +4,6 @@ import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.exception.GattException;
-import com.clj.fastble.exception.InitiatedException;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.OtherException;
 import com.clj.fastble.exception.ScanFailedException;
@@ -25,9 +24,6 @@ public abstract class BleExceptionHandler {
 
             } else if (exception instanceof TimeoutException) {
                 onTimeoutException((TimeoutException) exception);
-
-            } else if (exception instanceof InitiatedException) {
-                onInitiatedException((InitiatedException) exception);
 
             } else if (exception instanceof NotFoundDeviceException) {
                 onNotFoundDeviceException((NotFoundDeviceException) exception);
@@ -59,11 +55,6 @@ public abstract class BleExceptionHandler {
      * operation timeout
      */
     protected abstract void onTimeoutException(TimeoutException e);
-
-    /**
-     * operation inititiated error
-     */
-    protected abstract void onInitiatedException(InitiatedException e);
 
     /**
      * not found device error

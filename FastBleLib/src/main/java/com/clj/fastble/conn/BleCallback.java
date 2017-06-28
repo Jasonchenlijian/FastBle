@@ -2,6 +2,7 @@
 package com.clj.fastble.conn;
 
 import android.bluetooth.BluetoothGattCallback;
+
 import com.clj.fastble.exception.BleException;
 
 public abstract class BleCallback {
@@ -17,8 +18,7 @@ public abstract class BleCallback {
         return bluetoothGattCallback;
     }
 
-    public void onInitiatedSuccess() {
-    }
-
     public abstract void onFailure(BleException exception);
+
+    public abstract void onInitiatedResult(boolean result);
 }

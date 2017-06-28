@@ -12,7 +12,6 @@ import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
 import com.clj.fastble.scan.ListScanCallback;
-import com.clj.fastble.utils.BleLog;
 
 /**
  * Created by chenlijian on 2016/8/17.
@@ -214,6 +213,40 @@ public class BleManager {
     }
 
     /**
+     * stop notify, remove callback
+     *
+     * @param uuid_service
+     * @param uuid_notify
+     * @return
+     */
+    public boolean stopNotify(String uuid_service, String uuid_notify) {
+        boolean success = bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_notify, null)
+                .disableCharacteristicNotify();
+        if (success) {
+            bleBluetooth.removeGattCallback(uuid_notify);
+        }
+        return success;
+    }
+
+    /**
+     * stop indicate, remove callback
+     *
+     * @param uuid_service
+     * @param uuid_indicate
+     * @return
+     */
+    public boolean stopIndicate(String uuid_service, String uuid_indicate) {
+        boolean success = bleBluetooth.newBleConnector()
+                .withUUIDString(uuid_service, uuid_indicate, null)
+                .disableCharacteristicIndicate();
+        if (success) {
+            bleBluetooth.removeGattCallback(uuid_indicate);
+        }
+        return success;
+    }
+
+    /**
      * write
      *
      * @param uuid_service
@@ -245,16 +278,6 @@ public class BleManager {
         return bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_read, null)
                 .readCharacteristic(callback, uuid_read);
-    }
-
-    /**
-     * get state
-     */
-    public void getBluetoothState() {
-        BleLog.i("ConnectionState:  " + bleBluetooth.getConnectionState()
-                + "\nisInScanning: " + bleBluetooth.isInScanning()
-                + "\nisConnected: " + bleBluetooth.isConnected()
-                + "\nisServiceDiscovered: " + bleBluetooth.isServiceDiscovered());
     }
 
     /**
@@ -336,32 +359,6 @@ public class BleManager {
      */
     public void stopListenConnectCallback() {
         bleBluetooth.removeConnectGattCallback();
-    }
-
-    /**
-     * stop notify, remove callback
-     */
-    public boolean stopNotify(String uuid_service, String uuid_notify) {
-        boolean success = bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_notify, null)
-                .disableCharacteristicNotify();
-        if (success) {
-            bleBluetooth.removeGattCallback(uuid_notify);
-        }
-        return success;
-    }
-
-    /**
-     * stop indicate, remove callback
-     */
-    public boolean stopIndicate(String uuid_service, String uuid_indicate) {
-        boolean success = bleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_indicate, null)
-                .disableCharacteristicIndicate();
-        if (success) {
-            bleBluetooth.removeGattCallback(uuid_indicate);
-        }
-        return success;
     }
 
 }

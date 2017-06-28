@@ -88,6 +88,22 @@ public class CharacteristicOperationFragment extends Fragment {
                                     characteristic.getService().getUuid().toString(),
                                     characteristic.getUuid().toString(),
                                     new BleCharacterCallback() {
+
+                                        @Override
+                                        public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                    txt.append("\n");
+                                                    int offset = txt.getLineCount() * txt.getLineHeight();
+                                                    if (offset > txt.getHeight()) {
+                                                        txt.scrollTo(0, offset - txt.getHeight());
+                                                    }
+                                                }
+                                            });
+                                        }
+
                                         @Override
                                         public void onFailure(final BleException exception) {
                                             getActivity().runOnUiThread(new Runnable() {
@@ -104,18 +120,8 @@ public class CharacteristicOperationFragment extends Fragment {
                                         }
 
                                         @Override
-                                        public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                                            getActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-                                                    txt.append("\n");
-                                                    int offset = txt.getLineCount() * txt.getLineHeight();
-                                                    if (offset > txt.getHeight()) {
-                                                        txt.scrollTo(0, offset - txt.getHeight());
-                                                    }
-                                                }
-                                            });
+                                        public void onInitiatedResult(boolean result) {
+
                                         }
                                     });
                         }
@@ -141,6 +147,22 @@ public class CharacteristicOperationFragment extends Fragment {
                                     characteristic.getUuid().toString(),
                                     hex,
                                     new BleCharacterCallback() {
+
+                                        @Override
+                                        public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                    txt.append("\n");
+                                                    int offset = txt.getLineCount() * txt.getLineHeight();
+                                                    if (offset > txt.getHeight()) {
+                                                        txt.scrollTo(0, offset - txt.getHeight());
+                                                    }
+                                                }
+                                            });
+                                        }
+
                                         @Override
                                         public void onFailure(final BleException exception) {
                                             getActivity().runOnUiThread(new Runnable() {
@@ -157,19 +179,10 @@ public class CharacteristicOperationFragment extends Fragment {
                                         }
 
                                         @Override
-                                        public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                                            getActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-                                                    txt.append("\n");
-                                                    int offset = txt.getLineCount() * txt.getLineHeight();
-                                                    if (offset > txt.getHeight()) {
-                                                        txt.scrollTo(0, offset - txt.getHeight());
-                                                    }
-                                                }
-                                            });
+                                        public void onInitiatedResult(boolean result) {
+
                                         }
+
                                     });
                         }
                     });
@@ -194,6 +207,22 @@ public class CharacteristicOperationFragment extends Fragment {
                                     characteristic.getUuid().toString(),
                                     hex,
                                     new BleCharacterCallback() {
+
+                                        @Override
+                                        public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                    txt.append("\n");
+                                                    int offset = txt.getLineCount() * txt.getLineHeight();
+                                                    if (offset > txt.getHeight()) {
+                                                        txt.scrollTo(0, offset - txt.getHeight());
+                                                    }
+                                                }
+                                            });
+                                        }
+
                                         @Override
                                         public void onFailure(final BleException exception) {
                                             getActivity().runOnUiThread(new Runnable() {
@@ -210,19 +239,10 @@ public class CharacteristicOperationFragment extends Fragment {
                                         }
 
                                         @Override
-                                        public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                                            getActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-                                                    txt.append("\n");
-                                                    int offset = txt.getLineCount() * txt.getLineHeight();
-                                                    if (offset > txt.getHeight()) {
-                                                        txt.scrollTo(0, offset - txt.getHeight());
-                                                    }
-                                                }
-                                            });
+                                        public void onInitiatedResult(boolean result) {
+
                                         }
+
                                     });
                         }
                     });
@@ -243,6 +263,22 @@ public class CharacteristicOperationFragment extends Fragment {
                                         characteristic.getService().getUuid().toString(),
                                         characteristic.getUuid().toString(),
                                         new BleCharacterCallback() {
+
+                                            @Override
+                                            public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                                                getActivity().runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                        txt.append("\n");
+                                                        int offset = txt.getLineCount() * txt.getLineHeight();
+                                                        if (offset > txt.getHeight()) {
+                                                            txt.scrollTo(0, offset - txt.getHeight());
+                                                        }
+                                                    }
+                                                });
+                                            }
+
                                             @Override
                                             public void onFailure(final BleException exception) {
                                                 getActivity().runOnUiThread(new Runnable() {
@@ -259,19 +295,10 @@ public class CharacteristicOperationFragment extends Fragment {
                                             }
 
                                             @Override
-                                            public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                                                getActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
-                                                    }
-                                                });
+                                            public void onInitiatedResult(boolean result) {
+
                                             }
+
                                         });
                             } else {
                                 btn.setText("打开通知");
@@ -298,6 +325,22 @@ public class CharacteristicOperationFragment extends Fragment {
                                         characteristic.getService().getUuid().toString(),
                                         characteristic.getUuid().toString(),
                                         new BleCharacterCallback() {
+
+                                            @Override
+                                            public void onSuccess(final BluetoothGattCharacteristic characteristic) {
+                                                getActivity().runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                        txt.append("\n");
+                                                        int offset = txt.getLineCount() * txt.getLineHeight();
+                                                        if (offset > txt.getHeight()) {
+                                                            txt.scrollTo(0, offset - txt.getHeight());
+                                                        }
+                                                    }
+                                                });
+                                            }
+
                                             @Override
                                             public void onFailure(final BleException exception) {
                                                 getActivity().runOnUiThread(new Runnable() {
@@ -314,19 +357,10 @@ public class CharacteristicOperationFragment extends Fragment {
                                             }
 
                                             @Override
-                                            public void onSuccess(final BluetoothGattCharacteristic characteristic) {
-                                                getActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
-                                                    }
-                                                });
+                                            public void onInitiatedResult(boolean result) {
+
                                             }
+
                                         });
                             } else {
                                 btn.setText("打开通知");
