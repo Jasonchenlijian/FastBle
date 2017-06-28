@@ -1,10 +1,503 @@
 # FastBle
 Android Bluetooth Low Energy 蓝牙快速开发框架。
-使用回调方式处理：搜索、连接、读写、通知等一系列蓝牙操作。每一个characteristic会与一个callback形成一一对应的监听关系。
+
+使用简单的方式进行搜索、连接、读写、通知的订阅与取消等一系列蓝牙操作，并实时地得到操作反馈。
+
+
+
+
+
+# Preview
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble0.gif) 
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble1.png) 
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble2.png) 
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble3.png)
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble4.png)
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble5.png)
+
+	
+
+# Download
+	<dependency>
+       <groupId>com.clj.fastble</groupId>
+       <artifactId>FastBleLib</artifactId>
+       <version>1.2.0</version>
+	   <type>pom</type>
+	</dependency>
+
+or Gradle:
+
+	compile 'com.clj.fastble:FastBleLib:1.2.0'
+
+FastBle requires at minimum Java 7 or Android 4.0.
+
+
+# ProGuard
+If you are using ProGuard you might need to add the following options:
+
+	-dontwarn com.clj.fastble.**
+	-keep public class com.clj.fastble.**{*;}
+
+
+# 测试工具
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
+
+### [查看1.1.x旧版版本API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/raw/master/README_1.1.x.md)
+
+
 
 ***
 
-## Update Log
+
+# 蓝牙操作经验及FastBle的兼容性说明
+
+- BLE是蓝牙4.0里面的低功耗规范，Android 4.3以上的系统开始搭载BLE模块，所以FastBle也只支持4.3以上。
+- 不排除某些定制系统去除了BLE模块，可以通过`boolean isSupportBle()`判断是否支持，再进行后续操作。
+- 蓝牙设备相关程序必须使用真机才能运行。
+- FastBle当前版本仅支持对BLE蓝牙进行操作，不支持经典蓝牙。
+- FastBle当前版本仅支持中心模式 （central model），即"以App作为中心，连接其他BLE外设"。把手机作为外设目前版本是行不通的。
+- 使用蓝牙功能，必须先声明相关的蓝牙权限。6.0以上的系统，需要额外申请位置相关权限，并且是危险权限建议在运行时动态获取。FastBle库中并不包含权限相关的操作，使用者根据程序的实际情况在外层自行嵌套。示例代码中有相关代码演示，供参考。
+- 蓝牙操作与硬件关联很大，开发过程中要保持和硬件协议的沟通，某些问题的解决需要硬件方面做一些适配。
+- BLE的MTU（最大传输单元）是20字节，即一次最多能发送20个字节，若超过20个字节，建议采用分包传输的方式。
+- 蓝牙连接之后，列出当前外设模块的所有service，每个service可能有一个或多个的characteristic，每一个characteristic有其对应的property（即可操作的属性类别）,假如一个characteristic的property对应的是write，那么对这个characteristic做notify处理显然是行不通的。
+- 两次操作之间最好间隔一小段时间，如100ms（具体时间可以根据自己实际蓝牙外设自行尝试延长或缩短）。举例，连接成功之后，延迟100ms进行notify，成功之后延迟100ms进行write，write成功之后，notify的数据回调接口将返回外设传输过来的数据。
+- FastBle中开放的蓝牙操作的相关方法均要求在主线程中执行。
+- 连接及连接后的过程中，时刻关注BleGattCallback，蓝牙的连接情况会实时反映在其各个回调方法中，尤其是onDisConnected方法。
+- 连接过程中，假如外设突然中断（或关闭）了蓝牙，Android设备维持的BLE连接并不会马上回调onDisConnected方法，而是会延迟一段时间才会通知连接断开，开发时需注意，假如对实时性要求较高的程序，可能需要借助其他辅助方法来判断设备是否中断，比如心跳包等。
+
+
+
+# 如何使用
+
+- #### 初始化，创建操作对象
+	后续的所有操作方法，均通过当前所创建的BleManager对象来完成
+
+        bleManager = new BleManager(this);
+
+- #### 判断当前手机是否支持BLE
+
+        boolean isSupportBle()
+
+- #### 开启或关闭蓝牙
+
+		void enableBluetooth()
+		void disableBluetooth()
+		
+- #### 查看当前蓝牙或连接状态
+		
+		boolean isBlueEnable()
+		boolean isInScanning()
+		boolean isConnectingOrConnected()
+		isConnected()
+		isServiceDiscovered()
+
+
+- #### BleGattCallback
+
+		void onFoundDevice(ScanResult scanResult): 找到设备的回调；
+		void onConnecting(BluetoothGatt gatt, int status): 正在连接的回调；
+		void onConnectError(BleException exception)： 连接未成功的回调，通过解析BleException来判断具体未成功的原因；
+		void onConnectSuccess(BluetoothGatt gatt, int status): 连接成功的回调；
+		void onServicesDiscovered(BluetoothGatt gatt, int status): 发现服务的回调；
+		void onDisConnected(BleException exception): 连接断开的回调，指连接之后的断开。
+
+- #### BleCharacterCallback
+
+		void onSuccess(BluetoothGattCharacteristic characteristic): 数据传输回调；
+		void onFailure(BleException exception)： 操作或数据传输过程中出错；
+		void onInitiatedResult(boolean result): 操作成功与否的回调；
+
+- #### BleException
+
+		int getCode(): 获取异常码；
+		String getDescription()： 获取异常描述；
+		
+	异常码：
+	- 100： 超时
+	- 101： 连接异常
+	- 102： 其他（异常信息可以通过异常描述获取，一般是开发过程中的操作中间步骤的异常）
+	- 103： 设备未找到
+	- 104： 蓝牙未启用
+	- 105： 开启扫描过程失败
+
+		
+
+- #### 扫描所有设备
+	可获得周围蓝牙设备对象数组
+
+	`boolean scanDevice(ListScanCallback callback)`
+
+	返回值表示扫描操作是否成功，具体扫描结果会显示在ListScanCallback的回调方法中。
+
+	`ListScanCallback(long timeoutMillis)`
+
+	传参扫描的时间；`onScanning`表示当前正在扫描状态，且搜索到一个外围设备的回调；`onScanComplete`表示扫描时间到或手动取消扫描后的回调。
+
+	`ScanResult`表示返回的扫描结果对象。
+	`BluetoothDevice` `getDevice()`: 蓝牙设备对象;
+	`byte[]` `getScanRecord()`: 广播数据;
+	`int` `getRssi()`: 信号强度.
+
+
+        bleManager.scanDevice(new ListScanCallback(TIME_OUT) {
+            @Override
+            public void onScanning(ScanResult result) {
+
+            }
+
+            @Override
+            public void onScanComplete(ScanResult[] results) {  
+   
+            }
+        });
+
+- #### 连接设备
+	当搜索到周围设备之后，可以选择选择某一个设备和其连接
+
+	`void connectDevice(ScanResult scanResult,
+                              boolean autoConnect,
+                              BleGattCallback callback)`
+
+
+        bleManager.connectDevice(scanResult, true, new BleGattCallback() {
+
+            @Override
+            public void onConnecting(BluetoothGatt gatt, int status) {
+
+            }
+
+            @Override
+            public void onConnectError(BleException exception) {
+
+            }
+
+            @Override
+            public void onConnectSuccess(BluetoothGatt gatt, int status) {
+
+            }
+
+            @Override
+            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+
+            }
+
+            @Override
+            public void onDisConnected(BleException exception) {
+
+            }
+
+        });
+            
+
+- #### 扫描指定广播名的设备、并连接
+	扫描周围指定广播名称的设备，搜索到第一个即连接
+
+	`void scanNameAndConnect(String deviceName,
+                                   long time_out,
+                                   boolean autoConnect,
+                                   BleGattCallback callback)`
+
+        bleManager.scanNameAndConnect(
+                DEVICE_NAME,
+                TIME_OUT,
+                false,
+                new BleGattCallback() {
+
+                    @Override
+                    public void onFoundDevice(ScanResult scanResult) {
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onDisConnected(BleException exception) {
+
+                    }
+
+                });
+
+- #### 扫描指定广播名的设备，并连接（模糊广播名）
+	扫描周围指定广播名称的设备，搜索到第一个即连接
+
+	`void scanfuzzyNameAndConnect(String fuzzyName,
+                                        long time_out,
+                                        boolean autoConnect,
+                                        BleGattCallback callback)`
+
+        bleManager.scanfuzzyNameAndConnect(
+                DEVICE_NAME,
+                TIME_OUT,
+                false,
+                new BleGattCallback() {
+
+                    @Override
+                    public void onFoundDevice(ScanResult scanResult) {
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onDisConnected(BleException exception) {
+
+                    }
+
+                });
+
+- #### 扫描指定MAC地址的设备、并连接
+	扫描周围指定MAC地址的设备，搜索到第一个即连接
+
+	`void scanMacAndConnect(String deviceMac,
+                                  long time_out,
+                                  boolean autoConnect,
+                                  BleGattCallback callback)`
+
+        bleManager.scanMacAndConnect(
+                DEVICE_MAC,
+                TIME_OUT,
+                false,
+                new BleGattCallback() {
+
+                    @Override
+                    public void onFoundDevice(ScanResult scanResult) {
+
+                    }
+
+                    @Override
+                    public void onConnecting(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onConnectError(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+
+                    }
+
+                    @Override
+                    public void onDisConnected(BleException exception) {
+
+                    }
+
+                });;
+
+- #### 停止扫描
+	取消扫描操作
+
+	`void cancelScan()`
+
+		bleManager.cancelScan();
+
+
+- #### 订阅通知notify
+	参数中的callback和uuid将会形成关联，一旦设备的此uuid对应的character发生数据变化，此callback将会回调结果。此callbak将会唯一存在，和uuid是一一对应的关系。
+
+	`boolean notify(String uuid_service,
+                          String uuid_notify,
+                          BleCharacterCallback callback)`
+
+	`BleCharacterCallback`: `onSuccess`表示该Characteristic上发生数据变化的回调；onFailure表示发生异常的回调。
+
+        bleManager.notify(
+                UUID_SERVICE,
+                UUID_NOTIFY,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+
+                    }
+
+                    @Override
+                    public void onFailure(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
+
+                    }
+                });
+
+- #### 取消订阅通知notify，并移除回调监听
+
+	`boolean stopNotify(String uuid_service, String uuid_notify)`
+
+		bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
+
+- #### 订阅通知indicate
+
+	`boolean indicate(String uuid_service,
+                            String uuid_indicate,
+                            BleCharacterCallback callback)`
+
+        bleManager.indicate(
+                UUID_SERVICE,
+                UUID_INDICATE,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+
+                    }
+
+                    @Override
+                    public void onFailure(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
+
+                    }
+                });
+
+- #### 取消订阅通知indicate，并移除回调监听
+		bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
+
+- #### 写
+
+	`boolean writeDevice(String uuid_service,
+                               String uuid_write,
+                               byte[] data,
+                               BleCharacterCallback callback)`
+
+	返回值表示write操作是否成功，BleCharacterCallback()中的onInitiatedResult也表示本次操作是否成功，功能一致，便于不同情况下的用途。
+
+        bleManager.writeDevice(
+                UUID_SERVICE,
+                UUID_WRITE,
+                HexUtil.hexStringToBytes(SAMPLE_WRITE_DATA),
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+
+                    }
+
+                    @Override
+                    public void onFailure(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
+
+                    }
+                });
+- #### 读
+
+	`boolean readDevice(String uuid_service,
+                              String uuid_read,
+                              BleCharacterCallback callback)`
+
+	返回值表示read操作是否成功，BleCharacterCallback()中的onInitiatedResult也表示本次操作是否成功，功能一致，便于不同情况下的用途。
+
+        bleManager.readDevice(
+                UUID_SERVICE,
+                UUID_READ,
+                new BleCharacterCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+
+                    }
+
+                    @Override
+                    public void onFailure(BleException exception) {
+
+                    }
+
+                    @Override
+                    public void onInitiatedResult(boolean result) {
+
+                    }
+                });
+
+- #### 获取当前外设的Rssi
+
+	`boolean readRssi(BleRssiCallback callback)`
+
+	返回值表示readRssi操作是否成功，BleCharacterCallback()中的onInitiatedResult也表示本次操作是否成功，功能一致，便于不同情况下的用途。
+
+		bleManager.readRssi(new BleRssiCallback() {
+            @Override
+            public void onSuccess(int rssi) {
+
+            }
+
+            @Override
+            public void onFailure(BleException exception) {
+
+            }
+
+            @Override
+            public void onInitiatedResult(boolean result) {
+
+            }
+        });
+
+- #### manual remove callback 
+
+	`void stopListenCharacterCallback(String uuid)`
+
+    不再监听这个特征的数据变化，适用于移除notify、indicate、write、read对应的callback。
+
+        bleManager.stopListenCharacterCallback(uuid_sample);
+
+
+- #### 复位（断开此次蓝牙连接，移除所有回调）
+
+	`void closeBluetoothGatt()`
+
+        bleManager.closeBluetoothGatt();
+
+
+## 版本更新日志
+- v1.2.0（2017-06-28）
+    - 对扫描及连接的回调处理的API做优化处理，对所有蓝牙操作的结果做明确的回调，完善文档说明。
 - v1.1.1（2017-05-04）
     - 优化连接异常中断后的扫描及重连机制；优化测试工具。
 - v1.1.0（2017-04-30）
@@ -23,320 +516,24 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
     - 优化callback机制，一个character有且只会存在一个callback，并可以手动移除。
     - 示例代码中添加DemoActivity和OperateActivity。前者示范如何使用本框架，后者可以作为蓝牙调试工具，测试蓝牙设备。
 - v1.0.0（2016-09-08) 
-	- 增加设备是否支持ble的判断。
-	- 修正监听不同character的时候，当其中一个character发生变化,与该character无关的callback也会回调结果的bug。
-
-## Preview
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble0.gif) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble1.png) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble2.png) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble3.png)
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble4.png)
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble5.png)
-
-## Gradle
-	dependencies {
-    	compile 'com.clj.fastble:FastBleLib:1.1.1'
-	}
-
-## Maven
-	<dependency>
-    	<groupId>com.clj.fastble</groupId>
-    	<artifactId>FastBleLib</artifactId>
-    	<version>1.1.1</version>
-		<type>pom</type>
-	</dependency>
-
-## Demo
-   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
-
-## Usage
-
-- #### 初始化
-        bleManager = new BleManager(this);
-
-- #### 开启或关闭蓝牙
-		bleManager.enableBluetooth();
-		bleManager.disableBluetooth();
-
-- #### 扫描所有设备
-	可获得周围蓝牙设备对象数组
-
-	`boolean` `scanDevice(ListScanCallback callback)`如果返回false，表示扫描失败，可能是蓝牙未打开等原因造成。根据手机的不同型号及系统版本，蓝牙权限的相关申请工作请在调用此方法前自行配置。
-
-	`ListScanCallback(long timeoutMillis)`，传参扫描的时间；`onScanning`表示当前正在扫描状态，且搜索到一个外围设备的回调；`onScanComplete`表示扫描时间到或手动取消扫描后的回调。
-
-	`ScanResult`表示返回的扫描结果对象。
-	`BluetoothDevice` `getDevice()`: 蓝牙设备对象;
-	`byte[]` `getScanRecord()`: 广播数据;
-	`int` `getRssi()`: 信号强度.
-
-
-        bleManager.scanDevice(new ListScanCallback(TIME_OUT) {
-            @Override
-            public void onScanning(ScanResult result) {
-            }
-
-            @Override
-            public void onScanComplete(ScanResult[] results) {     
-            }
-        });
-
-- #### 连接设备
-	当搜索到周围设备之后，可以选择选择某一个设备和其连接
-
-	`void` `connectDevice(ScanResult scanResult,boolean autoConnect,BleGattCallback callback)`
-
-	`BleGattCallback`:`onNotFoundDevice`表示没有找到设备的回调；`onFoundDevice`表示找到设备的回调；`onConnectSuccess`表示连接成功的回调，如果需要进一步去发现服务，务必调用`gatt.discoverServices()`方法；`onServicesDiscovered`表示发现服务的回调；`onConnectFailure`表示连接断开的回调，设备连接后的操作过程中，一旦发生异常中断或主动断开，该回调会发生。
-
-
-        bleManager.connectDevice(scanResult, true, new BleGattCallback() {
-            @Override
-            public void onNotFoundDevice() { 
-            }
-
-            @Override
-            public void onFoundDevice(ScanResult scanResult) {
-            }
-
-            @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                gatt.discoverServices();
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            }
-
-            @Override
-            public void onConnectFailure(BleException exception) {
-            }
-        });
-            
-
-- #### 扫描指定广播名的设备、并连接
-	扫描周围指定广播名称的设备，搜索到第一个即连接
-
-	`boolean` `scanNameAndConnect(String deviceName,
-                                      long time_out,
-                                      boolean autoConnect,
-                                      BleGattCallback callback)`
-
-        bleManager.scanNameAndConnect(
-                DEVICE_NAME,
-                TIME_OUT,
-                false,
-                new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                    }
-
-                    @Override
-                    public void onFoundDevice(ScanResult scanResult) {
-                    }
-
-                    @Override
-                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                    }
-
-                    @Override
-                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                    }
-
-                    @Override
-                    public void onConnectFailure(BleException exception) {
-                    }
-                });
-
-- #### 扫描指定广播名的设备，并连接（模糊广播名）
-	扫描周围指定广播名称的设备，搜索到第一个即连接
-
-	`boolean` `scanfuzzyNameAndConnect(String deviceName,
-                                      long time_out,
-                                      boolean autoConnect,
-                                      BleGattCallback callback)`
-
-        bleManager.scanfuzzyNameAndConnect(
-                DEVICE_NAME,
-                TIME_OUT,
-                false,
-                new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                    }
-
-                    @Override
-                    public void onFoundDevice(ScanResult scanResult) {
-                    }
-
-                    @Override
-                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                    }
-
-                    @Override
-                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                    }
-
-                    @Override
-                    public void onConnectFailure(BleException exception) {
-                    }
-                });
-
-- #### 扫描指定MAC地址的设备、并连接
-	扫描周围指定MAC地址的设备，搜索到第一个即连接
-
-	`boolean` `scanMacAndConnect(String deviceMac,
-                                     long time_out,
-                                     boolean autoConnect,
-                                     BleGattCallback callback)`
-
-        bleManager.scanMacAndConnect(
-                DEVICE_MAC,
-                TIME_OUT,
-                false,
-                new BleGattCallback() {
-                    @Override
-                    public void onNotFoundDevice() {
-                    }
-
-                    @Override
-                    public void onFoundDevice(ScanResult scanResult) {
-                    }
-
-                    @Override
-                    public void onConnectSuccess(BluetoothGatt gatt, int status) {
-                        gatt.discoverServices();
-                    }
-
-                    @Override
-                    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                    }
-
-                    @Override
-                    public void onConnectFailure(BleException exception) {
-                    }
-                });
-
-- #### 停止扫描
-	取消扫描操作
-
-		bleManager.cancelScan();
-
-
-- #### notify，listen data changes through callback
-	参数中的callback和uuid将会形成关联，一旦设备的此uuid对应的character发生数据变化，此callback将会回调结果。此callbak将会唯一存在，和uuid是一一对应的关系。
-
-	`boolean` `notify(String uuid_service,
-                          String uuid_notify,
-                          BleCharacterCallback callback)`
-
-	`BleCharacterCallback`: `onSuccess`表示该Characteristic上发生数据变化的回调；onFailure表示发生异常的回调。
-
-        bleManager.notify(
-                UUID_SERVICE,
-                UUID_NOTIFY,
-                new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                    }
-                });
-
-- #### stop notify，remove callback
-		bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
-
-- #### indicate，listen data changes through callback
-
-	`boolean` `indicate(String uuid_service,
-                            String uuid_indicate,
-                            BleCharacterCallback callback)`
-
-        bleManager.indicate(
-                UUID_SERVICE,
-                UUID_INDICATE,
-                new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                    }
-                });
-
-- #### stop indicate，remove callback
-		bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
-
-- #### write
-
-	`boolean` `writeDevice(String uuid_service,
-                               String uuid_write,
-                               byte[] data,
-                               BleCharacterCallback callback)`
-
-        bleManager.writeDevice(
-                UUID_SERVICE,
-                UUID_WRITE,
-                HexUtil.hexStringToBytes(SAMPLE_WRITE_DATA),
-                new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                    }
-                });
-- #### read
-
-	`boolean` `readDevice(String uuid_service,
-                              String uuid_read,
-                              BleCharacterCallback callback)`
-
-        bleManager.readDevice(
-                UUID_SERVICE,
-                UUID_READ,
-                new BleCharacterCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                    }
-                });
-
-- #### manual remove callback 
-    不再监听这个特征的数据变化，适用于移除notify、indicate、write、read对应的callback。
-
-        bleManager.stopListenCharacterCallback(uuid_sample);
-
-
-- #### 复位（断开此次蓝牙连接，移除所有回调）
-        bleManager.closeBluetoothGatt();
-
+	- 初版
 
 
 ## License
 
-		Copyright 2016 chenlijian
+	   Copyright 2016 chenlijian
 
-		Licensed under the Apache License, Version 2.0 (the "License");
-		you may not use this file except in compliance with the License.
-		You may obtain a copy of the License at
+	   Licensed under the Apache License, Version 2.0 (the "License");
+	   you may not use this file except in compliance with the License.
+	   You may obtain a copy of the License at
 
-   			http://www.apache.org/licenses/LICENSE-2.0
+   		   http://www.apache.org/licenses/LICENSE-2.0
 
-		Unless required by applicable law or agreed to in writing, software
-		distributed under the License is distributed on an "AS IS" BASIS,
-		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-		See the License for the specific language governing permissions and
-		limitations under the License.
+	   Unless required by applicable law or agreed to in writing, software
+	   distributed under the License is distributed on an "AS IS" BASIS,
+	   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	   See the License for the specific language governing permissions and
+	   limitations under the License.
 
 
 

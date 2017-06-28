@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import com.clj.fastble.bluetooth.BleBluetooth;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
+import com.clj.fastble.conn.BleRssiCallback;
 import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.BlueToothNotEnableException;
@@ -46,15 +47,18 @@ public class BleManager {
      * scan device around
      */
     public boolean scanDevice(ListScanCallback callback) {
-        if (!isBlueEnable())
+        if (!isBlueEnable()) {
+            handleException(new BlueToothNotEnableException());
             return false;
+        }
+
         return bleBluetooth.startLeScan(callback);
     }
 
     /**
      * connect a searched device
      *
-     * @param scanResult  searched device
+     * @param scanResult
      * @param autoConnect
      * @param callback
      */
@@ -76,11 +80,10 @@ public class BleManager {
     /**
      * scan a known name device, then connect
      *
-     * @param deviceName  known name
-     * @param time_out    timeout
+     * @param deviceName
+     * @param time_out
      * @param autoConnect
      * @param callback
-     * @return
      */
     public void scanNameAndConnect(String deviceName,
                                    long time_out,
@@ -96,11 +99,10 @@ public class BleManager {
     /**
      * scan known names device, then connect
      *
-     * @param deviceNames known name
-     * @param time_out    timeout
+     * @param deviceNames
+     * @param time_out
      * @param autoConnect
      * @param callback
-     * @return
      */
     public void scanNamesAndConnect(String[] deviceNames,
                                     long time_out,
@@ -120,7 +122,6 @@ public class BleManager {
      * @param time_out
      * @param autoConnect
      * @param callback
-     * @return
      */
     public void scanfuzzyNameAndConnect(String fuzzyName,
                                         long time_out,
@@ -140,7 +141,6 @@ public class BleManager {
      * @param time_out
      * @param autoConnect
      * @param callback
-     * @return
      */
     public void scanfuzzyNamesAndConnect(String[] fuzzyNames,
                                          long time_out,
@@ -156,11 +156,10 @@ public class BleManager {
     /**
      * scan a known mca device, then connect
      *
-     * @param deviceMac   known mac
-     * @param time_out    timeout
+     * @param deviceMac
+     * @param time_out
      * @param autoConnect
      * @param callback
-     * @return
      */
     public void scanMacAndConnect(String deviceMac,
                                   long time_out,
@@ -281,6 +280,18 @@ public class BleManager {
     }
 
     /**
+     * read Rssi
+     *
+     * @param callback
+     * @return
+     */
+    public boolean readRssi(BleRssiCallback callback) {
+        return bleBluetooth.newBleConnector()
+                .readRemoteRssi(callback);
+    }
+
+
+    /**
      * refresh Device Cache
      */
     public void refreshDeviceCache() {
@@ -303,6 +314,8 @@ public class BleManager {
 
     /**
      * is support ble?
+     *
+     * @return
      */
     public boolean isSupportBle() {
         return mContext.getApplicationContext()

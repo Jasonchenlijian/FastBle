@@ -14,6 +14,7 @@ import android.os.Looper;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
+import com.clj.fastble.conn.BleRssiCallback;
 import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
@@ -622,28 +623,32 @@ public class BluetoothService extends Service {
         });
     }
 
-    public void read(String uuid_service, String uuid_read, BleCharacterCallback callback) {
-        bleManager.readDevice(uuid_service, uuid_read, callback);
+    public boolean read(String uuid_service, String uuid_read, BleCharacterCallback callback) {
+        return bleManager.readDevice(uuid_service, uuid_read, callback);
     }
 
-    public void write(String uuid_service, String uuid_write, String hex, BleCharacterCallback callback) {
-        bleManager.writeDevice(uuid_service, uuid_write, HexUtil.hexStringToBytes(hex), callback);
+    public boolean write(String uuid_service, String uuid_write, String hex, BleCharacterCallback callback) {
+        return bleManager.writeDevice(uuid_service, uuid_write, HexUtil.hexStringToBytes(hex), callback);
     }
 
-    public void notify(String uuid_service, String uuid_notify, BleCharacterCallback callback) {
-        bleManager.notify(uuid_service, uuid_notify, callback);
+    public boolean notify(String uuid_service, String uuid_notify, BleCharacterCallback callback) {
+        return bleManager.notify(uuid_service, uuid_notify, callback);
     }
 
-    public void indicate(String uuid_service, String uuid_indicate, BleCharacterCallback callback) {
-        bleManager.indicate(uuid_service, uuid_indicate, callback);
+    public boolean indicate(String uuid_service, String uuid_indicate, BleCharacterCallback callback) {
+        return bleManager.indicate(uuid_service, uuid_indicate, callback);
     }
 
-    public void stopNotify(String uuid_service, String uuid_notify) {
-        bleManager.stopNotify(uuid_service, uuid_notify);
+    public boolean stopNotify(String uuid_service, String uuid_notify) {
+        return bleManager.stopNotify(uuid_service, uuid_notify);
     }
 
-    public void stopIndicate(String uuid_service, String uuid_indicate) {
-        bleManager.stopIndicate(uuid_service, uuid_indicate);
+    public boolean stopIndicate(String uuid_service, String uuid_indicate) {
+        return bleManager.stopIndicate(uuid_service, uuid_indicate);
+    }
+
+    public boolean readRssi(BleRssiCallback callback) {
+        return bleManager.readRssi(callback);
     }
 
     public void closeConnect() {

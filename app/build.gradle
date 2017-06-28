@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        applicationId "com.bdk.blesample"
+        applicationId "com.clj.blesample"
         minSdkVersion 18
         targetSdkVersion 25
         versionCode 1

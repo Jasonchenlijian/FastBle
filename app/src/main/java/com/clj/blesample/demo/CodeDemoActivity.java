@@ -9,6 +9,7 @@ import com.clj.blesample.R;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
+import com.clj.fastble.conn.BleRssiCallback;
 import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.ListScanCallback;
@@ -467,6 +468,25 @@ public class CodeDemoActivity extends AppCompatActivity {
 
                     }
                 });
+    }
+
+    private boolean readRssi() {
+        return bleManager.readRssi(new BleRssiCallback() {
+            @Override
+            public void onSuccess(int rssi) {
+
+            }
+
+            @Override
+            public void onFailure(BleException exception) {
+
+            }
+
+            @Override
+            public void onInitiatedResult(boolean result) {
+
+            }
+        });
     }
 
 
