@@ -189,7 +189,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BleException exception) {
+            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -273,7 +273,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BleException exception) {
+            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -343,7 +343,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BleException exception) {
+            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -426,7 +426,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BleException exception) {
+            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -510,7 +510,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BleException exception) {
+            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -593,7 +593,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BleException exception) {
+            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {

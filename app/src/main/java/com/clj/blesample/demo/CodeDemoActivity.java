@@ -126,7 +126,7 @@ public class CodeDemoActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onDisConnected(BleException exception) {
+            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
 
             }
 
@@ -169,7 +169,7 @@ public class CodeDemoActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onDisConnected(BleException exception) {
+                    public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
 
                     }
 
@@ -212,8 +212,8 @@ public class CodeDemoActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onDisConnected(BleException exception) {
-
+                    public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
+                        gatt.connect();
                     }
 
                 });
@@ -255,7 +255,7 @@ public class CodeDemoActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onDisConnected(BleException exception) {
+                    public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
 
                     }
 
@@ -298,7 +298,7 @@ public class CodeDemoActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onDisConnected(BleException exception) {
+                    public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
 
                     }
 
@@ -341,7 +341,7 @@ public class CodeDemoActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onDisConnected(BleException exception) {
+                    public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
 
                     }
 

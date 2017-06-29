@@ -377,7 +377,7 @@ public class BleBluetooth {
         }
 
         @Override
-        public void onDisConnected(BleException exception) {
+        public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
             BleLog.i("BleGattCallback：onConnectFailure ");
 
             closeBluetoothGatt();
@@ -387,7 +387,7 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 Object call = entry.getValue();
                 if (call instanceof BleGattCallback) {
-                    ((BleGattCallback) call).onDisConnected(exception);
+                    ((BleGattCallback) call).onDisConnected(gatt, status, exception);
                 }
             }
         }
@@ -410,7 +410,7 @@ public class BleBluetooth {
 
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 connectionState = STATE_DISCONNECTED;
-                onDisConnected(new ConnectException(gatt, status));
+                onDisConnected(gatt, status, new ConnectException(gatt, status));
 
             } else if (newState == BluetoothGatt.STATE_CONNECTING) {
                 connectionState = STATE_CONNECTING;

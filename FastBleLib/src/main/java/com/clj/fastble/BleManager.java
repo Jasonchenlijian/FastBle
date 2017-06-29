@@ -14,10 +14,6 @@ import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
 import com.clj.fastble.scan.ListScanCallback;
 
-/**
- * Created by chenlijian on 2016/8/17.
- * BLE Manager
- */
 public class BleManager {
 
     private Context mContext;
