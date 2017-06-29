@@ -21,13 +21,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>1.2.0</version>
+       <version>1.2.1</version>
 	   <type>pom</type>
 	</dependency>
 
 or Gradle:
 
-	compile 'com.clj.fastble:FastBleLib:1.2.0'
+	compile 'com.clj.fastble:FastBleLib:1.2.1'
 
 FastBle requires at minimum Java 7 or Android 4.0.
 
@@ -40,7 +40,7 @@ If you are using ProGuard you might need to add the following options:
 
 
 # 测试工具
-   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBle.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBle.apk)
 
 ### [查看1.1.x旧版版本API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.1.x.md)
 
@@ -61,8 +61,8 @@ If you are using ProGuard you might need to add the following options:
 - 蓝牙连接之后，列出当前外设模块的所有service，每个service可能有一个或多个的characteristic，每一个characteristic有其对应的property（即可操作的属性类别）,假如一个characteristic的property对应的是write，那么对这个characteristic做notify处理显然是行不通的。
 - 两次操作之间最好间隔一小段时间，如100ms（具体时间可以根据自己实际蓝牙外设自行尝试延长或缩短）。举例，连接成功之后，延迟100ms进行notify，成功之后延迟100ms进行write，write成功之后，notify的数据回调接口将返回外设传输过来的数据。
 - FastBle中开放的蓝牙操作的相关方法均要求在主线程中执行。
-- 连接及连接后的过程中，时刻关注BleGattCallback，蓝牙的连接情况会实时反映在其各个回调方法中，尤其是onDisConnected方法。
-- 连接过程中，假如外设突然中断（或关闭）了蓝牙，Android设备维持的BLE连接并不会马上回调onDisConnected方法，而是会延迟一段时间才会通知连接断开，开发时需注意，假如对实时性要求较高的程序，可能需要借助其他辅助方法来判断设备是否中断，比如心跳包等。
+- 连接及连接后的过程中，时刻关注BleGattCallback，蓝牙的连接情况会实时反映在其各个回调方法中，尤其是`onDisConnected`方法。
+- 连接过程中，假如外设突然中断（或关闭）了蓝牙，Android设备维持的BLE连接并不会马上回调`onDisConnected`方法，而是会延迟一段时间才会通知连接断开，开发时需注意，假如对实时性要求较高的程序，可能需要借助其他辅助方法来判断设备是否中断，比如心跳包等。
 - 蓝牙应用开发中，存在两种角色，分别是central和peripheral ,中文就是中心和外设。比如手机去连接智能设备，那手机就是central，智能设备就是peripheral。
 - FastBle当前版本仅支持中心模式 （central model），即"以App作为中心，连接其他BLE外设"。把手机作为外设目前版本是行不通的。
 - 连接之后的操作有：write，read，notify，indicate，response or not等。indicate和notify的区别就在于，indicate是一定会收到数据，notify有可能会丢失数据（不会有central收到数据的回应），write也分为response和no response，如果是response，那么write成功回收到peripheral的确认消息，但是会降低写入的速率，换一个角度说就是 write no response写的速率更快。
@@ -530,6 +530,8 @@ If you are using ProGuard you might need to add the following options:
 
 
 ## 版本更新日志
+- v1.2.1（2017-06-29）
+    - 小幅优化：仅仅对onDisConnected()回调方法中增加gatt和status参数，便于进行重连操作。
 - v1.2.0（2017-06-28）
     - 对扫描及连接的回调处理的API做优化处理，对所有蓝牙操作的结果做明确的回调，完善文档说明。
 - v1.1.1（2017-05-04）
