@@ -40,7 +40,7 @@ If you are using ProGuard you might need to add the following options:
 
 
 # 测试工具
-   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBle.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBle.apk)
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
 
 ### [查看1.1.x旧版版本API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.1.x.md)
 
