@@ -61,6 +61,7 @@ If you are using ProGuard you might need to add the following options:
 - 蓝牙连接之后，列出当前外设模块的所有service，每个service可能有一个或多个的characteristic，每一个characteristic有其对应的property（即可操作的属性类别）,假如一个characteristic的property对应的是write，那么对这个characteristic做notify处理显然是行不通的。
 - 两次操作之间最好间隔一小段时间，如100ms（具体时间可以根据自己实际蓝牙外设自行尝试延长或缩短）。举例，连接成功之后，延迟100ms进行notify，成功之后延迟100ms进行write，write成功之后，notify的数据回调接口将返回外设传输过来的数据。
 - FastBle中开放的蓝牙操作的相关方法均要求在主线程中执行。
+- 一个简单的使用场景：打开蓝牙，在主线程扫描设备，连接，连接成功并发现服务之后，在`onServicesDiscovered`的异步回调方法中，延时100ms，再切换到主线程，再去调用notify、write等方法。这就是一个基本的操作。
 - 连接及连接后的过程中，时刻关注BleGattCallback，蓝牙的连接情况会实时反映在其各个回调方法中，尤其是`onDisConnected`方法。
 - 连接过程中，假如外设突然中断（或关闭）了蓝牙，Android设备维持的BLE连接并不会马上回调`onDisConnected`方法，而是会延迟一段时间才会通知连接断开，开发时需注意，假如对实时性要求较高的程序，可能需要借助其他辅助方法来判断设备是否中断，比如心跳包等。
 - 蓝牙应用开发中，存在两种角色，分别是central和peripheral ,中文就是中心和外设。比如手机去连接智能设备，那手机就是central，智能设备就是peripheral。
