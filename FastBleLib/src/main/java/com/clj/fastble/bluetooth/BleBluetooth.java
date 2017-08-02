@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -27,6 +28,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
 
 
 public class BleBluetooth {
@@ -139,7 +142,11 @@ public class BleBluetooth {
                 + "\nmac: " + scanResult.getDevice().getAddress()
                 + "\nautoConnect: " + autoConnect);
         addConnectGattCallback(callback);
-        return scanResult.getDevice().connectGatt(context, autoConnect, coreGattCallback);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return scanResult.getDevice().connectGatt(context, autoConnect, callback, TRANSPORT_LE);
+        } else {
+            return scanResult.getDevice().connectGatt(context, autoConnect, callback);
+        }
     }
 
     public void scanNameAndConnect(String name, long time_out, final boolean autoConnect, final BleGattCallback callback) {
