@@ -36,6 +36,12 @@ public abstract class NameScanCallback extends PeriodScanCallback {
     }
 
     @Override
+    public void notifyScanCancel() {
+        super.notifyScanCancel();
+        hasFound.set(false);
+    }
+
+    @Override
     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
         if (device == null)
             return;

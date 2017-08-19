@@ -21,6 +21,12 @@ public abstract class ListScanCallback extends PeriodScanCallback {
     }
 
     @Override
+    public void notifyScanCancel() {
+        super.notifyScanCancel();
+        resultList.clear();
+    }
+
+    @Override
     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
         if (device == null)
             return;
