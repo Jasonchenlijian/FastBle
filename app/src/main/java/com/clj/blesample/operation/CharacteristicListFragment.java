@@ -1,4 +1,4 @@
-package com.clj.blesample.tool.operation;
+package com.clj.blesample.operation;
 
 
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -18,7 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.clj.blesample.R;
-import com.clj.blesample.tool.BluetoothService;
+import com.clj.blesample.BluetoothService;
 
 import java.util.ArrayList;
 import java.util.List;

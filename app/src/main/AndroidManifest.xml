@@ -17,7 +17,7 @@
 
         <activity android:name=".demo.CodeDemoActivity" />
 
-        <activity android:name=".tool.MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,16 +25,16 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".tool.other.UserActivity"/>
-        <activity android:name=".tool.scan.AnyScanActivity" />
-        <activity android:name=".tool.scan.NameScanActivity" />
-        <activity android:name=".tool.scan.NameFuzzyScanActivity" />
-        <activity android:name=".tool.scan.NamesScanActivity" />
-        <activity android:name=".tool.scan.NamesFuzzyScanActivity" />
-        <activity android:name=".tool.scan.MacScanActivity" />
-        <activity android:name=".tool.operation.OperationActivity" />
+        <activity android:name=".other.UserActivity"/>
+        <activity android:name=".scan.AnyScanActivity" />
+        <activity android:name=".scan.NameScanActivity" />
+        <activity android:name=".scan.NameFuzzyScanActivity" />
+        <activity android:name=".scan.NamesScanActivity" />
+        <activity android:name=".scan.NamesFuzzyScanActivity" />
+        <activity android:name=".scan.MacScanActivity" />
+        <activity android:name=".operation.OperationActivity" />
 
-        <service android:name=".tool.BluetoothService" />
+        <service android:name=".BluetoothService" />
 
     </application>
 

@@ -1,4 +1,4 @@
-package com.clj.blesample.tool;
+package com.clj.blesample;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,14 +12,13 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.clj.blesample.R;
-import com.clj.blesample.tool.other.UserActivity;
-import com.clj.blesample.tool.scan.AnyScanActivity;
-import com.clj.blesample.tool.scan.MacScanActivity;
-import com.clj.blesample.tool.scan.NameFuzzyScanActivity;
-import com.clj.blesample.tool.scan.NameScanActivity;
-import com.clj.blesample.tool.scan.NamesFuzzyScanActivity;
-import com.clj.blesample.tool.scan.NamesScanActivity;
+import com.clj.blesample.other.UserActivity;
+import com.clj.blesample.scan.AnyScanActivity;
+import com.clj.blesample.scan.MacScanActivity;
+import com.clj.blesample.scan.NameFuzzyScanActivity;
+import com.clj.blesample.scan.NameScanActivity;
+import com.clj.blesample.scan.NamesFuzzyScanActivity;
+import com.clj.blesample.scan.NamesScanActivity;
 
 
 /**

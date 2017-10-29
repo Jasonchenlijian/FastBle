@@ -1,4 +1,4 @@
-package com.clj.blesample.tool.operation;
+package com.clj.blesample.operation;
 
 
 import android.content.ComponentName;
@@ -15,7 +15,7 @@ import android.view.KeyEvent;
 import android.view.View;
 
 import com.clj.blesample.R;
-import com.clj.blesample.tool.BluetoothService;
+import com.clj.blesample.BluetoothService;
 
 import java.util.ArrayList;
 import java.util.List;

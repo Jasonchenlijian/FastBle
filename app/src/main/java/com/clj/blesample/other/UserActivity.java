@@ -1,4 +1,4 @@
-package com.clj.blesample.tool.other;
+package com.clj.blesample.other;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

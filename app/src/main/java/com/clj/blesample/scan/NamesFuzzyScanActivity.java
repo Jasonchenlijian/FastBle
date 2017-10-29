@@ -1,14 +1,19 @@
-package com.clj.blesample.tool.scan;
+package com.clj.blesample.scan;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -25,8 +30,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.clj.blesample.R;
-import com.clj.blesample.tool.BluetoothService;
-import com.clj.blesample.tool.operation.OperationActivity;
+import com.clj.blesample.BluetoothService;
+import com.clj.blesample.operation.OperationActivity;
 import com.clj.fastble.data.ScanResult;
 
 import java.util.ArrayList;
@@ -58,6 +63,27 @@ public class NamesFuzzyScanActivity extends AppCompatActivity implements View.On
             unbindService();
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_start:
+                String str = et.getText().toString();
+                if (TextUtils.isEmpty(str)) {
+                    Toast.makeText(this, "请先输入蓝牙广播名", Toast.LENGTH_LONG).show();
+                } else {
+                    names = str.split(",");
+                    checkPermissions();
+                }
+                break;
+
+            case R.id.btn_stop:
+                if (mBluetoothService != null) {
+                    mBluetoothService.cancelScan();
+                }
+                break;
+        }
+    }
+
     private void initView() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("搜索设备");
@@ -79,27 +105,6 @@ public class NamesFuzzyScanActivity extends AppCompatActivity implements View.On
         operatingAnim = AnimationUtils.loadAnimation(this, R.anim.rotate);
         operatingAnim.setInterpolator(new LinearInterpolator());
         progressDialog = new ProgressDialog(this);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_start:
-                String str = et.getText().toString();
-                if (TextUtils.isEmpty(str)) {
-                    Toast.makeText(this, "请先输入蓝牙广播名", Toast.LENGTH_LONG).show();
-                } else {
-                    names = str.split(",");
-                    checkPermissions();
-                }
-                break;
-
-            case R.id.btn_stop:
-                if (mBluetoothService != null) {
-                    mBluetoothService.cancelScan();
-                }
-                break;
-        }
     }
 
     private void bindService() {
@@ -179,6 +184,14 @@ public class NamesFuzzyScanActivity extends AppCompatActivity implements View.On
         }
     };
 
+    private void startScan() {
+        if (mBluetoothService == null) {
+            bindService();
+        } else {
+            mBluetoothService.scanAndConnect4(names);
+        }
+    }
+
     @Override
     public final void onRequestPermissionsResult(int requestCode,
                                                  @NonNull String[] permissions,
@@ -217,12 +230,49 @@ public class NamesFuzzyScanActivity extends AppCompatActivity implements View.On
     private void onPermissionGranted(String permission) {
         switch (permission) {
             case Manifest.permission.ACCESS_FINE_LOCATION:
-                if (mBluetoothService == null) {
-                    bindService();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !checkGPSIsOpen()) {
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.notifyTitle)
+                            .setMessage(R.string.gpsNotifyMsg)
+                            .setNegativeButton(R.string.cancel,
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            finish();
+                                        }
+                                    })
+                            .setPositiveButton(R.string.setting,
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                            startActivityForResult(intent, 1);
+                                        }
+                                    })
+
+                            .setCancelable(false)
+                            .show();
                 } else {
-                    mBluetoothService.scanAndConnect4(names);
+                    startScan();
                 }
                 break;
+        }
+    }
+
+    private boolean checkGPSIsOpen() {
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null)
+            return false;
+        return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if (checkGPSIsOpen()) {
+                startScan();
+            }
         }
     }
 

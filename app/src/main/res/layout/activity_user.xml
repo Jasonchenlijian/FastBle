@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="25dp"
         android:paddingTop="10dp"
-        android:text="作者QQ： 1033526540"
+        android:text="作者邮箱： 1033526540@qq.com"
         android:textSize="15sp" />
 
     <TextView

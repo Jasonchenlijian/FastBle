@@ -1,4 +1,4 @@
-package com.clj.blesample.tool;
+package com.clj.blesample;
 
 
 import android.app.Service;
