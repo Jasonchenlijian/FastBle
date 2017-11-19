@@ -1,11 +1,13 @@
 
 package com.clj.fastble.conn;
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -25,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Ble Device Connector.
  * be sure main thread
  */
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleConnector {
 
     private static final String TAG = BleConnector.class.getSimpleName();

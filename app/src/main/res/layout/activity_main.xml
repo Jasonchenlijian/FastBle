@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:animateLayoutChanges="true"
     android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
@@ -13,42 +14,117 @@
         android:title="@string/app_name"
         app:titleTextColor="@android:color/white" />
 
+    <LinearLayout
+        android:id="@+id/layout_setting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#eeeeee"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="10dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:text="在下面你可以配置需要扫描的设备的条件，可以为空"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入蓝牙设备广播名，多个之间以英文逗号隔开"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/et_mac"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入蓝牙设备mac地址"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/et_uuid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入蓝牙设备UUID，多个之间以英文逗号隔开"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:textSize="13sp" />
+
+        <Switch
+            android:id="@+id/sw_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="扫描完成后直接连接？"
+            android:textSize="13sp" />
+
+        <Switch
+            android:id="@+id/sw_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="连接设置：AutoConnect ?"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
     <TextView
+        android:id="@+id/txt_setting"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:padding="15dp"
-        android:text="选择一种扫描方式"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:background="#eeeeee"
+        android:padding="10dp"
+        android:text="展开搜索设置" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
-        <ListView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="@android:color/darker_gray"
-            android:dividerHeight="0.5dp"
-            android:footerDividersEnabled="true"
-            android:paddingEnd="10dp"
-            android:paddingStart="10dp"
-            android:scrollbars="none" />
-
-        <TextView
-            android:id="@+id/txt_user"
+        <Button
+            android:id="@+id/btn_scan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:padding="20dp"
-            android:text="联系作者"
-            android:textColor="@color/colorPrimary"
-            android:textSize="14sp" />
+            android:layout_centerInParent="true"
+            android:text="开始扫描" />
+
+        <ImageView
+            android:id="@+id/img_loading"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:src="@mipmap/ic_loading" />
 
     </RelativeLayout>
+
+    <ListView
+        android:id="@+id/list_device"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="0.5dp"
+        android:paddingEnd="10dp"
+        android:paddingStart="10dp"
+        android:scrollbars="none" />
 
 
 </LinearLayout>

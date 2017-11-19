@@ -15,8 +15,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".demo.CodeDemoActivity" />
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,16 +23,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".other.UserActivity"/>
-        <activity android:name=".scan.AnyScanActivity" />
-        <activity android:name=".scan.NameScanActivity" />
-        <activity android:name=".scan.NameFuzzyScanActivity" />
-        <activity android:name=".scan.NamesScanActivity" />
-        <activity android:name=".scan.NamesFuzzyScanActivity" />
-        <activity android:name=".scan.MacScanActivity" />
-        <activity android:name=".operation.OperationActivity" />
-
         <service android:name=".BluetoothService" />
+
+        <activity android:name=".operation.OperationActivity" />
 
     </application>
 

@@ -15,10 +15,14 @@ import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.conn.BleRssiCallback;
+import com.clj.fastble.conn.BleScanCallback;
 import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
-import com.clj.fastble.scan.ListScanCallback;
+import com.clj.fastble.scan.BleScanRuleConfig;
 import com.clj.fastble.utils.HexUtil;
+
+import java.util.List;
+import java.util.UUID;
 
 public class BluetoothService extends Service {
 
@@ -96,14 +100,47 @@ public class BluetoothService extends Service {
         void onDisConnected();
     }
 
-    public void scanDevice() {
-        resetInfo();
-
-        if (mCallback != null) {
-            mCallback.onStartScan();
+    public void setting(String[] names, String mac, String[] uuids, boolean isAuto) {
+        UUID[] serviceUuids = null;
+        if (uuids != null && uuids.length > 0) {
+            serviceUuids = new UUID[uuids.length];
+            for (int i = 0; i < uuids.length; i++) {
+                serviceUuids[i] = UUID.fromString(uuids[i]);
+            }
         }
 
-        boolean b = bleManager.scanDevice(new ListScanCallback(5000) {
+        BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
+                .setServiceUuids(serviceUuids)
+                .setDeviceName(true, names)
+                .setDeviceMac(mac)
+                .setAutoConnect(isAuto)
+                .setTimeOut(8000)
+                .build();
+        bleManager.initScanRule(scanRuleConfig);
+    }
+
+    public void scanDevice(boolean isConnect) {
+        if (isConnect) {
+            scanAndConnect();
+        } else {
+            scan();
+        }
+    }
+
+    public void cancelScan() {
+        bleManager.cancelScan();
+    }
+
+    public void scan() {
+        resetInfo();
+
+        boolean b = bleManager.scan(new BleScanCallback() {
+            @Override
+            public void onScanStarted() {
+                if (mCallback != null) {
+                    mCallback.onStartScan();
+                }
+            }
 
             @Override
             public void onScanning(final ScanResult result) {
@@ -118,7 +155,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onScanComplete(final ScanResult[] results) {
+            public void onScanFinished(List<ScanResult> scanResultList) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -136,19 +173,19 @@ public class BluetoothService extends Service {
         }
     }
 
-    public void cancelScan() {
-        bleManager.cancelScan();
-    }
+    public void connect(final ScanResult scanResult) {
+        bleManager.connect(scanResult, new BleGattCallback() {
 
-    public void connectDevice(final ScanResult scanResult) {
-        if (mCallback != null) {
-            mCallback.onConnecting();
-        }
+            @Override
+            public void onScanStarted() {
 
-        bleManager.connectDevice(scanResult, true, new BleGattCallback() {
+            }
 
             @Override
             public void onFoundDevice(ScanResult scanResult) {
+                if (mCallback != null) {
+                    mCallback.onConnecting();
+                }
                 BluetoothService.this.name = scanResult.getDevice().getName();
                 BluetoothService.this.mac = scanResult.getDevice().getAddress();
             }
@@ -202,18 +239,20 @@ public class BluetoothService extends Service {
                     }
                 });
             }
-
         });
     }
 
-    public void scanAndConnect1(String name) {
+    public void scanAndConnect() {
         resetInfo();
 
-        if (mCallback != null) {
-            mCallback.onStartScan();
-        }
+        bleManager.scanAndConnect(new BleGattCallback() {
 
-        bleManager.scanNameAndConnect(name, 5000, false, new BleGattCallback() {
+            @Override
+            public void onScanStarted() {
+                if (mCallback != null) {
+                    mCallback.onStartScan();
+                }
+            }
 
             @Override
             public void onFoundDevice(ScanResult scanResult) {
@@ -286,349 +325,15 @@ public class BluetoothService extends Service {
                     }
                 });
             }
-        });
-    }
-
-    public void scanAndConnect2(String name) {
-        resetInfo();
-
-        if (mCallback != null) {
-            mCallback.onStartScan();
-        }
-
-        bleManager.scanfuzzyNameAndConnect(name, 5000, false, new BleGattCallback() {
-
-            @Override
-            public void onFoundDevice(ScanResult scanResult) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onScanComplete();
-                        }
-                    }
-                });
-                BluetoothService.this.name = scanResult.getDevice().getName();
-                BluetoothService.this.mac = scanResult.getDevice().getAddress();
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnecting();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnecting(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onConnectError(BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnectFail();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onDisConnected();
-                        }
-                        if (mCallback2 != null) {
-                            mCallback2.onDisConnected();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                BluetoothService.this.gatt = gatt;
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onServicesDiscovered();
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    public void scanAndConnect3(String[] names) {
-        resetInfo();
-
-        if (mCallback != null) {
-            mCallback.onStartScan();
-        }
-
-        bleManager.scanNamesAndConnect(names, 5000, false, new BleGattCallback() {
-
-            @Override
-            public void onFoundDevice(ScanResult scanResult) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onScanComplete();
-                        }
-                    }
-                });
-                BluetoothService.this.name = scanResult.getDevice().getName();
-                BluetoothService.this.mac = scanResult.getDevice().getAddress();
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnecting();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnecting(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onConnectError(BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnectFail();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onDisConnected();
-                        }
-                        if (mCallback2 != null) {
-                            mCallback2.onDisConnected();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                BluetoothService.this.gatt = gatt;
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onServicesDiscovered();
-                        }
-                    }
-                });
-            }
-        });
-
-    }
-
-    public void scanAndConnect4(String[] names) {
-        resetInfo();
-
-        if (mCallback != null) {
-            mCallback.onStartScan();
-        }
-
-        bleManager.scanfuzzyNamesAndConnect(names, 5000, false, new BleGattCallback() {
-
-            @Override
-            public void onFoundDevice(ScanResult scanResult) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onScanComplete();
-                        }
-                    }
-                });
-                BluetoothService.this.name = scanResult.getDevice().getName();
-                BluetoothService.this.mac = scanResult.getDevice().getAddress();
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnecting();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnecting(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onConnectError(BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnectFail();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onDisConnected();
-                        }
-                        if (mCallback2 != null) {
-                            mCallback2.onDisConnected();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                BluetoothService.this.gatt = gatt;
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onServicesDiscovered();
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    public void scanAndConnect5(String mac) {
-        resetInfo();
-
-        if (mCallback != null) {
-            mCallback.onStartScan();
-        }
-
-        bleManager.scanMacAndConnect(mac, 5000, false, new BleGattCallback() {
-
-            @Override
-            public void onFoundDevice(ScanResult scanResult) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onScanComplete();
-                        }
-                    }
-                });
-                BluetoothService.this.name = scanResult.getDevice().getName();
-                BluetoothService.this.mac = scanResult.getDevice().getAddress();
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnecting();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnecting(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onConnectError(BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onConnectFail();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onDisConnected();
-                        }
-                        if (mCallback2 != null) {
-                            mCallback2.onDisConnected();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                BluetoothService.this.gatt = gatt;
-                runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mCallback != null) {
-                            mCallback.onServicesDiscovered();
-                        }
-                    }
-                });
-            }
-
         });
     }
 
     public boolean read(String uuid_service, String uuid_read, BleCharacterCallback callback) {
-        return bleManager.readDevice(uuid_service, uuid_read, callback);
+        return bleManager.read(uuid_service, uuid_read, callback);
     }
 
     public boolean write(String uuid_service, String uuid_write, String hex, BleCharacterCallback callback) {
-        return bleManager.writeDevice(uuid_service, uuid_write, HexUtil.hexStringToBytes(hex), callback);
+        return bleManager.write(uuid_service, uuid_write, HexUtil.hexStringToBytes(hex), callback);
     }
 
     public boolean notify(String uuid_service, String uuid_notify, BleCharacterCallback callback) {

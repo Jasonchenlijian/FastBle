@@ -1,46 +1,50 @@
 package com.clj.fastble.scan;
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallback {
 
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private Handler mHandler = new Handler(Looper.getMainLooper());
+    protected BleBluetooth bleBluetooth;
     private long timeoutMillis = 10000;
-    BleBluetooth bleBluetooth;
 
     PeriodScanCallback(long timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
     }
 
-    public abstract void onScanTimeout();
+    public abstract void onStarted();
 
-    public abstract void onScanCancel();
+    public abstract void onFinished();
 
     public void notifyScanStarted() {
+        onStarted();
         if (timeoutMillis > 0) {
             removeHandlerMsg();
-            handler.postDelayed(new Runnable() {
+            mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    bleBluetooth.stopScan(PeriodScanCallback.this);
-                    onScanTimeout();
+                    bleBluetooth.stopLeScan();
                 }
             }, timeoutMillis);
         }
     }
 
-    public void notifyScanCancel() {
-        bleBluetooth.stopScan(PeriodScanCallback.this);
-        onScanCancel();
+    public void notifyScanStopped() {
+        removeHandlerMsg();
+        onFinished();
     }
 
     public void removeHandlerMsg() {
-        handler.removeCallbacksAndMessages(null);
+        mHandler.removeCallbacksAndMessages(null);
     }
+
 
     public long getTimeoutMillis() {
         return timeoutMillis;
