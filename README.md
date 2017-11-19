@@ -37,7 +37,7 @@ FastBle 所有代码均可以加入混淆。
 
 
 # 文档及工具
-   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE_2.0.0.apk)
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE_2.0.0.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE_2.0.0.apk)
 
 ### [查看1.1.x旧版版本API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.1.x.md)
 ### [查看1.2.x旧版版本API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.2.x.md)
@@ -85,6 +85,7 @@ FastBle 所有代码均可以加入混淆。
 - 连接断开之后可以根据实际情况进行重连，但如果是连接失败的情况，建议不要立即重连，而是调用`void closeBluetoothGatt()`清空一下状态，并延迟一段时间等待复位，否则会把gatt阻塞，导致手机不重启蓝牙就再也无法连接任何设备的严重情况。
 
 - 调用`bleManager.closeBluetoothGatt()`之后，最好不要紧接着调用`bleManager = null`，因为Android原生蓝牙API中的`gatt.close()`方法需要一段时间保证完成，我们建议延迟一段时间。延时操作在Android蓝牙开发中是一个重要的技巧。
+
 - 很多Android设备是可以强制打开用户手机蓝牙的，打开蓝牙需要一段时间（部分手机上需要向用户请求）。虽然时间比较短，但也不能调用完打开蓝牙方法后直接去调用扫描方法，此时蓝牙多半是还未开启完毕状态。建议的做法是维持一个蓝牙状态的广播，调用打开蓝牙方法后，在一段时间内阻塞线程，如果在这段时间内收到蓝牙打开广播后，再进行后续操作。而后续操作过程中，如果收到蓝牙正在关闭或关闭的广播，也可以及时对当前的情况做一个妥善处理。
 
 
@@ -119,7 +120,7 @@ FastBle 所有代码均可以加入混淆。
 
 - #### ScanResult
 
-      扫描到的结果对象
+    扫描到的结果对象
 
         BluetoothDevice getDevice(): 蓝牙设备对象
         byte[] getScanRecord(): 广播数据;
@@ -149,17 +150,17 @@ FastBle 所有代码均可以加入混淆。
 
     Characteristic操作的Callback
 
-		void onSuccess(BluetoothGattCharacteristic characteristic): 数据传输回调；
-		void onFailure(BleException exception)： 操作或数据传输过程中出错；
-		void onInitiatedResult(boolean result): 操作成功与否的回调；
+		void onSuccess(BluetoothGattCharacteristic characteristic); 数据传输回调；
+		void onFailure(BleException exception); 操作或数据传输过程中出错；
+		void onInitiatedResult(boolean result); 操作成功与否的回调；
 		
 - #### BleRssiCallback
 
     读Rssi操作的Callback
 
 		void onSuccess(int rssi): 得到rssi数据的回调；
-		void onFailure(BleException exception)： 操作或数据传输过程中出错；
-		void onInitiatedResult(boolean result): 操作成功与否的回调；
+		void onFailure(BleException exception); 操作或数据传输过程中出错；
+		void onInitiatedResult(boolean result); 操作成功与否的回调；
 
 - #### BleException
 
@@ -253,6 +254,7 @@ FastBle 所有代码均可以加入混淆。
         });
 
 - #### 扫描并连接
+
 	扫描到首个符合扫描规则的设备后，便停止扫描，然后连接该设备。
 
 	`void scanAndConnect(BleGattCallback callback)`
@@ -439,11 +441,13 @@ FastBle 所有代码均可以加入混淆。
             }
         });
 
-- #### manual remove callback 
+- #### 手动移除回调
+
+	不再监听这个特征的数据变化，适用于移除notify、indicate、write、read对应的callback。
+	该方法不常用，且不建议使用；比如stopNotify操作本身就会移除该特征值的通知回调，而write和read操作正常情况下没有主动移除的必要。
 
 	`void stopListenCharacterCallback(String uuid)`
 
-    不再监听这个特征的数据变化，适用于移除notify、indicate、write、read对应的callback。
 
         bleManager.stopListenCharacterCallback(uuid_sample);
 
