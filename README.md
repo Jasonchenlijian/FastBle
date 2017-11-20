@@ -12,7 +12,6 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_2.png) 
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_3.png)
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_4.png)
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_5.png)
 
 	
 
@@ -105,7 +104,7 @@ FastBle 所有代码均可以加入混淆。
 		void enableBluetooth()
 		void disableBluetooth()
 		
-- #### 查看当前蓝牙状态或连接状态
+- #### （方法说明）查看当前蓝牙状态或连接状态
 		
 		boolean isBlueEnable()
 		boolean isInScanning()
