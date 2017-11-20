@@ -19,13 +19,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.0.0</version>
+       <version>2.0.1</version>
 	   <type>pom</type>
 	</dependency>
 
 or Gradle:
 
-	compile 'com.clj.fastble:FastBleLib:2.0.0'
+	compile 'com.clj.fastble:FastBleLib:2.0.1'
 
 FastBle requires at minimum Java 7 or Android 4.0.
 
@@ -35,7 +35,7 @@ FastBle 所有代码均可以加入混淆。
 
 
 # 文档及工具
-   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE_2.0.0.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE_2.0.0.apk)
+   如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk)
 
 ### [查看1.1.x旧版API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.1.x.md)
 ### [查看1.2.x旧版API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.2.x.md)
@@ -391,7 +391,6 @@ FastBle 所有代码均可以加入混淆。
 
 	`void stopListenCharacterCallback(String uuid)`
 
-
         bleManager.stopListenCharacterCallback(uuid_sample);
 
 
@@ -402,6 +401,20 @@ FastBle 所有代码均可以加入混淆。
 	`void closeBluetoothGatt()`
 
         bleManager.closeBluetoothGatt();
+
+- #### （类说明）HexUtil
+
+    数据操作工具类
+
+		// byte[]转String，参数addSpace表示每一位之间是否增加空格，常用于打印日志。
+        String formatHexString(byte[] data, boolean addSpace)； 
+
+		// String转byte[]
+        byte[] hexStringToBytes(String hexString)
+
+		// byte[]转char[]，参数toLowerCase表示大小写
+		char[] encodeHex(byte[] data, boolean toLowerCase)
+
 
 - #### （类说明）ScanResult
 
@@ -463,7 +476,7 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
-- v2.0.0（2017-11-19）
+- v2.0.1（2017-11-20）
     - 新的扫描策略。
 - v1.2.1（2017-06-29）
     - 小幅优化：仅仅对onDisConnected()回调方法中增加gatt和status参数，便于进行重连操作。
