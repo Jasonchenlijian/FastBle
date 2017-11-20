@@ -1,10 +1,12 @@
 package com.clj.blesample.operation;
 
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -23,6 +25,7 @@ import com.clj.blesample.BluetoothService;
 import java.util.ArrayList;
 import java.util.List;
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class CharacteristicListFragment extends Fragment {
 
     private ResultAdapter mResultAdapter;

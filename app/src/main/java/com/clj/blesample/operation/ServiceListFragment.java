@@ -1,8 +1,10 @@
 package com.clj.blesample.operation;
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,13 +15,13 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.clj.blesample.R;
 import com.clj.blesample.BluetoothService;
+import com.clj.blesample.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class ServiceListFragment extends Fragment {
 
     private TextView txt_name, txt_mac;

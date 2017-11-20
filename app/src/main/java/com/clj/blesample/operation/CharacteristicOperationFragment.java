@@ -1,6 +1,8 @@
 package com.clj.blesample.operation;
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -13,8 +15,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.clj.blesample.R;
 import com.clj.blesample.BluetoothService;
+import com.clj.blesample.R;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.utils.HexUtil;
@@ -22,7 +24,7 @@ import com.clj.fastble.utils.HexUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class CharacteristicOperationFragment extends Fragment {
 
     public static final int PROPERTY_READ = 1;
@@ -94,7 +96,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             getActivity().runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                    txt.append(HexUtil.formatHexString(characteristic.getValue(), true));
                                                     txt.append("\n");
                                                     int offset = txt.getLineCount() * txt.getLineHeight();
                                                     if (offset > txt.getHeight()) {
@@ -153,7 +155,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             getActivity().runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                    txt.append(HexUtil.formatHexString(characteristic.getValue(), true));
                                                     txt.append("\n");
                                                     int offset = txt.getLineCount() * txt.getLineHeight();
                                                     if (offset > txt.getHeight()) {
@@ -213,7 +215,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             getActivity().runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                    txt.append(HexUtil.formatHexString(characteristic.getValue(), true));
                                                     txt.append("\n");
                                                     int offset = txt.getLineCount() * txt.getLineHeight();
                                                     if (offset > txt.getHeight()) {
@@ -269,7 +271,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 getActivity().runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                        txt.append(HexUtil.formatHexString(characteristic.getValue(), true));
                                                         txt.append("\n");
                                                         int offset = txt.getLineCount() * txt.getLineHeight();
                                                         if (offset > txt.getHeight()) {
@@ -331,7 +333,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 getActivity().runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append(String.valueOf(HexUtil.encodeHex(characteristic.getValue())));
+                                                        txt.append(HexUtil.formatHexString(characteristic.getValue(), true));
                                                         txt.append("\n");
                                                         int offset = txt.getLineCount() * txt.getLineHeight();
                                                         if (offset > txt.getHeight()) {

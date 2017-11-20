@@ -178,7 +178,7 @@ public class BleBluetooth {
     public void scanAndConnect(UUID[] serviceUuids, String[] names, final String mac, boolean fuzzy,
                                final boolean autoConnect, long timeOut, final BleGattCallback callback) {
 
-        boolean success = startLeScan(serviceUuids, new ScanCallback(names, mac, fuzzy, autoConnect, timeOut) {
+        boolean success = startLeScan(serviceUuids, new ScanCallback(names, mac, fuzzy, true, timeOut) {
 
             @Override
             public void onScanStarted() {

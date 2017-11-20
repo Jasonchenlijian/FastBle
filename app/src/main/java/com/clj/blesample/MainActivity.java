@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView txt_setting;
     private Button btn_scan;
     private EditText et_name, et_mac, et_uuid;
-    private Switch sw_1, sw_2;
+    private Switch sw_auto, sw_connect;
     private ImageView img_loading;
 
     private Animation operatingAnim;
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String[] names;
     private String mac;
     private String[] uuids;
-    private boolean isConnect, isAuto;
+    private boolean isAutoConnect, isNeedConnect;
     private BluetoothService mBluetoothService;
 
     @Override
@@ -116,8 +116,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_name = (EditText) findViewById(R.id.et_name);
         et_mac = (EditText) findViewById(R.id.et_mac);
         et_uuid = (EditText) findViewById(R.id.et_uuid);
-        sw_1 = (Switch) findViewById(R.id.sw_1);
-        sw_2 = (Switch) findViewById(R.id.sw_2);
+        sw_auto = (Switch) findViewById(R.id.sw_auto);
+        sw_connect = (Switch) findViewById(R.id.sw_connect);
 
         layout_setting = (LinearLayout) findViewById(R.id.layout_setting);
         txt_setting = (TextView) findViewById(R.id.txt_setting);
@@ -164,8 +164,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             uuids = str_uuid.split(",");
         }
 
-        isConnect = sw_1.isSelected();
-        isAuto = sw_2.isSelected();
+        isAutoConnect = sw_auto.isChecked();
+        isNeedConnect = sw_connect.isChecked();
     }
 
     private class ResultAdapter extends BaseAdapter {
@@ -249,8 +249,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
             mBluetoothService.setScanCallback(callback);
-            mBluetoothService.setting(names, mac, uuids, isAuto);
-            mBluetoothService.scanDevice(isConnect);
+            mBluetoothService.setting(names, mac, uuids, isAutoConnect);
+            mBluetoothService.scanDevice(isNeedConnect);
         }
 
         @Override
@@ -318,8 +318,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mBluetoothService == null) {
             bindService();
         } else {
-            mBluetoothService.setting(names, mac, uuids, isAuto);
-            mBluetoothService.scanDevice(isConnect);
+            mBluetoothService.setting(names, mac, uuids, isAutoConnect);
+            mBluetoothService.scanDevice(isNeedConnect);
         }
     }
 

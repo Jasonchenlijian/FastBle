@@ -8,12 +8,11 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 
 # Preview
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble0.gif) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_1.jpg) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble2.png) 
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble3.png)
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble4.png)
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble5.png)
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_1.png) 
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_2.png) 
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_3.png)
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_4.png)
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/FastBLE_2.0.0_5.png)
 
 	
 
@@ -39,8 +38,8 @@ FastBle 所有代码均可以加入混淆。
 # 文档及工具
    如果想快速预览所有功能，可以直接下载apk作为测试工具使用：[FastBLE_2.0.0.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE_2.0.0.apk)
 
-### [查看1.1.x旧版版本API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.1.x.md)
-### [查看1.2.x旧版版本API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.2.x.md)
+### [查看1.1.x旧版API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.1.x.md)
+### [查看1.2.x旧版API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.2.x.md)
 
 
 
@@ -97,11 +96,11 @@ FastBle 所有代码均可以加入混淆。
     
         public BleManager(Context context)
 
-- #### 判断当前手机是否支持BLE
+- #### （方法说明）判断当前手机是否支持BLE
 
         boolean isSupportBle()
 
-- #### 开启或关闭蓝牙
+- #### （方法说明）开启或关闭蓝牙
 
 		void enableBluetooth()
 		void disableBluetooth()
@@ -114,83 +113,27 @@ FastBle 所有代码均可以加入混淆。
 		boolean isConnected()
 		boolean isServiceDiscovered()
 
-- #### 打印异常信息
+- #### （方法说明）打印异常信息
 	
 		void handleException(BleException exception);
 
-- #### ScanResult
-
-    扫描到的结果对象
-
-        BluetoothDevice getDevice(): 蓝牙设备对象
-        byte[] getScanRecord(): 广播数据;
-        int getRssi(): 信号强度
-		
-- #### BleScanCallback
-
-    扫描的Callback
-
-		void onScanStarted(); 开始扫描的回调
-		void onScanning(ScanResult result); 当前正在扫描状态，且搜索到一个外围设备的回调
-        void onScanFinished(List<ScanResult> scanResultList); 扫描时间到或手动取消扫描后的回调
-
-- #### BleGattCallback
-
-    连接的Callback
-
-		void onScanStarted(); 开始扫描的回调
-		void onFoundDevice(ScanResult scanResult); 找到设备的回调；
-		void onConnecting(BluetoothGatt gatt, int status); 正在连接的回调；
-		void onConnectError(BleException exception); 连接未成功的回调，通过解析BleException来判断具体未成功的原因；
-		void onConnectSuccess(BluetoothGatt gatt, int status); 连接成功的回调；
-		void onServicesDiscovered(BluetoothGatt gatt, int status); 发现服务的回调；
-		void onDisConnected(BluetoothGatt gatt, int status, BleException exception); 通信过程中的断开的回调。
-
-- #### BleCharacterCallback
-
-    Characteristic操作的Callback
-
-		void onSuccess(BluetoothGattCharacteristic characteristic); 数据传输回调；
-		void onFailure(BleException exception); 操作或数据传输过程中出错；
-		void onInitiatedResult(boolean result); 操作成功与否的回调；
-		
-- #### BleRssiCallback
-
-    读Rssi操作的Callback
-
-		void onSuccess(int rssi): 得到rssi数据的回调；
-		void onFailure(BleException exception); 操作或数据传输过程中出错；
-		void onInitiatedResult(boolean result); 操作成功与否的回调；
-
-- #### BleException
-
-		int getCode(): 获取异常码；
-		String getDescription()： 获取异常描述；
-		
-	异常码：
-
-		100： 超时
-		101： 连接异常
-		102： 其他（异常信息可以通过异常描述获取，一般是开发过程中的操作中间步骤的异常）
-		103： 设备未找到
-		104： 蓝牙未启用
-		105： 开启扫描过程失败
-
-- #### 配置扫描规则
+- #### （方法说明）配置扫描规则
 
 	`void initScanRule(BleScanRuleConfig scanRuleConfig)`
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                .setServiceUuids(serviceUuids)		// 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)			// 只扫描指定广播名的设备，可选
-                .setDeviceMac(mac)					// 只扫描指定mac的设备，可选
-                .setAutoConnect(isAuto)				// 指定是否在设备可连接的时候通知连接，可选，默认false
-                .setTimeOut(8000)					// 扫描超时时间，可选，默认5秒
+                .setServiceUuids(serviceUuids)	// 只扫描指定的服务的设备，可选
+                .setDeviceName(true, names)		// 只扫描指定广播名的设备，可选
+                .setDeviceMac(mac)				// 只扫描指定mac的设备，可选
+                .setAutoConnect(isAuto)			// 连接时的autoConnect参数，可选，默认false
+                .setTimeOut(8000)				// 扫描超时时间，可选，默认5秒
                 .build();
         bleManager.initScanRule(scanRuleConfig);
 
+	在扫描设备之前，建议配置扫描规则，筛选出与程序匹配的设备；不配置的话均为默认参数。
 
-- #### 扫描设备
+
+- #### （方法说明）扫描设备
 
 	`boolean scan(BleScanCallback callback)`
 
@@ -211,7 +154,7 @@ FastBle 所有代码均可以加入混淆。
             }
         });
 
-- #### 连接设备
+- #### （方法说明）连接设备
 
 	`void connect(ScanResult scanResult, BleGattCallback callback)`
 
@@ -253,7 +196,7 @@ FastBle 所有代码均可以加入混淆。
             }
         });
 
-- #### 扫描并连接
+- #### （方法说明）扫描并连接
 
 	扫描到首个符合扫描规则的设备后，便停止扫描，然后连接该设备。
 
@@ -298,8 +241,8 @@ FastBle 所有代码均可以加入混淆。
         });    
 
 
-- #### 停止扫描
-	取消扫描操作
+- #### （方法说明）停止扫描
+	中止扫描操作
 
 	`void cancelScan()`
 
@@ -308,7 +251,7 @@ FastBle 所有代码均可以加入混淆。
 	调用该方法后，会回调BleScanCallback的onScanFinished方法，或者BleGattCallback的onConnectError方法。
 
 
-- #### 订阅通知notify
+- #### （方法说明）订阅通知notify
 	`boolean notify(String uuid_service, String uuid_notify, BleCharacterCallback callback)`
                         
         bleManager.notify(
@@ -331,13 +274,13 @@ FastBle 所有代码均可以加入混淆。
                     }
                 });
 
-- #### 取消订阅通知notify，并移除回调监听
+- #### （方法说明）取消订阅通知notify，并移除回调监听
 
 	`boolean stopNotify(String uuid_service, String uuid_notify)`
 
 		bleManager.stopNotify(UUID_SERVICE, UUID_NOTIFY);
 
-- #### 订阅通知indicate
+- #### （方法说明）订阅通知indicate
 
 	`boolean indicate(String uuid_service, String uuid_indicate, BleCharacterCallback callback)`
 
@@ -361,13 +304,13 @@ FastBle 所有代码均可以加入混淆。
                     }
                 });
 
-- #### 取消订阅通知indicate，并移除回调监听
+- #### （方法说明）取消订阅通知indicate，并移除回调监听
 
     `boolean stopIndicate(String uuid_service, String uuid_notify)`
     
 		bleManager.stopIndicate(UUID_SERVICE, UUID_INDICATE);
 
-- #### 写
+- #### （方法说明）写
 
 	`boolean write(String uuid_service,
                                String uuid_write,
@@ -394,7 +337,8 @@ FastBle 所有代码均可以加入混淆。
 						// 写操作失败
                     }
                 });
-- #### 读
+
+- #### （方法说明）读
 
 	`boolean read(String uuid_service,
                               String uuid_read,
@@ -420,7 +364,7 @@ FastBle 所有代码均可以加入混淆。
                     }
                 });
 
-- #### 读外设的Rssi
+- #### （方法说明）读外设的Rssi
 
 	`boolean readRssi(BleRssiCallback callback)`
 
@@ -441,7 +385,7 @@ FastBle 所有代码均可以加入混淆。
             }
         });
 
-- #### 手动移除回调
+- #### （方法说明）手动移除回调
 
 	不再监听这个特征的数据变化，适用于移除notify、indicate、write、read对应的callback。
 	该方法不常用，且不建议使用；比如stopNotify操作本身就会移除该特征值的通知回调，而write和read操作正常情况下没有主动移除的必要。
@@ -452,11 +396,71 @@ FastBle 所有代码均可以加入混淆。
         bleManager.stopListenCharacterCallback(uuid_sample);
 
 
-- #### 复位（断开此次蓝牙连接，移除所有回调）
+- #### （方法说明）复位
+
+	断开此次蓝牙连接，移除所有回调
 
 	`void closeBluetoothGatt()`
 
         bleManager.closeBluetoothGatt();
+
+- #### （类说明）ScanResult
+
+    扫描到的结果对象
+
+        BluetoothDevice getDevice(): 蓝牙设备对象
+        byte[] getScanRecord(): 广播数据;
+        int getRssi(): 信号强度
+		
+- #### （类说明）BleScanCallback
+
+    扫描的Callback
+
+		void onScanStarted(); 开始扫描的回调
+		void onScanning(ScanResult result); 当前正在扫描状态，且搜索到一个外围设备的回调
+        void onScanFinished(List<ScanResult> scanResultList); 扫描时间到或手动取消扫描后的回调
+
+- #### （类说明）BleGattCallback
+
+    连接的Callback
+
+		void onScanStarted(); 开始扫描的回调
+		void onFoundDevice(ScanResult scanResult); 找到设备的回调；
+		void onConnecting(BluetoothGatt gatt, int status); 正在连接的回调；
+		void onConnectError(BleException exception); 连接未成功的回调，通过解析BleException来判断具体未成功的原因；
+		void onConnectSuccess(BluetoothGatt gatt, int status); 连接成功的回调；
+		void onServicesDiscovered(BluetoothGatt gatt, int status); 发现服务的回调；
+		void onDisConnected(BluetoothGatt gatt, int status, BleException exception); 通信过程中的断开的回调。
+
+- #### （类说明）BleCharacterCallback
+
+    Characteristic操作的Callback
+
+		void onSuccess(BluetoothGattCharacteristic characteristic); 数据传输回调；
+		void onFailure(BleException exception); 操作或数据传输过程中出错；
+		void onInitiatedResult(boolean result); 操作成功与否的回调；
+		
+- #### （类说明）BleRssiCallback
+
+    读Rssi操作的Callback
+
+		void onSuccess(int rssi): 得到rssi数据的回调；
+		void onFailure(BleException exception); 操作或数据传输过程中出错；
+		void onInitiatedResult(boolean result); 操作成功与否的回调；
+
+- #### （类说明）BleException
+
+		int getCode(): 获取异常码；
+		String getDescription()： 获取异常描述；
+		
+	异常码：
+
+		100： 超时
+		101： 连接异常
+		102： 其他（异常信息可以通过异常描述获取，一般是开发过程中的操作中间步骤的异常）
+		103： 设备未找到
+		104： 蓝牙未启用
+		105： 开启扫描过程失败
 
 
 ## 版本更新日志

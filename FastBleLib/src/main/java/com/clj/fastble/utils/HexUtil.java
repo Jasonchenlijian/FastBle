@@ -2,27 +2,22 @@ package com.clj.fastble.utils;
 
 public class HexUtil {
 
+    private static final char[] DIGITS_LOWER = {'0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-    private static final char[] DIGITS_LOWER = { '0', '1', '2', '3', '4', '5',
-            '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-
-    private static final char[] DIGITS_UPPER = { '0', '1', '2', '3', '4', '5',
-            '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
+    private static final char[] DIGITS_UPPER = {'0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     public static char[] encodeHex(byte[] data) {
         return encodeHex(data, true);
     }
 
-
     public static char[] encodeHex(byte[] data, boolean toLowerCase) {
         return encodeHex(data, toLowerCase ? DIGITS_LOWER : DIGITS_UPPER);
     }
 
-
     protected static char[] encodeHex(byte[] data, char[] toDigits) {
-        if(data == null)
+        if (data == null)
             return null;
         int l = data.length;
         char[] out = new char[l << 1];
@@ -38,7 +33,6 @@ public class HexUtil {
         return encodeHexStr(data, true);
     }
 
-
     public static String encodeHexStr(byte[] data, boolean toLowerCase) {
         return encodeHexStr(data, toLowerCase ? DIGITS_LOWER : DIGITS_UPPER);
     }
@@ -48,6 +42,25 @@ public class HexUtil {
         return new String(encodeHex(data, toDigits));
     }
 
+    public static String formatHexString(byte[] data) {
+        return formatHexString(data, false);
+    }
+
+    public static String formatHexString(byte[] data, boolean addSpace) {
+        if (data == null || data.length < 1)
+            return null;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < data.length; i++) {
+            String hex = Integer.toHexString(data[i] & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+            sb.append(hex);
+            if (addSpace)
+                sb.append(" ");
+        }
+        return sb.toString().trim();
+    }
 
     public static byte[] decodeHex(char[] data) {
 
@@ -102,7 +115,7 @@ public class HexUtil {
     }
 
     public static String extractData(byte[] data, int position) {
-        return HexUtil.encodeHexStr(new byte[]{data[position]});
+        return HexUtil.formatHexString(new byte[]{data[position]});
     }
 
 }

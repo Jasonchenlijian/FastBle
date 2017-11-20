@@ -16,7 +16,6 @@ public abstract class ScanCallback extends PeriodScanCallback {
     private String mDeviceMac = null;
     private boolean mFuzzy = false;
     private boolean mNeedConnect = false;
-    private AtomicBoolean hasFound = new AtomicBoolean(false);
     private List<ScanResult> mScanResultList = new ArrayList<>();
 
     public ScanCallback(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeoutMillis) {
@@ -38,61 +37,54 @@ public abstract class ScanCallback extends PeriodScanCallback {
 
         ScanResult scanResult = new ScanResult(device, rssi, scanRecord, System.currentTimeMillis());
 
-        if (mNeedConnect) {
+        synchronized (this) {
+            if (TextUtils.isEmpty(mDeviceMac) && (mDeviceNames == null || mDeviceNames.length < 1)) {
+                next(scanResult);
+                return;
+            }
 
-            if (!hasFound.get()) {
+            if (!TextUtils.isEmpty(mDeviceMac)) {
+                if (!mDeviceMac.equalsIgnoreCase(device.getAddress()))
+                    return;
+            }
 
-                if (TextUtils.isEmpty(mDeviceMac) && (mDeviceNames == null || mDeviceNames.length > 0)) {
-                    hasFound.set(true);
-                    mScanResultList.add(scanResult);
-                    bleBluetooth.stopLeScan();
+            if (mDeviceNames != null && mDeviceNames.length > 0) {
+                AtomicBoolean equal = new AtomicBoolean(false);
+                for (String name : mDeviceNames) {
+                    if (mFuzzy ? device.getName().contains(name) : name.equalsIgnoreCase(device.getName())) {
+                        equal.set(true);
+                    }
+                }
+                if (!equal.get()) {
                     return;
                 }
-
-                if (!TextUtils.isEmpty(mDeviceMac)) {
-                    if (!mDeviceMac.equalsIgnoreCase(device.getAddress()))
-                        return;
-                }
-
-                if (mDeviceNames != null && mDeviceNames.length > 0) {
-
-                    boolean equal = false;
-                    for (String name : mDeviceNames) {
-                        if (mFuzzy ? device.getName().contains(name) : name.equalsIgnoreCase(device.getName())) {
-                            equal = true;
-                        }
-                    }
-                    if (!equal) {
-                        return;
-                    }
-                }
-
-                hasFound.set(true);
-                mScanResultList.add(scanResult);
-                bleBluetooth.stopLeScan();
             }
 
+            next(scanResult);
+        }
+    }
+
+    private void next(ScanResult scanResult) {
+        if (mNeedConnect) {
+            mScanResultList.add(scanResult);
+            bleBluetooth.stopLeScan();
         } else {
-            synchronized (this) {
-                hasFound.set(false);
-                for (ScanResult result : mScanResultList) {
-                    if (result.getDevice().equals(device)) {
-                        hasFound.set(true);
-                    }
+            AtomicBoolean hasFound = new AtomicBoolean(false);
+            for (ScanResult result : mScanResultList) {
+                if (result.getDevice().equals(scanResult.getDevice())) {
+                    hasFound.set(true);
                 }
-                if (!hasFound.get()) {
-                    mScanResultList.add(scanResult);
-                    onScanning(scanResult);
-                }
+            }
+            if (!hasFound.get()) {
+                mScanResultList.add(scanResult);
+                onScanning(scanResult);
             }
         }
-
     }
 
     @Override
     public void onStarted() {
         mScanResultList.clear();
-        hasFound.set(false);
         onScanStarted();
     }
 
