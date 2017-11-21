@@ -110,7 +110,7 @@ public class BleBluetooth {
         return callbackHashMap.get(uuid);
     }
 
-    public boolean startLeScan(UUID[] serviceUuids, PeriodScanCallback callback) {
+    private boolean startLeScan(UUID[] serviceUuids, PeriodScanCallback callback) {
         if (callback == null)
             return false;
         this.periodScanCallback = callback;

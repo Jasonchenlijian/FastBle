@@ -23,7 +23,7 @@ public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallb
 
     public abstract void onFinished();
 
-    public void notifyScanStarted() {
+    public final void notifyScanStarted() {
         onStarted();
         if (timeoutMillis > 0) {
             removeHandlerMsg();
@@ -36,7 +36,7 @@ public abstract class PeriodScanCallback implements BluetoothAdapter.LeScanCallb
         }
     }
 
-    public void notifyScanStopped() {
+    public final void notifyScanStopped() {
         removeHandlerMsg();
         onFinished();
     }
