@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
+
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleBluetooth {
 
@@ -144,7 +146,11 @@ public class BleBluetooth {
                 + "\nmac: " + scanResult.getDevice().getAddress()
                 + "\nautoConnect: " + autoConnect);
         addConnectGattCallback(callback);
-        return scanResult.getDevice().connectGatt(context, autoConnect, coreGattCallback);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return scanResult.getDevice().connectGatt(context, autoConnect, coreGattCallback, TRANSPORT_LE);
+        } else {
+            return scanResult.getDevice().connectGatt(context, autoConnect, coreGattCallback);
+        }
     }
 
     public boolean scan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
