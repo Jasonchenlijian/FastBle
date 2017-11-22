@@ -1,5 +1,5 @@
 
-package com.clj.fastble.conn;
+package com.clj.fastble.bluetooth;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
@@ -12,7 +12,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.clj.fastble.bluetooth.BleBluetooth;
+import com.clj.fastble.conn.BleCallback;
+import com.clj.fastble.conn.BleCharacterCallback;
+import com.clj.fastble.conn.BleRssiCallback;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.OtherException;
 import com.clj.fastble.exception.TimeoutException;

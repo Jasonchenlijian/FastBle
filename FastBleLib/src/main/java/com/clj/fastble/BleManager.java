@@ -6,16 +6,19 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
+import com.clj.fastble.bluetooth.BleBluetoothPool;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.conn.BleRssiCallback;
 import com.clj.fastble.conn.BleScanCallback;
+import com.clj.fastble.data.ConnectState;
 import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
 import com.clj.fastble.scan.BleScanRuleConfig;
+import com.clj.fastble.utils.BleLog;
 
 import java.util.UUID;
 
@@ -25,17 +28,29 @@ public class BleManager {
     private BleBluetooth mBleBluetooth;
     private BleScanRuleConfig mScanRuleConfig;
     private DefaultBleExceptionHandler mBleExceptionHandler;
+    private BleBluetoothPool bleBluetoothPool;          // 设备连接池
 
-    public BleManager(Context context) {
-        this.mContext = context;
+    public static BleManager getInstance() {
+        return BleManagerHolder.sBleManager;
+    }
 
-        if (isSupportBle()) {
-            if (mBleBluetooth == null) {
-                mBleBluetooth = new BleBluetooth(mContext);
+    private static class BleManagerHolder {
+        private static final BleManager sBleManager = new BleManager();
+    }
+
+    public void init(Context context) {
+        if (this.mContext == null && context != null) {
+            this.mContext = context.getApplicationContext();
+
+            if (isSupportBle()) {
+                if (mBleBluetooth == null) {
+                    mBleBluetooth = new BleBluetooth(mContext);
+                }
             }
-        }
 
-        mBleExceptionHandler = new DefaultBleExceptionHandler();
+            mBleExceptionHandler = new DefaultBleExceptionHandler();
+            bleBluetoothPool = new BleBluetoothPool();
+        }
     }
 
     /**
@@ -238,6 +253,15 @@ public class BleManager {
             throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
         }
 
+        if (data == null) {
+            BleLog.e("data is Null!");
+            return false;
+        }
+
+        if (data.length > 20) {
+            BleLog.w("data's length beyond 20!");
+        }
+
         return mBleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_write, null)
                 .writeCharacteristic(data, callback, uuid_write);
@@ -359,6 +383,92 @@ public class BleManager {
      */
     public void stopListenConnectCallback() {
         mBleBluetooth.removeConnectGattCallback();
+    }
+
+    /**
+     * 获取连接池中的设备镜像，如果没有连接则返回空
+     *
+     * @param bluetoothLeDevice
+     * @return
+     */
+    public BleBluetooth getDeviceMirror(ScanResult bluetoothLeDevice) {
+        if (bleBluetoothPool != null) {
+            return bleBluetoothPool.getBleBluetooth(bluetoothLeDevice);
+        }
+        return null;
+    }
+
+    /**
+     * 获取该设备连接状态
+     *
+     * @param bluetoothLeDevice
+     * @return
+     */
+    public ConnectState getConnectState(ScanResult bluetoothLeDevice) {
+        if (bleBluetoothPool != null) {
+            return bleBluetoothPool.getConnectState(bluetoothLeDevice);
+        }
+        return ConnectState.CONNECT_DISCONNECT;
+    }
+
+    /**
+     * 判断该设备是否已连接
+     *
+     * @param bluetoothLeDevice
+     * @return
+     */
+    public boolean isConnect(ScanResult bluetoothLeDevice) {
+        if (bleBluetoothPool != null) {
+            return bleBluetoothPool.isContainDevice(bluetoothLeDevice);
+        }
+        return false;
+    }
+
+    /**
+     * 断开某一个设备
+     *
+     * @param bluetoothLeDevice
+     */
+    public void disconnect(ScanResult bluetoothLeDevice) {
+        if (bleBluetoothPool != null) {
+            bleBluetoothPool.disconnect(bluetoothLeDevice);
+        }
+    }
+
+    /**
+     * 断开所有设备
+     */
+    public void disconnect() {
+        if (bleBluetoothPool != null) {
+            bleBluetoothPool.disconnect();
+        }
+    }
+
+    /**
+     * 清除资源，在退出应用时调用
+     */
+    public void clear() {
+        if (bleBluetoothPool != null) {
+            bleBluetoothPool.clear();
+        }
+    }
+
+    /**
+     * 获取Context
+     *
+     * @return 返回Context
+     */
+    public Context getContext() {
+        return mContext;
+    }
+
+    /**
+     * 获取设备镜像池
+     *
+     * @return
+     */
+    public BleBluetoothPool getDeviceMirrorPool() {
+        return bleBluetoothPool;
     }
 
 }
