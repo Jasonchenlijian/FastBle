@@ -1,16 +1,23 @@
 package com.clj.fastble.scan;
 
 
+import android.annotation.TargetApi;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
+import com.clj.fastble.BleManager;
 import com.clj.fastble.data.ScanResult;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class ScanCallback extends PeriodScanCallback {
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
 
     private String[] mDeviceNames = null;
     private String mDeviceMac = null;
@@ -18,12 +25,15 @@ public abstract class ScanCallback extends PeriodScanCallback {
     private boolean mNeedConnect = false;
     private List<ScanResult> mScanResultList = new ArrayList<>();
 
+    private Handler mHandler = new Handler(Looper.getMainLooper());
+    private long timeoutMillis = 10000;
+
     public ScanCallback(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeoutMillis) {
-        super(timeoutMillis);
         this.mDeviceNames = names;
         this.mDeviceMac = mac;
         this.mFuzzy = fuzzy;
         this.mNeedConnect = needConnect;
+        this.timeoutMillis = timeoutMillis;
     }
 
     @Override
@@ -67,7 +77,7 @@ public abstract class ScanCallback extends PeriodScanCallback {
     private void next(ScanResult scanResult) {
         if (mNeedConnect) {
             mScanResultList.add(scanResult);
-            bleBluetooth.stopLeScan();
+            BleManager.getInstance().getBleScanner().stopLeScan();
         } else {
             AtomicBoolean hasFound = new AtomicBoolean(false);
             for (ScanResult result : mScanResultList) {
@@ -82,15 +92,27 @@ public abstract class ScanCallback extends PeriodScanCallback {
         }
     }
 
-    @Override
-    public void onStarted() {
+    public final void notifyScanStarted() {
         mScanResultList.clear();
         onScanStarted();
+        if (timeoutMillis > 0) {
+            removeHandlerMsg();
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    BleManager.getInstance().getBleScanner().stopLeScan();
+                }
+            }, timeoutMillis);
+        }
     }
 
-    @Override
-    public void onFinished() {
+    public final void notifyScanStopped() {
+        removeHandlerMsg();
         onScanFinished(mScanResultList);
+    }
+
+    public final void removeHandlerMsg() {
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     public abstract void onScanStarted();

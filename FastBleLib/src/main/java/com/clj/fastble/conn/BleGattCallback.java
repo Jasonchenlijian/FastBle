@@ -21,7 +21,7 @@ public abstract class BleGattCallback extends BluetoothGattCallback {
 
     public abstract void onConnectError(BleException exception);
 
-    public abstract void onConnectSuccess(BluetoothGatt gatt, int status);
+    public abstract void onConnectSuccess();
 
     public abstract void onDisConnected(BluetoothGatt gatt, int status, boolean isActive);
 

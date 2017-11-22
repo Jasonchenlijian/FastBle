@@ -1,6 +1,9 @@
 package com.clj.fastble;
 
+import android.annotation.TargetApi;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -18,14 +21,18 @@ import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
 import com.clj.fastble.scan.BleScanRuleConfig;
+import com.clj.fastble.scan.BleScanner;
 import com.clj.fastble.utils.BleLog;
 
 import java.util.UUID;
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleManager {
 
     private Context mContext;
     private BleBluetooth mBleBluetooth;
+    private BleScanner bleScanner;
+    private BluetoothAdapter bluetoothAdapter;  // 蓝牙适配器
     private BleScanRuleConfig mScanRuleConfig;
     private DefaultBleExceptionHandler mBleExceptionHandler;
     private BleBluetoothPool bleBluetoothPool;          // 设备连接池
@@ -42,15 +49,20 @@ public class BleManager {
         if (this.mContext == null && context != null) {
             this.mContext = context.getApplicationContext();
 
-            if (isSupportBle()) {
-                if (mBleBluetooth == null) {
-                    mBleBluetooth = new BleBluetooth(mContext);
-                }
-            }
-
+            BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            if (bluetoothManager != null)
+                bluetoothAdapter = bluetoothManager.getAdapter();
             mBleExceptionHandler = new DefaultBleExceptionHandler();
             bleBluetoothPool = new BleBluetoothPool();
         }
+    }
+
+    public BluetoothAdapter getBluetoothAdapter() {
+        return bluetoothAdapter;
+    }
+
+    public BleScanner getBleScanner() {
+        return bleScanner;
     }
 
     /**
@@ -100,7 +112,7 @@ public class BleManager {
         boolean fuzzy = mScanRuleConfig.isFuzzy();
         long timeOut = mScanRuleConfig.getTimeOut();
 
-        return mBleBluetooth.scan(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
+        return bleScanner.scan(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
     }
 
     /**
@@ -152,14 +164,14 @@ public class BleManager {
         boolean fuzzy = mScanRuleConfig.isFuzzy();
         long timeOut = mScanRuleConfig.getTimeOut();
 
-        mBleBluetooth.scanAndConnect(serviceUuids, deviceNames, deviceMac, fuzzy, autoConnect, timeOut, callback);
+        bleScanner.scanAndConnect(serviceUuids, deviceNames, deviceMac, fuzzy, autoConnect, timeOut, callback);
     }
 
     /**
      * cancel scan
      */
     public void cancelScan() {
-        mBleBluetooth.stopLeScan();
+        bleScanner.stopLeScan();
     }
 
     /**
