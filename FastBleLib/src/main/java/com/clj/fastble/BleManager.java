@@ -32,10 +32,10 @@ public class BleManager {
     private Context mContext;
     private BleBluetooth mBleBluetooth;
     private BleScanner bleScanner;
-    private BluetoothAdapter bluetoothAdapter;  // 蓝牙适配器
+    private BluetoothAdapter bluetoothAdapter;
     private BleScanRuleConfig mScanRuleConfig;
     private DefaultBleExceptionHandler mBleExceptionHandler;
-    private BleBluetoothPool bleBluetoothPool;          // 设备连接池
+    private BleBluetoothPool bleBluetoothPool;
 
     public static BleManager getInstance() {
         return BleManagerHolder.sBleManager;
@@ -54,6 +54,7 @@ public class BleManager {
                 bluetoothAdapter = bluetoothManager.getAdapter();
             mBleExceptionHandler = new DefaultBleExceptionHandler();
             bleBluetoothPool = new BleBluetoothPool();
+            bleScanner = BleScanner.getInstance();
         }
     }
 
@@ -63,6 +64,10 @@ public class BleManager {
 
     public BleScanner getBleScanner() {
         return bleScanner;
+    }
+
+    public BleBluetooth getBleBluetooth() {
+        return mBleBluetooth;
     }
 
     /**
@@ -135,6 +140,7 @@ public class BleManager {
             callback.onConnectError(new NotFoundDeviceException());
         } else {
             callback.onFoundDevice(scanResult);
+            mBleBluetooth = new BleBluetooth(scanResult);
             boolean autoConnect = mScanRuleConfig.isAutoConnect();
             return mBleBluetooth.connect(scanResult, autoConnect, callback);
         }
@@ -190,7 +196,7 @@ public class BleManager {
         }
 
         return mBleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_notify, null)
+                .withUUIDString(uuid_service, uuid_notify)
                 .enableCharacteristicNotify(callback, uuid_notify);
     }
 
@@ -210,7 +216,7 @@ public class BleManager {
         }
 
         return mBleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_indicate, null)
+                .withUUIDString(uuid_service, uuid_indicate)
                 .enableCharacteristicIndicate(callback, uuid_indicate);
     }
 
@@ -223,10 +229,10 @@ public class BleManager {
      */
     public boolean stopNotify(String uuid_service, String uuid_notify) {
         boolean success = mBleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_notify, null)
+                .withUUIDString(uuid_service, uuid_notify)
                 .disableCharacteristicNotify();
         if (success) {
-            mBleBluetooth.removeGattCallback(uuid_notify);
+            mBleBluetooth.removeCharacterCallback(uuid_notify);
         }
         return success;
     }
@@ -240,10 +246,10 @@ public class BleManager {
      */
     public boolean stopIndicate(String uuid_service, String uuid_indicate) {
         boolean success = mBleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_indicate, null)
+                .withUUIDString(uuid_service, uuid_indicate)
                 .disableCharacteristicIndicate();
         if (success) {
-            mBleBluetooth.removeGattCallback(uuid_indicate);
+            mBleBluetooth.removeCharacterCallback(uuid_indicate);
         }
         return success;
     }
@@ -275,7 +281,7 @@ public class BleManager {
         }
 
         return mBleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_write, null)
+                .withUUIDString(uuid_service, uuid_write)
                 .writeCharacteristic(data, callback, uuid_write);
     }
 
@@ -295,7 +301,7 @@ public class BleManager {
         }
 
         return mBleBluetooth.newBleConnector()
-                .withUUIDString(uuid_service, uuid_read, null)
+                .withUUIDString(uuid_service, uuid_read)
                 .readCharacteristic(callback, uuid_read);
     }
 
@@ -349,8 +355,8 @@ public class BleManager {
      * open bluetooth
      */
     public void enableBluetooth() {
-        if (mBleBluetooth != null) {
-            mBleBluetooth.enableBluetoothIfDisabled();
+        if (bluetoothAdapter != null) {
+            bluetoothAdapter.enable();
         }
     }
 
@@ -358,36 +364,26 @@ public class BleManager {
      * close bluetooth
      */
     public void disableBluetooth() {
-        if (mBleBluetooth != null) {
-            mBleBluetooth.disableBluetooth();
+        if (bluetoothAdapter != null) {
+            if (bluetoothAdapter.isEnabled())
+                bluetoothAdapter.disable();
         }
     }
 
     public boolean isBlueEnable() {
-        return mBleBluetooth != null && mBleBluetooth.isBlueEnable();
+        return bluetoothAdapter != null && bluetoothAdapter.isEnabled();
     }
 
     public boolean isInScanning() {
         return mBleBluetooth.isInScanning();
     }
 
-    public boolean isConnectingOrConnected() {
-        return mBleBluetooth.isConnectingOrConnected();
-    }
-
-    public boolean isConnected() {
-        return mBleBluetooth.isConnected();
-    }
-
-    public boolean isServiceDiscovered() {
-        return mBleBluetooth.isServiceDiscovered();
-    }
 
     /**
      * remove callback form a character
      */
     public void stopListenCharacterCallback(String uuid) {
-        mBleBluetooth.removeGattCallback(uuid);
+        mBleBluetooth.removeCharacterCallback(uuid);
     }
 
     /**

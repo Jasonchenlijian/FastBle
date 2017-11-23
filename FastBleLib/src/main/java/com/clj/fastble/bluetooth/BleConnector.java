@@ -3,7 +3,6 @@ package com.clj.fastble.bluetooth;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
@@ -15,7 +14,6 @@ import android.os.Message;
 import com.clj.fastble.conn.BleCallback;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleRssiCallback;
-import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.OtherException;
 import com.clj.fastble.exception.TimeoutException;
 import com.clj.fastble.utils.BleLog;
@@ -23,7 +21,6 @@ import com.clj.fastble.utils.HexUtil;
 
 import java.util.Arrays;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Ble Device Connector.
@@ -35,19 +32,15 @@ public class BleConnector {
     private static final String TAG = BleConnector.class.getSimpleName();
     private static final String UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
 
-    private static final int MSG_WRITE_CHA = 1;
-    private static final int MSG_WRIATE_DES = 2;
-    private static final int MSG_READ_CHA = 3;
-    private static final int MSG_READ_DES = 4;
-    private static final int MSG_READ_RSSI = 5;
-    private static final int MSG_NOTIFY_CHA = 6;
-    private static final int MSG_NOTIY_DES = 7;
-    private static final int MSG_INDICATE_DES = 8;
+    private static final int MSG_NOTIFY_CHA = 0x014;
+    private static final int MSG_INDICATE_DES = 0x015;
+    private static final int MSG_WRITE_CHA = 0x01;
+    private static final int MSG_READ_CHA = 0x012;
+    private static final int MSG_READ_RSSI = 0x013;
 
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattService service;
     private BluetoothGattCharacteristic characteristic;
-    private BluetoothGattDescriptor descriptor;
     private BleBluetooth bleBluetooth;
     private static int timeOutMillis = 10000;
     private Handler handler = new MyHandler();
@@ -55,6 +48,32 @@ public class BleConnector {
     private static final class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+
+            switch (msg.what) {
+                case MSG_NOTIFY_CHA:
+                    BleCharacterCallback notifyCallback = (BleCharacterCallback) msg.obj;
+                    if (notifyCallback != null)
+                        notifyCallback.onFailure(new TimeoutException());
+                    break;
+
+                case MSG_INDICATE_DES:
+                    BleCharacterCallback indicateCallback = (BleCharacterCallback) msg.obj;
+                    if (indicateCallback != null)
+                        indicateCallback.onFailure(new TimeoutException());
+                    break;
+
+                case MSG_WRITE_CHA:
+                    BleCharacterCallback writeCallback = (BleCharacterCallback) msg.obj;
+                    if (writeCallback != null)
+                        writeCallback.onFailure(new TimeoutException());
+                    break;
+
+                case MSG_READ_CHA:
+                    BleCharacterCallback readCallback = (BleCharacterCallback) msg.obj;
+                    if (readCallback != null)
+                        readCallback.onFailure(new TimeoutException());
+                    break;
+            }
 
             BleCallback call = (BleCallback) msg.obj;
             if (call != null) {
@@ -70,30 +89,7 @@ public class BleConnector {
         this.handler = new Handler(Looper.getMainLooper());
     }
 
-    public BleConnector(BleBluetooth bleBluetooth, BluetoothGattService service,
-                        BluetoothGattCharacteristic characteristic, BluetoothGattDescriptor descriptor) {
-        this(bleBluetooth);
-        this.service = service;
-        this.characteristic = characteristic;
-        this.descriptor = descriptor;
-    }
-
-    public BleConnector(BleBluetooth bleBluetooth,
-                        UUID serviceUUID, UUID charactUUID,
-                        UUID descriptorUUID, UUID client_characteristic_conifgUUID) {
-        this(bleBluetooth);
-        withUUID(serviceUUID, charactUUID, descriptorUUID);
-    }
-
-    public BleConnector(BleBluetooth bleBluetooth,
-                        String serviceUUID, String charactUUID,
-                        String descriptorUUID, String client_characteristic_conifgUUID) {
-        this(bleBluetooth);
-        withUUIDString(serviceUUID, charactUUID, descriptorUUID);
-    }
-
-
-    public BleConnector withUUID(UUID serviceUUID, UUID charactUUID, UUID descriptorUUID) {
+    public BleConnector withUUID(UUID serviceUUID, UUID charactUUID) {
 
         if (serviceUUID != null && bluetoothGatt != null) {
             service = bluetoothGatt.getService(serviceUUID);
@@ -103,16 +99,11 @@ public class BleConnector {
             characteristic = service.getCharacteristic(charactUUID);
         }
 
-        if (characteristic != null && descriptorUUID != null) {
-            descriptor = characteristic.getDescriptor(descriptorUUID);
-        }
-
         return this;
     }
 
-    public BleConnector withUUIDString(String serviceUUID, String charactUUID,
-                                       String descriptorUUID) {
-        return withUUID(formUUID(serviceUUID), formUUID(charactUUID), formUUID(descriptorUUID));
+    public BleConnector withUUIDString(String serviceUUID, String charactUUID) {
+        return withUUID(formUUID(serviceUUID), formUUID(charactUUID));
     }
 
     private UUID formUUID(String uuid) {
@@ -345,22 +336,10 @@ public class BleConnector {
     private void handleCharacteristicNotificationCallback(final BleCharacterCallback bleCallback,
                                                           final String uuid_notify) {
         if (bleCallback != null) {
-
-            listenAndTimer(bleCallback, MSG_NOTIFY_CHA, uuid_notify, new BluetoothGattCallback() {
-                AtomicBoolean msgRemoved = new AtomicBoolean(false);
-
-                @Override
-                public void onCharacteristicChanged(BluetoothGatt gatt,
-                                                    BluetoothGattCharacteristic characteristic) {
-
-                    if (!msgRemoved.getAndSet(true)) {
-                        handler.removeMessages(MSG_NOTIFY_CHA, this);
-                    }
-                    if (characteristic.getUuid().equals(UUID.fromString(uuid_notify))) {
-                        bleCallback.onSuccess(characteristic);
-                    }
-                }
-            });
+            handler.removeMessages(MSG_NOTIFY_CHA, this);
+            bleCallback.setBleConnector(this);
+            bleBluetooth.addCharacterCallback(uuid_notify, bleCallback);
+            handler.sendMessageDelayed(handler.obtainMessage(MSG_NOTIFY_CHA, bleCallback), timeOutMillis);
         }
     }
 
@@ -371,46 +350,23 @@ public class BleConnector {
                                                         final String uuid_indicate) {
         if (bleCallback != null) {
 
-            listenAndTimer(bleCallback, MSG_INDICATE_DES, uuid_indicate, new BluetoothGattCallback() {
-                AtomicBoolean msgRemoved = new AtomicBoolean(false);
-
-                @Override
-                public void onCharacteristicChanged(BluetoothGatt gatt,
-                                                    BluetoothGattCharacteristic characteristic) {
-
-                    if (!msgRemoved.getAndSet(true)) {
-                        handler.removeMessages(MSG_INDICATE_DES, this);
-                    }
-                    if (characteristic.getUuid().equals(UUID.fromString(uuid_indicate))) {
-                        bleCallback.onSuccess(characteristic);
-                    }
-                }
-            });
+            handler.removeMessages(MSG_INDICATE_DES, this);
+            bleCallback.setBleConnector(this);
+            bleBluetooth.addCharacterCallback(uuid_indicate, bleCallback);
+            handler.sendMessageDelayed(handler.obtainMessage(MSG_INDICATE_DES, bleCallback), timeOutMillis);
         }
     }
 
     /**
      * write
      */
-    private void handleCharacteristicWriteCallback(final BleCharacterCallback bleCallback,
-                                                   final String uuid_write) {
+    private void handleCharacteristicWriteCallback(BleCharacterCallback bleCallback,
+                                                   String uuid_write) {
         if (bleCallback != null) {
-
-            listenAndTimer(bleCallback, MSG_WRITE_CHA, uuid_write, new BluetoothGattCallback() {
-                @Override
-                public void onCharacteristicWrite(BluetoothGatt gatt,
-                                                  BluetoothGattCharacteristic characteristic, int status) {
-                    handler.removeMessages(MSG_WRITE_CHA, this);
-
-                    if (status == BluetoothGatt.GATT_SUCCESS) {
-                        if (characteristic.getUuid().equals(UUID.fromString(uuid_write))) {
-                            bleCallback.onSuccess(characteristic);
-                        }
-                    } else {
-                        bleCallback.onFailure(new GattException(status));
-                    }
-                }
-            });
+            handler.removeMessages(MSG_WRITE_CHA, this);
+            bleCallback.setBleConnector(this);
+            bleBluetooth.addCharacterCallback(uuid_write, bleCallback);
+            handler.sendMessageDelayed(handler.obtainMessage(MSG_WRITE_CHA, bleCallback), timeOutMillis);
         }
     }
 
@@ -420,24 +376,10 @@ public class BleConnector {
     private void handleCharacteristicReadCallback(final BleCharacterCallback bleCallback,
                                                   final String uuid_read) {
         if (bleCallback != null) {
-            listenAndTimer(bleCallback, MSG_READ_CHA, uuid_read, new BluetoothGattCallback() {
-                AtomicBoolean msgRemoved = new AtomicBoolean(false);
-
-                @Override
-                public void onCharacteristicRead(BluetoothGatt gatt,
-                                                 BluetoothGattCharacteristic characteristic, int status) {
-                    if (!msgRemoved.getAndSet(true)) {
-                        handler.removeMessages(MSG_READ_CHA, this);
-                    }
-                    if (status == BluetoothGatt.GATT_SUCCESS) {
-                        if (characteristic.getUuid().equals(UUID.fromString(uuid_read))) {
-                            bleCallback.onSuccess(characteristic);
-                        }
-                    } else {
-                        bleCallback.onFailure(new GattException(status));
-                    }
-                }
-            });
+            handler.removeMessages(MSG_READ_CHA, this);
+            bleCallback.setBleConnector(this);
+            bleBluetooth.addCharacterCallback(uuid_read, bleCallback);
+            handler.sendMessageDelayed(handler.obtainMessage(MSG_READ_CHA, bleCallback), timeOutMillis);
         }
     }
 
@@ -445,19 +387,11 @@ public class BleConnector {
      * rssi
      */
     private void handleRSSIReadCallback(final BleRssiCallback bleCallback) {
-
         if (bleCallback != null) {
-            listenAndTimer(bleCallback, MSG_READ_RSSI, BleBluetooth.READ_RSSI_KEY, new BluetoothGattCallback() {
-                @Override
-                public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-                    handler.removeMessages(MSG_READ_RSSI, this);
-                    if (status == BluetoothGatt.GATT_SUCCESS) {
-                        bleCallback.onSuccess(rssi);
-                    } else {
-                        bleCallback.onFailure(new GattException(status));
-                    }
-                }
-            });
+            handler.removeMessages(MSG_READ_RSSI, this);
+            bleCallback.setBleConnector(this);
+            bleBluetooth.addRssiCallback(bleCallback);
+            handler.sendMessageDelayed(handler.obtainMessage(MSG_READ_RSSI, bleCallback), timeOutMillis);
         }
     }
 
@@ -471,17 +405,28 @@ public class BleConnector {
         return initiated;
     }
 
-
-    /**
-     * listen bleBluetooth gatt callback, and send a delayed message.
-     */
-    private void listenAndTimer(BleCallback bleCallback, int what, String uuid, BluetoothGattCallback callback) {
-        bleCallback.setBluetoothGattCallback(callback);
-        bleBluetooth.addGattCallback(uuid, callback);
-
-        Message msg = handler.obtainMessage(what, bleCallback);
-        handler.sendMessageDelayed(msg, timeOutMillis);
+    public void notifySuccess() {
+        handler.removeMessages(MSG_NOTIFY_CHA, this);
     }
+
+    public void indicateSuccess() {
+        handler.removeMessages(MSG_INDICATE_DES, this);
+    }
+
+    public void writeSuccess() {
+        handler.removeMessages(MSG_WRITE_CHA, this);
+    }
+
+    public void readSuccess() {
+        handler.removeMessages(MSG_READ_CHA, this);
+    }
+
+    public void rssiSuccess() {
+        handler.removeMessages(MSG_READ_RSSI, this);
+    }
+
+
+
 
 
 
@@ -512,15 +457,6 @@ public class BleConnector {
 
     public BleConnector setCharacteristic(BluetoothGattCharacteristic characteristic) {
         this.characteristic = characteristic;
-        return this;
-    }
-
-    public BluetoothGattDescriptor getDescriptor() {
-        return descriptor;
-    }
-
-    public BleConnector setDescriptor(BluetoothGattDescriptor descriptor) {
-        this.descriptor = descriptor;
         return this;
     }
 

@@ -20,6 +20,14 @@ import java.util.UUID;
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleScanner {
 
+    public static BleScanner getInstance() {
+        return BleScannerHolder.sBleScanner;
+    }
+
+    private static class BleScannerHolder {
+        private static final BleScanner sBleScanner = new BleScanner();
+    }
+
     private ScanCallback scanCallback;
     private ScanState scanState = ScanState.STATE_IDLE;
 
