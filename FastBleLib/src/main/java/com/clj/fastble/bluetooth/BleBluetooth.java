@@ -12,8 +12,8 @@ import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.conn.BleRssiCallback;
+import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.ConnectState;
-import com.clj.fastble.data.ScanResult;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.utils.BleLog;
@@ -29,13 +29,15 @@ import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
 public class BleBluetooth {
 
     private ConnectState connectState = ConnectState.CONNECT_INIT;
-    private BluetoothGatt bluetoothGatt;
     private Handler handler = new Handler(Looper.getMainLooper());
 
     private BleGattCallback bleGattCallback;
     private BleRssiCallback bleRssiCallback;
     private HashMap<String, BleCharacterCallback> bleCharacterCallbackHashMap = new HashMap<>();
 
+    private BleBluetooth bleBluetooth;
+    private BleDevice bleDevice;
+    private BluetoothGatt bluetoothGatt;
     private boolean isActiveDisconnect = false;             // 是否主动断开连接
 
 
@@ -56,9 +58,14 @@ public class BleBluetooth {
         bleCharacterCallbackHashMap.put(uuid, bleCallback);
     }
 
-    public void removeCharacterCallback(String uuid) {
+    public synchronized void removeCharacterCallback(String uuid) {
         if (bleCharacterCallbackHashMap.containsKey(uuid))
             bleCharacterCallbackHashMap.remove(uuid);
+    }
+
+    public synchronized void clearCharacterCallback() {
+        if (bleCharacterCallbackHashMap != null)
+            bleCharacterCallbackHashMap.clear();
     }
 
     public void addRssiCallback(BleRssiCallback callback) {
@@ -70,25 +77,10 @@ public class BleBluetooth {
     }
 
 
-//    public void clearCallback() {
-//        callbackHashMap.clear();
-//    }
 
-//    public BluetoothGattCallback getGattCallback(String uuid) {
-//        if (TextUtils.isEmpty(uuid))
-//            return null;
-//        return callbackHashMap.get(uuid);
-//    }
-
-
-    private BleBluetooth bleBluetooth;
-    private ScanResult scanResult;          // 设备基础信息
-    private String uniqueSymbol;            // 唯一符号
-
-    public BleBluetooth(ScanResult scanResult) {
+    public BleBluetooth(BleDevice bleDevice) {
         bleBluetooth = this;
-        this.scanResult = scanResult;
-        this.uniqueSymbol = scanResult.getDevice().getAddress() + scanResult.getDevice().getName();
+        this.bleDevice = bleDevice;
     }
 
     /**
@@ -97,7 +89,7 @@ public class BleBluetooth {
      * @return
      */
     public String getUniqueSymbol() {
-        return uniqueSymbol;
+        return bleDevice.getKey();
     }
 
     /**
@@ -114,11 +106,11 @@ public class BleBluetooth {
      *
      * @return
      */
-    public ScanResult getBluetoothLeDevice() {
-        return scanResult;
+    public BleDevice getBluetoothLeDevice() {
+        return bleDevice;
     }
 
-    public synchronized BluetoothGatt connect(ScanResult scanResult,
+    public synchronized BluetoothGatt connect(BleDevice scanResult,
                                               boolean autoConnect,
                                               BleGattCallback callback) {
         BleLog.i("connect device: " + scanResult.getDevice().getName()
@@ -171,13 +163,17 @@ public class BleBluetooth {
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
         }
-
         if (bluetoothGatt != null) {
             refreshDeviceCache();
         }
-
         if (bluetoothGatt != null) {
             bluetoothGatt.close();
+        }
+        removeConnectGattCallback();
+        removeRssiCallback();
+        clearCharacterCallback();
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
         }
     }
 
@@ -227,7 +223,7 @@ public class BleBluetooth {
                     + '\n' + "status: " + status
                     + '\n' + "currentThread: " + Thread.currentThread().getId());
 
-            if (status == 0) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
                 bluetoothGatt = gatt;
                 connectState = ConnectState.CONNECT_SUCCESS;
                 if (bleGattCallback != null) {

@@ -39,7 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clj.blesample.operation.OperationActivity;
-import com.clj.fastble.data.ScanResult;
+import com.clj.fastble.data.BleDevice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -171,14 +171,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private class ResultAdapter extends BaseAdapter {
 
         private Context context;
-        private List<ScanResult> scanResultList;
+        private List<BleDevice> scanResultList;
 
         ResultAdapter(Context context) {
             this.context = context;
             scanResultList = new ArrayList<>();
         }
 
-        void addResult(ScanResult result) {
+        void addResult(BleDevice result) {
             scanResultList.add(result);
         }
 
@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        public ScanResult getItem(int position) {
+        public BleDevice getItem(int position) {
             if (position > scanResultList.size())
                 return null;
             return scanResultList.get(position);
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 holder.txt_rssi = (TextView) convertView.findViewById(R.id.txt_rssi);
             }
 
-            ScanResult result = scanResultList.get(position);
+            BleDevice result = scanResultList.get(position);
             BluetoothDevice device = result.getDevice();
             String name = device.getName();
             String mac = device.getAddress();
@@ -270,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        public void onScanning(ScanResult result) {
+        public void onScanning(BleDevice result) {
             mResultAdapter.addResult(result);
             mResultAdapter.notifyDataSetChanged();
         }

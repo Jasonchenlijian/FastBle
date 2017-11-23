@@ -10,7 +10,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import com.clj.fastble.BleManager;
-import com.clj.fastble.data.ScanResult;
+import com.clj.fastble.data.BleDevice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
     private String mDeviceMac = null;
     private boolean mFuzzy = false;
     private boolean mNeedConnect = false;
-    private List<ScanResult> mScanResultList = new ArrayList<>();
+    private List<BleDevice> mScanResultList = new ArrayList<>();
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private long timeoutMillis = 10000;
@@ -45,7 +45,7 @@ public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
             return;
         }
 
-        ScanResult scanResult = new ScanResult(device, rssi, scanRecord, System.currentTimeMillis());
+        BleDevice scanResult = new BleDevice(device, rssi, scanRecord, System.currentTimeMillis());
 
         synchronized (this) {
             if (TextUtils.isEmpty(mDeviceMac) && (mDeviceNames == null || mDeviceNames.length < 1)) {
@@ -74,13 +74,13 @@ public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
         }
     }
 
-    private void next(ScanResult scanResult) {
+    private void next(BleDevice scanResult) {
         if (mNeedConnect) {
             mScanResultList.add(scanResult);
             BleManager.getInstance().getBleScanner().stopLeScan();
         } else {
             AtomicBoolean hasFound = new AtomicBoolean(false);
-            for (ScanResult result : mScanResultList) {
+            for (BleDevice result : mScanResultList) {
                 if (result.getDevice().equals(scanResult.getDevice())) {
                     hasFound.set(true);
                 }
@@ -117,9 +117,9 @@ public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
 
     public abstract void onScanStarted();
 
-    public abstract void onScanning(ScanResult result);
+    public abstract void onScanning(BleDevice result);
 
-    public abstract void onScanFinished(List<ScanResult> scanResultList);
+    public abstract void onScanFinished(List<BleDevice> scanResultList);
 
 
 }

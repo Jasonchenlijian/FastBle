@@ -9,7 +9,7 @@ import android.os.Looper;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.conn.BleScanCallback;
-import com.clj.fastble.data.ScanResult;
+import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.ScanState;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.ScanFailedException;
@@ -43,14 +43,14 @@ public class BleScanner {
             }
 
             @Override
-            public void onScanning(ScanResult result) {
+            public void onScanning(BleDevice result) {
                 if (callback != null) {
                     callback.onScanning(result);
                 }
             }
 
             @Override
-            public void onScanFinished(List<ScanResult> scanResultList) {
+            public void onScanFinished(List<BleDevice> scanResultList) {
                 if (callback != null) {
                     callback.onScanFinished(scanResultList);
                 }
@@ -99,12 +99,12 @@ public class BleScanner {
             }
 
             @Override
-            public void onScanning(ScanResult result) {
+            public void onScanning(BleDevice result) {
 
             }
 
             @Override
-            public void onScanFinished(final List<ScanResult> scanResultList) {
+            public void onScanFinished(final List<BleDevice> scanResultList) {
                 if (scanResultList == null || scanResultList.size() < 1) {
                     if (callback != null) {
                         callback.onConnectError(new NotFoundDeviceException());

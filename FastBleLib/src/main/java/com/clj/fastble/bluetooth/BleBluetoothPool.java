@@ -2,8 +2,8 @@ package com.clj.fastble.bluetooth;
 
 
 import com.clj.fastble.data.BleConfig;
+import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.ConnectState;
-import com.clj.fastble.data.ScanResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,9 +64,8 @@ public class BleBluetoothPool {
     /**
      * 判断是否包含设备镜像
      */
-    public synchronized boolean isContainDevice(ScanResult scanResult) {
-        if (scanResult == null || !bleLruHashMap.containsKey(scanResult.getDevice().getAddress() +
-                scanResult.getDevice().getName())) {
+    public synchronized boolean isContainDevice(BleDevice bleDevice) {
+        if (bleDevice == null || !bleLruHashMap.containsKey(bleDevice.getKey())) {
             return false;
         }
         return true;
@@ -75,8 +74,8 @@ public class BleBluetoothPool {
     /**
      * 获取连接池中该设备镜像的连接状态，如果没有连接则返回CONNECT_DISCONNECT。
      */
-    public synchronized ConnectState getConnectState(ScanResult scanResult) {
-        BleBluetooth bleBluetooth = getBleBluetooth(scanResult);
+    public synchronized ConnectState getConnectState(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
         if (bleBluetooth != null) {
             return bleBluetooth.getConnectState();
         }
@@ -86,9 +85,9 @@ public class BleBluetoothPool {
     /**
      * 获取连接池中的设备镜像，如果没有连接则返回空
      */
-    public synchronized BleBluetooth getBleBluetooth(ScanResult scanResult) {
-        if (scanResult != null) {
-            String key = scanResult.getDevice().getAddress() + scanResult.getDevice().getName();
+    public synchronized BleBluetooth getBleBluetooth(BleDevice bleDevice) {
+        if (bleDevice != null) {
+            String key = bleDevice.getDevice().getAddress() + bleDevice.getDevice().getName();
             if (bleLruHashMap.containsKey(key)) {
                 return bleLruHashMap.get(key);
             }
@@ -99,9 +98,9 @@ public class BleBluetoothPool {
     /**
      * 断开连接池中某一个设备
      */
-    public synchronized void disconnect(ScanResult scanResult) {
-        if (isContainDevice(scanResult)) {
-            getBleBluetooth(scanResult).disconnect();
+    public synchronized void disconnect(BleDevice bleDevice) {
+        if (isContainDevice(bleDevice)) {
+            getBleBluetooth(bleDevice).disconnect();
         }
     }
 
@@ -155,8 +154,8 @@ public class BleBluetoothPool {
      *
      * @return
      */
-    public synchronized List<ScanResult> getDeviceList() {
-        final List<ScanResult> deviceList = new ArrayList<>();
+    public synchronized List<BleDevice> getDeviceList() {
+        final List<BleDevice> deviceList = new ArrayList<>();
         for (BleBluetooth BleBluetooth : getBleBluetoothList()) {
             if (BleBluetooth != null) {
                 deviceList.add(BleBluetooth.getBluetoothLeDevice());

@@ -16,7 +16,7 @@ import com.clj.fastble.conn.BleCharacterCallback;
 import com.clj.fastble.conn.BleGattCallback;
 import com.clj.fastble.conn.BleRssiCallback;
 import com.clj.fastble.conn.BleScanCallback;
-import com.clj.fastble.data.ScanResult;
+import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.BleScanRuleConfig;
 import com.clj.fastble.utils.HexUtil;
@@ -82,7 +82,7 @@ public class BluetoothService extends Service {
 
         void onStartScan();
 
-        void onScanning(ScanResult scanResult);
+        void onScanning(BleDevice scanResult);
 
         void onScanComplete();
 
@@ -143,7 +143,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onScanning(final ScanResult result) {
+            public void onScanning(final BleDevice result) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -155,7 +155,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onScanFinished(List<ScanResult> scanResultList) {
+            public void onScanFinished(List<BleDevice> scanResultList) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -173,7 +173,7 @@ public class BluetoothService extends Service {
         }
     }
 
-    public void connect(final ScanResult scanResult) {
+    public void connect(final BleDevice scanResult) {
         bleManager.connect(scanResult, new BleGattCallback() {
 
             @Override
@@ -182,7 +182,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onFoundDevice(ScanResult scanResult) {
+            public void onFoundDevice(BleDevice scanResult) {
                 if (mCallback != null) {
                     mCallback.onConnecting();
                 }
@@ -255,7 +255,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onFoundDevice(ScanResult scanResult) {
+            public void onFoundDevice(BleDevice scanResult) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {

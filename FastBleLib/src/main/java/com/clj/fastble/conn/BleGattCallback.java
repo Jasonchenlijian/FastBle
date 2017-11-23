@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.os.Build;
 
-import com.clj.fastble.data.ScanResult;
+import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
 
 
@@ -15,7 +15,7 @@ public abstract class BleGattCallback extends BluetoothGattCallback {
 
     public abstract void onScanStarted();
 
-    public abstract void onFoundDevice(ScanResult scanResult);
+    public abstract void onFoundDevice(BleDevice scanResult);
 
     public abstract void onConnecting(BluetoothGatt gatt, int status);
 
