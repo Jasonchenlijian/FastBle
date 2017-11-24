@@ -1,14 +1,14 @@
-package com.clj.fastble.conn;
+package com.clj.fastble.callback;
 
-import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.clj.fastble.bluetooth.BleConnector;
+import com.clj.fastble.exception.BleException;
 
+public abstract class BleReadCallback {
 
-public abstract class BleCharacterCallback extends BleCallback {
+    public abstract void onReadSuccess(byte[] data);
 
-
-    public abstract void onSuccess(BluetoothGattCharacteristic characteristic);
+    public abstract void onReadFailure(BleException exception);
 
     private String key;
 

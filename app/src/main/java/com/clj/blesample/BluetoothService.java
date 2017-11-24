@@ -12,10 +12,13 @@ import android.os.IBinder;
 import android.os.Looper;
 
 import com.clj.fastble.BleManager;
-import com.clj.fastble.conn.BleCharacterCallback;
-import com.clj.fastble.conn.BleGattCallback;
-import com.clj.fastble.conn.BleRssiCallback;
-import com.clj.fastble.conn.BleScanCallback;
+import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleIndicateCallback;
+import com.clj.fastble.callback.BleNotifyCallback;
+import com.clj.fastble.callback.BleReadCallback;
+import com.clj.fastble.callback.BleRssiCallback;
+import com.clj.fastble.callback.BleScanCallback;
+import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.BleScanRuleConfig;
@@ -27,28 +30,25 @@ import java.util.UUID;
 public class BluetoothService extends Service {
 
     public BluetoothBinder mBinder = new BluetoothBinder();
-    private BleManager bleManager;
     private Handler threadHandler = new Handler(Looper.getMainLooper());
     private Callback mCallback = null;
     private Callback2 mCallback2 = null;
 
-    private String name;
-    private String mac;
-    private BluetoothGatt gatt;
+    private BleDevice mBleDevice;
+    private BluetoothGatt mGatt;
     private BluetoothGattService service;
     private BluetoothGattCharacteristic characteristic;
     private int charaProp;
 
     @Override
     public void onCreate() {
-        bleManager = new BleManager(this);
-        bleManager.enableBluetooth();
+        BleManager.getInstance().init(getApplication());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        bleManager = null;
+        BleManager.getInstance().clear();
         mCallback = null;
         mCallback2 = null;
     }
@@ -60,7 +60,7 @@ public class BluetoothService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
-        bleManager.closeBluetoothGatt();
+        BleManager.getInstance().disconnect();
         return super.onUnbind(intent);
     }
 
@@ -116,7 +116,7 @@ public class BluetoothService extends Service {
                 .setAutoConnect(isAuto)
                 .setTimeOut(8000)
                 .build();
-        bleManager.initScanRule(scanRuleConfig);
+        BleManager.getInstance().initScanRule(scanRuleConfig);
     }
 
     public void scanDevice(boolean isConnect) {
@@ -128,17 +128,21 @@ public class BluetoothService extends Service {
     }
 
     public void cancelScan() {
-        bleManager.cancelScan();
+        BleManager.getInstance().cancelScan();
     }
 
     public void scan() {
         resetInfo();
 
-        boolean b = bleManager.scan(new BleScanCallback() {
+        BleManager.getInstance().scan(new BleScanCallback() {
             @Override
-            public void onScanStarted() {
+            public void onScanStarted(boolean success) {
                 if (mCallback != null) {
-                    mCallback.onStartScan();
+                    if (success) {
+                        mCallback.onStartScan();
+                    } else {
+                        mCallback.onScanComplete();
+                    }
                 }
             }
 
@@ -166,28 +170,21 @@ public class BluetoothService extends Service {
                 });
             }
         });
-        if (!b) {
-            if (mCallback != null) {
-                mCallback.onScanComplete();
-            }
-        }
     }
 
     public void connect(final BleDevice scanResult) {
-        bleManager.connect(scanResult, new BleGattCallback() {
+        BleManager.getInstance().connect(scanResult, new BleGattCallback() {
 
             @Override
-            public void onScanStarted() {
+            public void onScanStarted(boolean success) {
 
             }
 
             @Override
-            public void onFoundDevice(BleDevice scanResult) {
+            public void onFoundDevice(BleDevice bleDevice) {
                 if (mCallback != null) {
                     mCallback.onConnecting();
                 }
-                BluetoothService.this.name = scanResult.getDevice().getName();
-                BluetoothService.this.mac = scanResult.getDevice().getAddress();
             }
 
             @Override
@@ -208,13 +205,9 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
-                BluetoothService.this.gatt = gatt;
+            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                mBleDevice = bleDevice;
+                mGatt = gatt;
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -226,7 +219,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
+            public void onDisConnected(boolean isActive, BluetoothGatt gatt, int status) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -245,12 +238,16 @@ public class BluetoothService extends Service {
     public void scanAndConnect() {
         resetInfo();
 
-        bleManager.scanAndConnect(new BleGattCallback() {
+        BleManager.getInstance().scanAndConnect(new BleGattCallback() {
 
             @Override
-            public void onScanStarted() {
+            public void onScanStarted(boolean success) {
                 if (mCallback != null) {
-                    mCallback.onStartScan();
+                    if (success) {
+                        mCallback.onStartScan();
+                    } else {
+                        mCallback.onScanComplete();
+                    }
                 }
             }
 
@@ -264,8 +261,6 @@ public class BluetoothService extends Service {
                         }
                     }
                 });
-                BluetoothService.this.name = scanResult.getDevice().getName();
-                BluetoothService.this.mac = scanResult.getDevice().getAddress();
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -294,13 +289,9 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onConnectSuccess(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                BluetoothService.this.gatt = gatt;
+            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                mBleDevice = bleDevice;
+                mGatt = gatt;
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -312,7 +303,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onDisConnected(BluetoothGatt gatt, int status, BleException exception) {
+            public void onDisConnected(boolean isActive, BluetoothGatt gatt, int status) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -328,58 +319,52 @@ public class BluetoothService extends Service {
         });
     }
 
-    public boolean read(String uuid_service, String uuid_read, BleCharacterCallback callback) {
-        return bleManager.read(uuid_service, uuid_read, callback);
+    public void read(String uuid_service, String uuid_read, BleReadCallback callback) {
+        BleManager.getInstance().read(mBleDevice, uuid_service, uuid_read, callback);
     }
 
-    public boolean write(String uuid_service, String uuid_write, String hex, BleCharacterCallback callback) {
-        return bleManager.write(uuid_service, uuid_write, HexUtil.hexStringToBytes(hex), callback);
+    public void write(String uuid_service, String uuid_write, String hex, BleWriteCallback callback) {
+        BleManager.getInstance().write(mBleDevice, uuid_service, uuid_write, HexUtil.hexStringToBytes(hex), callback);
     }
 
-    public boolean notify(String uuid_service, String uuid_notify, BleCharacterCallback callback) {
-        return bleManager.notify(uuid_service, uuid_notify, callback);
+    public void notify(String uuid_service, String uuid_notify, BleNotifyCallback callback) {
+        BleManager.getInstance().notify(mBleDevice, uuid_service, uuid_notify, callback);
     }
 
-    public boolean indicate(String uuid_service, String uuid_indicate, BleCharacterCallback callback) {
-        return bleManager.indicate(uuid_service, uuid_indicate, callback);
+    public void indicate(String uuid_service, String uuid_indicate, BleIndicateCallback callback) {
+        BleManager.getInstance().indicate(mBleDevice, uuid_service, uuid_indicate, callback);
     }
 
-    public boolean stopNotify(String uuid_service, String uuid_notify) {
-        return bleManager.stopNotify(uuid_service, uuid_notify);
+    public void stopNotify(String uuid_service, String uuid_notify) {
+        BleManager.getInstance().stopNotify(mBleDevice, uuid_service, uuid_notify);
     }
 
-    public boolean stopIndicate(String uuid_service, String uuid_indicate) {
-        return bleManager.stopIndicate(uuid_service, uuid_indicate);
+    public void stopIndicate(String uuid_service, String uuid_indicate) {
+        BleManager.getInstance().stopIndicate(mBleDevice, uuid_service, uuid_indicate);
     }
 
-    public boolean readRssi(BleRssiCallback callback) {
-        return bleManager.readRssi(callback);
+    public void readRssi(BleRssiCallback callback) {
+        BleManager.getInstance().readRssi(mBleDevice, callback);
     }
 
     public void closeConnect() {
-        bleManager.closeBluetoothGatt();
+        BleManager.getInstance().clear();
     }
 
 
     private void resetInfo() {
-        name = null;
-        mac = null;
-        gatt = null;
+        mBleDevice = null;
         service = null;
         characteristic = null;
         charaProp = 0;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getMac() {
-        return mac;
+    public BleDevice getBleDevice() {
+        return mBleDevice;
     }
 
     public BluetoothGatt getGatt() {
-        return gatt;
+        return mGatt;
     }
 
     public void setService(BluetoothGattService service) {

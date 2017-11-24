@@ -17,18 +17,18 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
+public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallback {
 
     private String[] mDeviceNames = null;
     private String mDeviceMac = null;
     private boolean mFuzzy = false;
     private boolean mNeedConnect = false;
-    private List<BleDevice> mScanResultList = new ArrayList<>();
+    private List<BleDevice> mBleDeviceList = new ArrayList<>();
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private long timeoutMillis = 10000;
 
-    public ScanCallback(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeoutMillis) {
+    public BleScanPresenter(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeoutMillis) {
         this.mDeviceNames = names;
         this.mDeviceMac = mac;
         this.mFuzzy = fuzzy;
@@ -40,10 +40,6 @@ public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
         if (device == null)
             return;
-
-        if (TextUtils.isEmpty(device.getName())) {
-            return;
-        }
 
         BleDevice scanResult = new BleDevice(device, rssi, scanRecord, System.currentTimeMillis());
 
@@ -61,7 +57,10 @@ public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
             if (mDeviceNames != null && mDeviceNames.length > 0) {
                 AtomicBoolean equal = new AtomicBoolean(false);
                 for (String name : mDeviceNames) {
-                    if (mFuzzy ? device.getName().contains(name) : name.equalsIgnoreCase(device.getName())) {
+                    String remoteName = device.getName();
+                    if (remoteName == null)
+                        remoteName = "";
+                    if (mFuzzy ? remoteName.contains(name) : remoteName.equalsIgnoreCase(name)) {
                         equal.set(true);
                     }
                 }
@@ -74,52 +73,56 @@ public abstract class ScanCallback implements BluetoothAdapter.LeScanCallback {
         }
     }
 
-    private void next(BleDevice scanResult) {
+    private void next(BleDevice bleDevice) {
         if (mNeedConnect) {
-            mScanResultList.add(scanResult);
+            mBleDeviceList.add(bleDevice);
             BleManager.getInstance().getBleScanner().stopLeScan();
         } else {
             AtomicBoolean hasFound = new AtomicBoolean(false);
-            for (BleDevice result : mScanResultList) {
-                if (result.getDevice().equals(scanResult.getDevice())) {
+            for (BleDevice result : mBleDeviceList) {
+                if (result.getDevice().equals(bleDevice.getDevice())) {
                     hasFound.set(true);
                 }
             }
             if (!hasFound.get()) {
-                mScanResultList.add(scanResult);
-                onScanning(scanResult);
+                mBleDeviceList.add(bleDevice);
+                onScanning(bleDevice);
             }
         }
     }
 
-    public final void notifyScanStarted() {
-        mScanResultList.clear();
-        onScanStarted();
-        if (timeoutMillis > 0) {
-            removeHandlerMsg();
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    BleManager.getInstance().getBleScanner().stopLeScan();
-                }
-            }, timeoutMillis);
+    public final void notifyScanStarted(boolean success) {
+        if(success){
+            mBleDeviceList.clear();
+            onScanStarted(true);
+            if (timeoutMillis > 0) {
+                removeHandlerMsg();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        BleManager.getInstance().getBleScanner().stopLeScan();
+                    }
+                }, timeoutMillis);
+            }
+        }else {
+            onScanStarted(false);
         }
     }
 
     public final void notifyScanStopped() {
         removeHandlerMsg();
-        onScanFinished(mScanResultList);
+        onScanFinished(mBleDeviceList);
     }
 
     public final void removeHandlerMsg() {
         mHandler.removeCallbacksAndMessages(null);
     }
 
-    public abstract void onScanStarted();
+    public abstract void onScanStarted(boolean success);
 
-    public abstract void onScanning(BleDevice result);
+    public abstract void onScanning(BleDevice bleDevice);
 
-    public abstract void onScanFinished(List<BleDevice> scanResultList);
+    public abstract void onScanFinished(List<BleDevice> bleDeviceList);
 
 
 }

@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.clj.blesample.BluetoothService;
 import com.clj.blesample.R;
+import com.clj.fastble.data.BleDevice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,14 +63,16 @@ public class ServiceListFragment extends Fragment {
     }
 
     private void showData() {
-        String name = mBluetoothService.getName();
-        String mac = mBluetoothService.getMac();
+        BleDevice bleDevice = mBluetoothService.getBleDevice();
+        String name = bleDevice.getName();
+        String mac = bleDevice.getMac();
         BluetoothGatt gatt = mBluetoothService.getGatt();
+
         txt_name.setText(String.valueOf("设备广播名：" + name));
         txt_mac.setText(String.valueOf("MAC地址: " + mac));
 
         mResultAdapter.clear();
-        for (final BluetoothGattService service : gatt.getServices()) {
+        for (BluetoothGattService service : gatt.getServices()) {
             mResultAdapter.addResult(service);
         }
         mResultAdapter.notifyDataSetChanged();

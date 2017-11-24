@@ -1,4 +1,4 @@
-package com.clj.fastble.conn;
+package com.clj.fastble.callback;
 
 
 import com.clj.fastble.data.BleDevice;
@@ -7,7 +7,7 @@ import java.util.List;
 
 public abstract class BleScanCallback {
 
-    public abstract void onScanStarted();
+    public abstract void onScanStarted(boolean success);
 
     public abstract void onScanning(BleDevice result);
 

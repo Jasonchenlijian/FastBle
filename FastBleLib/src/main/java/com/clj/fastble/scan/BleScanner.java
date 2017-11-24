@@ -7,12 +7,11 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.clj.fastble.BleManager;
-import com.clj.fastble.conn.BleGattCallback;
-import com.clj.fastble.conn.BleScanCallback;
+import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
-import com.clj.fastble.data.ScanState;
+import com.clj.fastble.data.BleScanState;
 import com.clj.fastble.exception.NotFoundDeviceException;
-import com.clj.fastble.exception.ScanFailedException;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,17 +27,17 @@ public class BleScanner {
         private static final BleScanner sBleScanner = new BleScanner();
     }
 
-    private ScanCallback scanCallback;
-    private ScanState scanState = ScanState.STATE_IDLE;
+    private BleScanPresenter scanCallback;
+    private BleScanState scanState = BleScanState.STATE_IDLE;
 
-    public boolean scan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
-                        long timeOut, final BleScanCallback callback) {
+    public void scan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
+                     long timeOut, final BleScanCallback callback) {
 
-        return startLeScan(serviceUuids, new ScanCallback(names, mac, fuzzy, false, timeOut) {
+        startLeScan(serviceUuids, new BleScanPresenter(names, mac, fuzzy, false, timeOut) {
             @Override
-            public void onScanStarted() {
+            public void onScanStarted(boolean success) {
                 if (callback != null) {
-                    callback.onScanStarted();
+                    callback.onScanStarted(success);
                 }
             }
 
@@ -59,21 +58,21 @@ public class BleScanner {
 
     }
 
-    private boolean startLeScan(UUID[] serviceUuids, ScanCallback callback) {
+    private synchronized void startLeScan(UUID[] serviceUuids, BleScanPresenter callback) {
         if (callback == null)
-            return false;
+            return;
         this.scanCallback = callback;
         boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, scanCallback);
         if (success) {
-            scanState = ScanState.STATE_SCANNING;
-            scanCallback.notifyScanStarted();
+            scanState = BleScanState.STATE_SCANNING;
+            scanCallback.notifyScanStarted(true);
         } else {
+            scanCallback.notifyScanStarted(false);
             callback.removeHandlerMsg();
         }
-        return success;
     }
 
-    public void stopLeScan() {
+    public synchronized void stopLeScan() {
         if (scanCallback == null)
             return;
 
@@ -81,50 +80,47 @@ public class BleScanner {
         scanCallback.notifyScanStopped();
         scanCallback = null;
 
-        if (scanState == ScanState.STATE_SCANNING) {
-            scanState = ScanState.STATE_IDLE;
+        if (scanState == BleScanState.STATE_SCANNING) {
+            scanState = BleScanState.STATE_IDLE;
         }
     }
 
     public void scanAndConnect(UUID[] serviceUuids, String[] names, final String mac, boolean fuzzy,
-                               final boolean autoConnect, long timeOut, final BleGattCallback callback) {
+                               long timeOut, final BleGattCallback callback) {
 
-        boolean success = startLeScan(serviceUuids, new ScanCallback(names, mac, fuzzy, true, timeOut) {
+        startLeScan(serviceUuids, new BleScanPresenter(names, mac, fuzzy, true, timeOut) {
 
             @Override
-            public void onScanStarted() {
+            public void onScanStarted(boolean success) {
                 if (callback != null) {
-                    callback.onScanStarted();
+                    callback.onScanStarted(success);
                 }
             }
 
             @Override
-            public void onScanning(BleDevice result) {
+            public void onScanning(BleDevice bleDevice) {
 
             }
 
             @Override
-            public void onScanFinished(final List<BleDevice> scanResultList) {
-                if (scanResultList == null || scanResultList.size() < 1) {
+            public void onScanFinished(final List<BleDevice> bleDeviceList) {
+                if (bleDeviceList == null || bleDeviceList.size() < 1) {
                     if (callback != null) {
                         callback.onConnectError(new NotFoundDeviceException());
                     }
                 } else {
                     if (callback != null) {
-                        callback.onFoundDevice(scanResultList.get(0));
+                        callback.onFoundDevice(bleDeviceList.get(0));
                     }
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            BleManager.getInstance().connect(scanResultList.get(0), callback);
+                            BleManager.getInstance().connect(bleDeviceList.get(0), callback);
                         }
                     });
                 }
             }
         });
-        if (!success && callback != null) {
-            callback.onConnectError(new ScanFailedException());
-        }
     }
 
 }

@@ -1,6 +1,7 @@
 package com.clj.fastble;
 
 import android.annotation.TargetApi;
+import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
@@ -10,12 +11,15 @@ import android.os.Build;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
 import com.clj.fastble.bluetooth.BleBluetoothPool;
-import com.clj.fastble.conn.BleCharacterCallback;
-import com.clj.fastble.conn.BleGattCallback;
-import com.clj.fastble.conn.BleRssiCallback;
-import com.clj.fastble.conn.BleScanCallback;
+import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleIndicateCallback;
+import com.clj.fastble.callback.BleNotifyCallback;
+import com.clj.fastble.callback.BleReadCallback;
+import com.clj.fastble.callback.BleRssiCallback;
+import com.clj.fastble.callback.BleScanCallback;
+import com.clj.fastble.callback.BleWriteCallback;
+import com.clj.fastble.data.BleConnectState;
 import com.clj.fastble.data.BleDevice;
-import com.clj.fastble.data.ConnectState;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.NotFoundDeviceException;
@@ -30,7 +34,7 @@ import java.util.UUID;
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleManager {
 
-    private Context mContext;
+    private static Application context;
     private BleScanRuleConfig mScanRuleConfig;
     private BleScanner bleScanner;
     private BluetoothAdapter bluetoothAdapter;
@@ -46,17 +50,21 @@ public class BleManager {
         private static final BleManager sBleManager = new BleManager();
     }
 
-    public void init(Context context) {
-        if (this.mContext == null && context != null) {
-            this.mContext = context.getApplicationContext();
-
-            BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+    public void init(Application app) {
+        if (context == null && app != null) {
+            context = app;
+            BluetoothManager bluetoothManager = (BluetoothManager) context
+                    .getSystemService(Context.BLUETOOTH_SERVICE);
             if (bluetoothManager != null)
                 bluetoothAdapter = bluetoothManager.getAdapter();
             mBleExceptionHandler = new DefaultBleExceptionHandler();
             bleBluetoothPool = new BleBluetoothPool();
             bleScanner = BleScanner.getInstance();
         }
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     public BluetoothAdapter getBluetoothAdapter() {
@@ -98,14 +106,14 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean scan(BleScanCallback callback) {
+    public void scan(BleScanCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("ScanCallback can not be Null!");
+            throw new IllegalArgumentException("BleScanPresenter can not be Null!");
         }
 
         if (!isBlueEnable()) {
             handleException(new BlueToothNotEnableException());
-            return false;
+            return;
         }
 
         UUID[] serviceUuids = mScanRuleConfig.getServiceUuids();
@@ -114,7 +122,7 @@ public class BleManager {
         boolean fuzzy = mScanRuleConfig.isFuzzy();
         long timeOut = mScanRuleConfig.getTimeOut();
 
-        return bleScanner.scan(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
+        bleScanner.scan(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
     }
 
     /**
@@ -135,11 +143,10 @@ public class BleManager {
         UUID[] serviceUuids = mScanRuleConfig.getServiceUuids();
         String[] deviceNames = mScanRuleConfig.getDeviceNames();
         String deviceMac = mScanRuleConfig.getDeviceMac();
-        boolean autoConnect = mScanRuleConfig.isAutoConnect();
         boolean fuzzy = mScanRuleConfig.isFuzzy();
         long timeOut = mScanRuleConfig.getTimeOut();
 
-        bleScanner.scanAndConnect(serviceUuids, deviceNames, deviceMac, fuzzy, autoConnect, timeOut, callback);
+        bleScanner.scanAndConnect(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
     }
 
     /**
@@ -185,20 +192,19 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean notify(BleDevice bleDevice,
-                          String uuid_service,
-                          String uuid_notify,
-                          BleCharacterCallback callback) {
+    public void notify(BleDevice bleDevice,
+                       String uuid_service,
+                       String uuid_notify,
+                       BleNotifyCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
         }
 
         BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onFailure(new OtherException("this device not connect!"));
-            return false;
+            callback.onNotifyFailure(new OtherException("this device not connect!"));
         } else {
-            return bleBluetooth.newBleConnector()
+            bleBluetooth.newBleConnector()
                     .withUUIDString(uuid_service, uuid_notify)
                     .enableCharacteristicNotify(callback, uuid_notify);
         }
@@ -212,20 +218,19 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean indicate(BleDevice bleDevice,
-                            String uuid_service,
-                            String uuid_indicate,
-                            BleCharacterCallback callback) {
+    public void indicate(BleDevice bleDevice,
+                         String uuid_service,
+                         String uuid_indicate,
+                         BleIndicateCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
         }
 
         BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onFailure(new OtherException("this device not connect!"));
-            return false;
+            callback.onIndicateFailure(new OtherException("this device not connect!"));
         } else {
-            return bleBluetooth.newBleConnector()
+            bleBluetooth.newBleConnector()
                     .withUUIDString(uuid_service, uuid_indicate)
                     .enableCharacteristicIndicate(callback, uuid_indicate);
         }
@@ -249,7 +254,7 @@ public class BleManager {
                 .withUUIDString(uuid_service, uuid_notify)
                 .disableCharacteristicNotify();
         if (success) {
-            bleBluetooth.removeCharacterCallback(uuid_notify);
+            bleBluetooth.removeNotifyCallback(uuid_notify);
         }
         return success;
     }
@@ -272,7 +277,7 @@ public class BleManager {
                 .withUUIDString(uuid_service, uuid_indicate)
                 .disableCharacteristicIndicate();
         if (success) {
-            bleBluetooth.removeCharacterCallback(uuid_indicate);
+            bleBluetooth.removeIndicateCallback(uuid_indicate);
         }
         return success;
     }
@@ -286,18 +291,18 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean write(BleDevice bleDevice,
-                         String uuid_service,
-                         String uuid_write,
-                         byte[] data,
-                         BleCharacterCallback callback) {
+    public void write(BleDevice bleDevice,
+                      String uuid_service,
+                      String uuid_write,
+                      byte[] data,
+                      BleWriteCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
         }
 
         if (data == null) {
             BleLog.e("data is Null!");
-            return false;
+            return;
         }
 
         if (data.length > 20) {
@@ -306,11 +311,11 @@ public class BleManager {
 
         BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onFailure(new OtherException("this device not connect!"));
-            return false;
+            callback.onWriteFailure(new OtherException("this device not connect!"));
+            return;
         }
 
-        return bleBluetooth.newBleConnector()
+        bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_write)
                 .writeCharacteristic(data, callback, uuid_write);
     }
@@ -323,21 +328,21 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean read(BleDevice bleDevice,
-                        String uuid_service,
-                        String uuid_read,
-                        BleCharacterCallback callback) {
+    public void read(BleDevice bleDevice,
+                     String uuid_service,
+                     String uuid_read,
+                     BleReadCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
         }
 
         BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onFailure(new OtherException("this device not connect!"));
-            return false;
+            callback.onReadFailure(new OtherException("this device not connect!"));
+            return;
         }
 
-        return bleBluetooth.newBleConnector()
+        bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_read)
                 .readCharacteristic(callback, uuid_read);
     }
@@ -348,19 +353,19 @@ public class BleManager {
      * @param callback
      * @return
      */
-    public boolean readRssi(BleDevice bleDevice,
-                            BleRssiCallback callback) {
+    public void readRssi(BleDevice bleDevice,
+                         BleRssiCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleRssiCallback can not be Null!");
         }
 
         BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onFailure(new OtherException("this device not connect!"));
-            return false;
+            callback.onRssiFailure(new OtherException("this device not connect!"));
+            return;
         }
 
-        return bleBluetooth.newBleConnector().readRemoteRssi(callback);
+        bleBluetooth.newBleConnector().readRemoteRssi(callback);
     }
 
     /**
@@ -370,7 +375,7 @@ public class BleManager {
      */
     public boolean isSupportBle() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                && mContext.getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+                && context.getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
     /**
@@ -416,11 +421,11 @@ public class BleManager {
      * @param bluetoothLeDevice
      * @return
      */
-    public ConnectState getConnectState(BleDevice bluetoothLeDevice) {
+    public BleConnectState getConnectState(BleDevice bluetoothLeDevice) {
         if (bleBluetoothPool != null) {
             return bleBluetoothPool.getConnectState(bluetoothLeDevice);
         }
-        return ConnectState.CONNECT_DISCONNECT;
+        return BleConnectState.CONNECT_DISCONNECT;
     }
 
     /**
@@ -463,15 +468,6 @@ public class BleManager {
         if (bleBluetoothPool != null) {
             bleBluetoothPool.clear();
         }
-    }
-
-    /**
-     * 获取Context
-     *
-     * @return 返回Context
-     */
-    public Context getContext() {
-        return mContext;
     }
 
     /**

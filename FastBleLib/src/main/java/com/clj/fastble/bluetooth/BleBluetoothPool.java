@@ -3,7 +3,7 @@ package com.clj.fastble.bluetooth;
 
 import com.clj.fastble.data.BleConfig;
 import com.clj.fastble.data.BleDevice;
-import com.clj.fastble.data.ConnectState;
+import com.clj.fastble.data.BleConnectState;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,8 +32,8 @@ public class BleBluetoothPool {
         if (bleBluetooth == null) {
             return;
         }
-        if (!bleLruHashMap.containsKey(bleBluetooth.getUniqueSymbol())) {
-            bleLruHashMap.put(bleBluetooth.getUniqueSymbol(), bleBluetooth);
+        if (!bleLruHashMap.containsKey(bleBluetooth.getDeviceKey())) {
+            bleLruHashMap.put(bleBluetooth.getDeviceKey(), bleBluetooth);
         }
     }
 
@@ -46,8 +46,8 @@ public class BleBluetoothPool {
         if (bleBluetooth == null) {
             return;
         }
-        if (bleLruHashMap.containsKey(bleBluetooth.getUniqueSymbol())) {
-            bleLruHashMap.remove(bleBluetooth.getUniqueSymbol());
+        if (bleLruHashMap.containsKey(bleBluetooth.getDeviceKey())) {
+            bleLruHashMap.remove(bleBluetooth.getDeviceKey());
         }
     }
 
@@ -55,7 +55,7 @@ public class BleBluetoothPool {
      * 判断是否包含设备镜像
      */
     public synchronized boolean isContainDevice(BleBluetooth bleBluetooth) {
-        if (bleBluetooth == null || !bleLruHashMap.containsKey(bleBluetooth.getUniqueSymbol())) {
+        if (bleBluetooth == null || !bleLruHashMap.containsKey(bleBluetooth.getDeviceKey())) {
             return false;
         }
         return true;
@@ -74,12 +74,12 @@ public class BleBluetoothPool {
     /**
      * 获取连接池中该设备镜像的连接状态，如果没有连接则返回CONNECT_DISCONNECT。
      */
-    public synchronized ConnectState getConnectState(BleDevice bleDevice) {
+    public synchronized BleConnectState getConnectState(BleDevice bleDevice) {
         BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
         if (bleBluetooth != null) {
             return bleBluetooth.getConnectState();
         }
-        return ConnectState.CONNECT_DISCONNECT;
+        return BleConnectState.CONNECT_DISCONNECT;
     }
 
     /**
@@ -87,9 +87,8 @@ public class BleBluetoothPool {
      */
     public synchronized BleBluetooth getBleBluetooth(BleDevice bleDevice) {
         if (bleDevice != null) {
-            String key = bleDevice.getDevice().getAddress() + bleDevice.getDevice().getName();
-            if (bleLruHashMap.containsKey(key)) {
-                return bleLruHashMap.get(key);
+            if (bleLruHashMap.containsKey(bleDevice.getKey())) {
+                return bleLruHashMap.get(bleDevice.getKey());
             }
         }
         return null;
@@ -143,7 +142,7 @@ public class BleBluetoothPool {
         Collections.sort(BleBluetooths, new Comparator<BleBluetooth>() {
             @Override
             public int compare(final BleBluetooth lhs, final BleBluetooth rhs) {
-                return lhs.getUniqueSymbol().compareToIgnoreCase(rhs.getUniqueSymbol());
+                return lhs.getDeviceKey().compareToIgnoreCase(rhs.getDeviceKey());
             }
         });
         return BleBluetooths;
@@ -158,7 +157,7 @@ public class BleBluetoothPool {
         final List<BleDevice> deviceList = new ArrayList<>();
         for (BleBluetooth BleBluetooth : getBleBluetoothList()) {
             if (BleBluetooth != null) {
-                deviceList.add(BleBluetooth.getBluetoothLeDevice());
+                deviceList.add(BleBluetooth.getDevice());
             }
         }
         return deviceList;

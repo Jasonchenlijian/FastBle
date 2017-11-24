@@ -1,5 +1,5 @@
 
-package com.clj.fastble.conn;
+package com.clj.fastble.callback;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
@@ -13,7 +13,7 @@ import com.clj.fastble.exception.BleException;
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public abstract class BleGattCallback extends BluetoothGattCallback {
 
-    public abstract void onScanStarted();
+    public abstract void onScanStarted(boolean success);
 
     public abstract void onFoundDevice(BleDevice scanResult);
 
@@ -21,8 +21,8 @@ public abstract class BleGattCallback extends BluetoothGattCallback {
 
     public abstract void onConnectError(BleException exception);
 
-    public abstract void onConnectSuccess();
+    public abstract void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status);
 
-    public abstract void onDisConnected(BluetoothGatt gatt, int status, boolean isActive);
+    public abstract void onDisConnected(boolean isActive, BluetoothGatt gatt, int status);
 
 }
