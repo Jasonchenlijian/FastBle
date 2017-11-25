@@ -16,8 +16,8 @@ import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleRssiCallback;
 import com.clj.fastble.callback.BleWriteCallback;
-import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleConnectState;
+import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.utils.BleLog;
@@ -199,16 +199,13 @@ public class BleBluetooth {
         }
     }
 
-    /**
-     * 关闭GATT
-     */
-    public synchronized void close() {
+    public synchronized void closeBluetoothGatt() {
         if (bluetoothGatt != null) {
             bluetoothGatt.close();
         }
     }
 
-    public synchronized void closeBluetoothGatt() {
+    public synchronized void destroy() {
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
         }
@@ -239,15 +236,15 @@ public class BleBluetooth {
                 gatt.discoverServices();
 
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                close();
+                closeBluetoothGatt();
                 if (bleGattCallback != null) {
-                    BleManager.getInstance().getDeviceMirrorPool().removeBleBluetooth(bleBluetooth);
+                    BleManager.getInstance().getBleBluetoothPool().removeBleBluetooth(bleBluetooth);
                     if (status == BluetoothGatt.GATT_SUCCESS) {
                         connectState = BleConnectState.CONNECT_DISCONNECT;
                         bleGattCallback.onDisConnected(isActiveDisconnect, gatt, newState);
                     } else {
                         connectState = BleConnectState.CONNECT_FAILURE;
-                        bleGattCallback.onConnectError(new ConnectException(gatt, status));
+                        bleGattCallback.onConnectFail(new ConnectException(gatt, status));
                     }
                 }
 
@@ -268,13 +265,13 @@ public class BleBluetooth {
                 connectState = BleConnectState.CONNECT_SUCCESS;
                 if (bleGattCallback != null) {
                     isActiveDisconnect = false;
-                    BleManager.getInstance().getDeviceMirrorPool().addBleBluetooth(bleBluetooth);
+                    BleManager.getInstance().getBleBluetoothPool().addBleBluetooth(bleBluetooth);
                     bleGattCallback.onConnectSuccess(bleDevice, gatt, status);
                 }
             } else {
-                close();
+                closeBluetoothGatt();
                 if (bleGattCallback != null) {
-                    bleGattCallback.onConnectError(new ConnectException(gatt, status));
+                    bleGattCallback.onConnectFail(new ConnectException(gatt, status));
                 }
             }
         }

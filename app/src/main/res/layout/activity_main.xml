@@ -77,7 +77,7 @@
             android:layout_weight="1"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
-            android:text="扫描完成后直接连接？"
+            android:text="扫描到符合条件的设备后直接连接？"
             android:textSize="13sp" />
 
     </LinearLayout>

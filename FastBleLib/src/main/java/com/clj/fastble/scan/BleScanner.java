@@ -7,11 +7,10 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.clj.fastble.BleManager;
-import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleScanAndConnectCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleScanState;
-import com.clj.fastble.exception.NotFoundDeviceException;
 
 import java.util.List;
 import java.util.UUID;
@@ -86,7 +85,7 @@ public class BleScanner {
     }
 
     public void scanAndConnect(UUID[] serviceUuids, String[] names, final String mac, boolean fuzzy,
-                               long timeOut, final BleGattCallback callback) {
+                               long timeOut, final BleScanAndConnectCallback callback) {
 
         startLeScan(serviceUuids, new BleScanPresenter(names, mac, fuzzy, true, timeOut) {
 
@@ -106,11 +105,11 @@ public class BleScanner {
             public void onScanFinished(final List<BleDevice> bleDeviceList) {
                 if (bleDeviceList == null || bleDeviceList.size() < 1) {
                     if (callback != null) {
-                        callback.onConnectError(new NotFoundDeviceException());
+                        callback.onScanFinished(null);
                     }
                 } else {
                     if (callback != null) {
-                        callback.onFoundDevice(bleDeviceList.get(0));
+                        callback.onScanFinished(bleDeviceList.get(0));
                     }
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override

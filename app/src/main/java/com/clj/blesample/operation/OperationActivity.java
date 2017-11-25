@@ -42,7 +42,7 @@ public class OperationActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (mBluetoothService != null)
-            mBluetoothService.closeConnect();
+            mBluetoothService.destroy();
         unbindService();
     }
 

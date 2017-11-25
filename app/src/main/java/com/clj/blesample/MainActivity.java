@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView img_loading;
 
     private Animation operatingAnim;
-    private ResultAdapter mResultAdapter;
+    private ScanResultAdapter mResultAdapter;
     private ProgressDialog progressDialog;
 
     private String[] names;
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         operatingAnim.setInterpolator(new LinearInterpolator());
         progressDialog = new ProgressDialog(this);
 
-        mResultAdapter = new ResultAdapter(this);
+        mResultAdapter = new ScanResultAdapter(this);
         ListView listView_device = (ListView) findViewById(R.id.list_device);
         listView_device.setAdapter(mResultAdapter);
         listView_device.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -168,12 +168,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         isNeedConnect = sw_connect.isChecked();
     }
 
-    private class ResultAdapter extends BaseAdapter {
+    private class ScanResultAdapter extends BaseAdapter {
 
         private Context context;
         private List<BleDevice> scanResultList;
 
-        ResultAdapter(Context context) {
+        ScanResultAdapter(Context context) {
             this.context = context;
             scanResultList = new ArrayList<>();
         }
@@ -205,12 +205,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ResultAdapter.ViewHolder holder;
+            ScanResultAdapter.ViewHolder holder;
             if (convertView != null) {
-                holder = (ResultAdapter.ViewHolder) convertView.getTag();
+                holder = (ScanResultAdapter.ViewHolder) convertView.getTag();
             } else {
                 convertView = View.inflate(context, R.layout.adapter_scan_result, null);
-                holder = new ResultAdapter.ViewHolder();
+                holder = new ScanResultAdapter.ViewHolder();
                 convertView.setTag(holder);
                 holder.txt_name = (TextView) convertView.findViewById(R.id.txt_name);
                 holder.txt_mac = (TextView) convertView.findViewById(R.id.txt_mac);

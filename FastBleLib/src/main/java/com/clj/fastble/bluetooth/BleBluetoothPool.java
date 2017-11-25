@@ -2,8 +2,8 @@ package com.clj.fastble.bluetooth;
 
 
 import com.clj.fastble.data.BleConfig;
-import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleConnectState;
+import com.clj.fastble.data.BleDevice;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,7 +106,7 @@ public class BleBluetoothPool {
     /**
      * 断开连接池中所有设备
      */
-    public synchronized void disconnect() {
+    public synchronized void disconnectAllDevice() {
         for (Map.Entry<String, BleBluetooth> stringBleBluetoothEntry : bleLruHashMap.entrySet()) {
             stringBleBluetoothEntry.getValue().disconnect();
         }
@@ -116,9 +116,9 @@ public class BleBluetoothPool {
     /**
      * 清除连接池
      */
-    public synchronized void clear() {
+    public synchronized void destroy() {
         for (Map.Entry<String, BleBluetooth> stringBleBluetoothEntry : bleLruHashMap.entrySet()) {
-            stringBleBluetoothEntry.getValue().closeBluetoothGatt();
+            stringBleBluetoothEntry.getValue().destroy();
         }
         bleLruHashMap.clear();
     }
@@ -138,14 +138,14 @@ public class BleBluetoothPool {
      * @return
      */
     public synchronized List<BleBluetooth> getBleBluetoothList() {
-        final List<BleBluetooth> BleBluetooths = new ArrayList<>(bleLruHashMap.values());
-        Collections.sort(BleBluetooths, new Comparator<BleBluetooth>() {
+        final List<BleBluetooth> bleBluetoothList = new ArrayList<>(bleLruHashMap.values());
+        Collections.sort(bleBluetoothList, new Comparator<BleBluetooth>() {
             @Override
             public int compare(final BleBluetooth lhs, final BleBluetooth rhs) {
                 return lhs.getDeviceKey().compareToIgnoreCase(rhs.getDeviceKey());
             }
         });
-        return BleBluetooths;
+        return bleBluetoothList;
     }
 
     /**

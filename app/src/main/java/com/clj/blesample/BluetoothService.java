@@ -17,6 +17,7 @@ import com.clj.fastble.callback.BleIndicateCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleRssiCallback;
+import com.clj.fastble.callback.BleScanAndConnectCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleDevice;
@@ -48,7 +49,7 @@ public class BluetoothService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        BleManager.getInstance().clear();
+        BleManager.getInstance().destroy();
         mCallback = null;
         mCallback2 = null;
     }
@@ -60,7 +61,7 @@ public class BluetoothService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
-        BleManager.getInstance().disconnect();
+        BleManager.getInstance().disconnectAllDevice();
         return super.onUnbind(intent);
     }
 
@@ -172,28 +173,18 @@ public class BluetoothService extends Service {
         });
     }
 
-    public void connect(final BleDevice scanResult) {
-        BleManager.getInstance().connect(scanResult, new BleGattCallback() {
+    public void connect(BleDevice bleDevice) {
+        BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
 
             @Override
-            public void onScanStarted(boolean success) {
-
-            }
-
-            @Override
-            public void onFoundDevice(BleDevice bleDevice) {
+            public void onConnecting(BluetoothGatt gatt, int status) {
                 if (mCallback != null) {
                     mCallback.onConnecting();
                 }
             }
 
             @Override
-            public void onConnecting(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onConnectError(BleException exception) {
+            public void onConnectFail(BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -238,7 +229,7 @@ public class BluetoothService extends Service {
     public void scanAndConnect() {
         resetInfo();
 
-        BleManager.getInstance().scanAndConnect(new BleGattCallback() {
+        BleManager.getInstance().scanAndConnect(new BleScanAndConnectCallback() {
 
             @Override
             public void onScanStarted(boolean success) {
@@ -252,7 +243,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onFoundDevice(BleDevice scanResult) {
+            public void onScanFinished(BleDevice scanResult) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -261,6 +252,10 @@ public class BluetoothService extends Service {
                         }
                     }
                 });
+            }
+
+            @Override
+            public void onConnecting(BluetoothGatt gatt, int status) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -272,12 +267,7 @@ public class BluetoothService extends Service {
             }
 
             @Override
-            public void onConnecting(BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onConnectError(BleException exception) {
+            public void onConnectFail(BleException exception) {
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -347,8 +337,8 @@ public class BluetoothService extends Service {
         BleManager.getInstance().readRssi(mBleDevice, callback);
     }
 
-    public void closeConnect() {
-        BleManager.getInstance().clear();
+    public void destroy() {
+        BleManager.getInstance().destroy();
     }
 
 

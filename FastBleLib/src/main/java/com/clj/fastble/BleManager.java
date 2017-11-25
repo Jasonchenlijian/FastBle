@@ -16,6 +16,7 @@ import com.clj.fastble.callback.BleIndicateCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleRssiCallback;
+import com.clj.fastble.callback.BleScanAndConnectCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleConnectState;
@@ -35,11 +36,11 @@ import java.util.UUID;
 public class BleManager {
 
     private static Application context;
-    private BleScanRuleConfig mScanRuleConfig;
+    private BleScanRuleConfig bleScanRuleConfig;
     private BleScanner bleScanner;
     private BluetoothAdapter bluetoothAdapter;
     private BleBluetoothPool bleBluetoothPool;
-    private DefaultBleExceptionHandler mBleExceptionHandler;
+    private DefaultBleExceptionHandler bleExceptionHandler;
 
 
     public static BleManager getInstance() {
@@ -57,7 +58,7 @@ public class BleManager {
                     .getSystemService(Context.BLUETOOTH_SERVICE);
             if (bluetoothManager != null)
                 bluetoothAdapter = bluetoothManager.getAdapter();
-            mBleExceptionHandler = new DefaultBleExceptionHandler();
+            bleExceptionHandler = new DefaultBleExceptionHandler();
             bleBluetoothPool = new BleBluetoothPool();
             bleScanner = BleScanner.getInstance();
         }
@@ -76,10 +77,28 @@ public class BleManager {
     }
 
     /**
+     * get the ScanRuleConfig
+     *
+     * @return
+     */
+    public BleScanRuleConfig getScanRuleConfig() {
+        return bleScanRuleConfig;
+    }
+
+    /**
      * handle Exception Information
      */
     public void handleException(BleException exception) {
-        mBleExceptionHandler.handleException(exception);
+        bleExceptionHandler.handleException(exception);
+    }
+
+    /**
+     * 获取设备镜像池
+     *
+     * @return
+     */
+    public BleBluetoothPool getBleBluetoothPool() {
+        return bleBluetoothPool;
     }
 
     /**
@@ -88,16 +107,7 @@ public class BleManager {
      * @param scanRuleConfig
      */
     public void initScanRule(BleScanRuleConfig scanRuleConfig) {
-        this.mScanRuleConfig = scanRuleConfig;
-    }
-
-    /**
-     * get the ScanRuleConfig
-     *
-     * @return
-     */
-    public BleScanRuleConfig getScanRuleConfig() {
-        return mScanRuleConfig;
+        this.bleScanRuleConfig = scanRuleConfig;
     }
 
     /**
@@ -116,11 +126,11 @@ public class BleManager {
             return;
         }
 
-        UUID[] serviceUuids = mScanRuleConfig.getServiceUuids();
-        String[] deviceNames = mScanRuleConfig.getDeviceNames();
-        String deviceMac = mScanRuleConfig.getDeviceMac();
-        boolean fuzzy = mScanRuleConfig.isFuzzy();
-        long timeOut = mScanRuleConfig.getTimeOut();
+        UUID[] serviceUuids = bleScanRuleConfig.getServiceUuids();
+        String[] deviceNames = bleScanRuleConfig.getDeviceNames();
+        String deviceMac = bleScanRuleConfig.getDeviceMac();
+        boolean fuzzy = bleScanRuleConfig.isFuzzy();
+        long timeOut = bleScanRuleConfig.getTimeOut();
 
         bleScanner.scan(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
     }
@@ -130,7 +140,7 @@ public class BleManager {
      *
      * @param callback
      */
-    public void scanAndConnect(BleGattCallback callback) {
+    public void scanAndConnect(BleScanAndConnectCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleGattCallback can not be Null!");
         }
@@ -140,11 +150,11 @@ public class BleManager {
             return;
         }
 
-        UUID[] serviceUuids = mScanRuleConfig.getServiceUuids();
-        String[] deviceNames = mScanRuleConfig.getDeviceNames();
-        String deviceMac = mScanRuleConfig.getDeviceMac();
-        boolean fuzzy = mScanRuleConfig.isFuzzy();
-        long timeOut = mScanRuleConfig.getTimeOut();
+        UUID[] serviceUuids = bleScanRuleConfig.getServiceUuids();
+        String[] deviceNames = bleScanRuleConfig.getDeviceNames();
+        String deviceMac = bleScanRuleConfig.getDeviceMac();
+        boolean fuzzy = bleScanRuleConfig.isFuzzy();
+        long timeOut = bleScanRuleConfig.getTimeOut();
 
         bleScanner.scanAndConnect(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
     }
@@ -166,11 +176,10 @@ public class BleManager {
         }
 
         if (bleDevice == null || bleDevice.getDevice() == null) {
-            bleGattCallback.onConnectError(new NotFoundDeviceException());
+            bleGattCallback.onConnectFail(new NotFoundDeviceException());
         } else {
-            bleGattCallback.onFoundDevice(bleDevice);
             BleBluetooth bleBluetooth = new BleBluetooth(bleDevice);
-            boolean autoConnect = mScanRuleConfig.isAutoConnect();
+            boolean autoConnect = bleScanRuleConfig.isAutoConnect();
             return bleBluetooth.connect(bleDevice, autoConnect, bleGattCallback);
         }
 
@@ -405,12 +414,12 @@ public class BleManager {
     /**
      * 获取连接池中的设备镜像，如果没有连接则返回空
      *
-     * @param bluetoothLeDevice
+     * @param bleDevice
      * @return
      */
-    public BleBluetooth getDeviceMirror(BleDevice bluetoothLeDevice) {
+    public BleBluetooth getBleBluetooth(BleDevice bleDevice) {
         if (bleBluetoothPool != null) {
-            return bleBluetoothPool.getBleBluetooth(bluetoothLeDevice);
+            return bleBluetoothPool.getBleBluetooth(bleDevice);
         }
         return null;
     }
@@ -418,12 +427,12 @@ public class BleManager {
     /**
      * 获取该设备连接状态
      *
-     * @param bluetoothLeDevice
+     * @param bleDevice
      * @return
      */
-    public BleConnectState getConnectState(BleDevice bluetoothLeDevice) {
+    public BleConnectState getConnectState(BleDevice bleDevice) {
         if (bleBluetoothPool != null) {
-            return bleBluetoothPool.getConnectState(bluetoothLeDevice);
+            return bleBluetoothPool.getConnectState(bleDevice);
         }
         return BleConnectState.CONNECT_DISCONNECT;
     }
@@ -431,12 +440,12 @@ public class BleManager {
     /**
      * 判断该设备是否已连接
      *
-     * @param bluetoothLeDevice
+     * @param bleDevice
      * @return
      */
-    public boolean isConnect(BleDevice bluetoothLeDevice) {
+    public boolean isConnect(BleDevice bleDevice) {
         if (bleBluetoothPool != null) {
-            return bleBluetoothPool.isContainDevice(bluetoothLeDevice);
+            return bleBluetoothPool.isContainDevice(bleDevice);
         }
         return false;
     }
@@ -444,39 +453,30 @@ public class BleManager {
     /**
      * 断开某一个设备
      *
-     * @param bluetoothLeDevice
+     * @param bleDevice
      */
-    public void disconnect(BleDevice bluetoothLeDevice) {
+    public void disconnect(BleDevice bleDevice) {
         if (bleBluetoothPool != null) {
-            bleBluetoothPool.disconnect(bluetoothLeDevice);
+            bleBluetoothPool.disconnect(bleDevice);
         }
     }
 
     /**
      * 断开所有设备
      */
-    public void disconnect() {
+    public void disconnectAllDevice() {
         if (bleBluetoothPool != null) {
-            bleBluetoothPool.disconnect();
+            bleBluetoothPool.disconnectAllDevice();
         }
     }
 
     /**
      * 清除资源，在退出应用时调用
      */
-    public void clear() {
+    public void destroy() {
         if (bleBluetoothPool != null) {
-            bleBluetoothPool.clear();
+            bleBluetoothPool.destroy();
         }
-    }
-
-    /**
-     * 获取设备镜像池
-     *
-     * @return
-     */
-    public BleBluetoothPool getDeviceMirrorPool() {
-        return bleBluetoothPool;
     }
 
 }
