@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +16,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.clj.blesample.BluetoothService;
 import com.clj.blesample.R;
+import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleIndicateCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleWriteCallback;
+import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.utils.HexUtil;
 
@@ -40,14 +42,6 @@ public class CharacteristicOperationFragment extends Fragment {
 
     private List<String> childList = new ArrayList<>();
 
-    private BluetoothService mBluetoothService;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        mBluetoothService = ((OperationActivity) getActivity()).getBluetoothService();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,20 +55,21 @@ public class CharacteristicOperationFragment extends Fragment {
     }
 
     public void showData() {
-        final BluetoothGattCharacteristic characteristic = mBluetoothService.getCharacteristic();
-        final int charaProp = mBluetoothService.getCharaProp();
+        final BleDevice bleDevice = ((OperationActivity) getActivity()).getBleDevice();
+        final BluetoothGattCharacteristic characteristic = ((OperationActivity) getActivity()).getCharacteristic();
+        final int charaProp = ((OperationActivity) getActivity()).getCharaProp();
         String child = characteristic.getUuid().toString() + String.valueOf(charaProp);
 
         for (int i = 0; i < layout_container.getChildCount(); i++) {
             layout_container.getChildAt(i).setVisibility(View.GONE);
         }
         if (childList.contains(child)) {
-            layout_container.findViewWithTag(characteristic.getUuid().toString()).setVisibility(View.VISIBLE);
+            layout_container.findViewWithTag(bleDevice.getKey()+ characteristic.getUuid().toString() + charaProp).setVisibility(View.VISIBLE);
         } else {
             childList.add(child);
 
             View view = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation, null);
-            view.setTag(characteristic.getUuid().toString());
+            view.setTag(bleDevice.getKey()+ characteristic.getUuid().toString() + charaProp);
             LinearLayout layout_add = (LinearLayout) view.findViewById(R.id.layout_add);
             final TextView txt_title = (TextView) view.findViewById(R.id.txt_title);
             txt_title.setText(String.valueOf(characteristic.getUuid().toString() + "的数据变化："));
@@ -89,7 +84,8 @@ public class CharacteristicOperationFragment extends Fragment {
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            mBluetoothService.read(
+                            BleManager.getInstance().read(
+                                    bleDevice,
                                     characteristic.getService().getUuid().toString(),
                                     characteristic.getUuid().toString(),
                                     new BleReadCallback() {
@@ -142,10 +138,11 @@ public class CharacteristicOperationFragment extends Fragment {
                             if (TextUtils.isEmpty(hex)) {
                                 return;
                             }
-                            mBluetoothService.write(
+                            BleManager.getInstance().write(
+                                    bleDevice,
                                     characteristic.getService().getUuid().toString(),
                                     characteristic.getUuid().toString(),
-                                    hex,
+                                    HexUtil.hexStringToBytes(hex),
                                     new BleWriteCallback() {
 
                                         @Override
@@ -196,10 +193,11 @@ public class CharacteristicOperationFragment extends Fragment {
                             if (TextUtils.isEmpty(hex)) {
                                 return;
                             }
-                            mBluetoothService.write(
+                            BleManager.getInstance().write(
+                                    bleDevice,
                                     characteristic.getService().getUuid().toString(),
                                     characteristic.getUuid().toString(),
-                                    hex,
+                                    HexUtil.hexStringToBytes(hex),
                                     new BleWriteCallback() {
 
                                         @Override
@@ -247,7 +245,8 @@ public class CharacteristicOperationFragment extends Fragment {
                         public void onClick(View view) {
                             if (btn.getText().toString().equals("打开通知")) {
                                 btn.setText("关闭通知");
-                                mBluetoothService.notify(
+                                BleManager.getInstance().notify(
+                                        bleDevice,
                                         characteristic.getService().getUuid().toString(),
                                         characteristic.getUuid().toString(),
                                         new BleNotifyCallback() {
@@ -289,7 +288,8 @@ public class CharacteristicOperationFragment extends Fragment {
                                         });
                             } else {
                                 btn.setText("打开通知");
-                                mBluetoothService.stopNotify(
+                                BleManager.getInstance().stopNotify(
+                                        bleDevice,
                                         characteristic.getService().getUuid().toString(),
                                         characteristic.getUuid().toString());
                             }
@@ -308,7 +308,8 @@ public class CharacteristicOperationFragment extends Fragment {
                         public void onClick(View view) {
                             if (btn.getText().toString().equals("打开通知")) {
                                 btn.setText("关闭通知");
-                                mBluetoothService.indicate(
+                                BleManager.getInstance().indicate(
+                                        bleDevice,
                                         characteristic.getService().getUuid().toString(),
                                         characteristic.getUuid().toString(),
                                         new BleIndicateCallback() {
@@ -350,7 +351,8 @@ public class CharacteristicOperationFragment extends Fragment {
                                         });
                             } else {
                                 btn.setText("打开通知");
-                                mBluetoothService.stopIndicate(
+                                BleManager.getInstance().stopIndicate(
+                                        bleDevice,
                                         characteristic.getService().getUuid().toString(),
                                         characteristic.getUuid().toString());
                             }

@@ -26,14 +26,14 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     private List<BleDevice> mBleDeviceList = new ArrayList<>();
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
-    private long timeoutMillis = 10000;
+    private long mScanTimeout = BleManager.getInstance().getScanTimeout();
 
-    public BleScanPresenter(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeoutMillis) {
+    public BleScanPresenter(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeOut) {
         this.mDeviceNames = names;
         this.mDeviceMac = mac;
         this.mFuzzy = fuzzy;
         this.mNeedConnect = needConnect;
-        this.timeoutMillis = timeoutMillis;
+        this.mScanTimeout = timeOut;
     }
 
     @Override
@@ -92,19 +92,19 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     }
 
     public final void notifyScanStarted(boolean success) {
-        if(success){
+        if (success) {
             mBleDeviceList.clear();
             onScanStarted(true);
-            if (timeoutMillis > 0) {
+            if (mScanTimeout > 0) {
                 removeHandlerMsg();
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         BleManager.getInstance().getBleScanner().stopLeScan();
                     }
-                }, timeoutMillis);
+                }, mScanTimeout);
             }
-        }else {
+        } else {
             onScanStarted(false);
         }
     }

@@ -1,12 +1,9 @@
 package com.clj.blesample.operation;
 
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -15,19 +12,26 @@ import android.view.KeyEvent;
 import android.view.View;
 
 import com.clj.blesample.R;
-import com.clj.blesample.BluetoothService;
+import com.clj.blesample.comm.Observer;
+import com.clj.blesample.comm.ObserverManager;
+import com.clj.fastble.data.BleDevice;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class OperationActivity extends AppCompatActivity {
+public class OperationActivity extends AppCompatActivity implements Observer {
+
+    public static final String KEY_DATA = "key_data";
+
+    private BleDevice bleDevice;
+    private BluetoothGattService bluetoothGattService;
+    private BluetoothGattCharacteristic characteristic;
+    private int charaProp;
 
     private Toolbar toolbar;
     private List<Fragment> fragments = new ArrayList<>();
     private int currentPage = 0;
     private String[] titles = new String[]{"服务列表", "特征列表", "操作控制台"};
-
-    private BluetoothService mBluetoothService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,15 +39,21 @@ public class OperationActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_operation);
         initView();
-        bindService();
+        initData();
+        initPage();
+
+        ObserverManager.getInstance().addObserver(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mBluetoothService != null)
-            mBluetoothService.destroy();
-        unbindService();
+        ObserverManager.getInstance().deleteObserver(this);
+    }
+
+    @Override
+    public void disConnected() {
+        finish();
     }
 
     @Override
@@ -77,6 +87,12 @@ public class OperationActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void initData() {
+        bleDevice = getIntent().getParcelableExtra(KEY_DATA);
+        if (bleDevice == null)
+            finish();
     }
 
     private void initPage() {
@@ -120,38 +136,33 @@ public class OperationActivity extends AppCompatActivity {
         }
     }
 
-    public BluetoothService getBluetoothService() {
-        return mBluetoothService;
+    public BleDevice getBleDevice() {
+        return bleDevice;
     }
 
-    private void bindService() {
-        Intent bindIntent = new Intent(this, BluetoothService.class);
-        this.bindService(bindIntent, mFhrSCon, Context.BIND_AUTO_CREATE);
+    public BluetoothGattService getBluetoothGattService() {
+        return bluetoothGattService;
     }
 
-    private void unbindService() {
-        this.unbindService(mFhrSCon);
+    public void setBluetoothGattService(BluetoothGattService bluetoothGattService) {
+        this.bluetoothGattService = bluetoothGattService;
     }
 
-    private ServiceConnection mFhrSCon = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setConnectCallback(callback);
-            initPage();
-        }
+    public BluetoothGattCharacteristic getCharacteristic() {
+        return characteristic;
+    }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mBluetoothService = null;
-        }
-    };
+    public void setCharacteristic(BluetoothGattCharacteristic characteristic) {
+        this.characteristic = characteristic;
+    }
 
-    private BluetoothService.Callback2 callback = new BluetoothService.Callback2() {
+    public int getCharaProp() {
+        return charaProp;
+    }
 
-        @Override
-        public void onDisConnected() {
-            finish();
-        }
-    };
+    public void setCharaProp(int charaProp) {
+        this.charaProp = charaProp;
+    }
+
+
 }

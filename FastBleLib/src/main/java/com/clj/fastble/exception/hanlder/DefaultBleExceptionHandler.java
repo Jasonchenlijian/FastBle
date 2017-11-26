@@ -1,6 +1,5 @@
 package com.clj.fastble.exception.hanlder;
 
-import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.NotFoundDeviceException;
@@ -33,11 +32,6 @@ public class DefaultBleExceptionHandler extends BleExceptionHandler {
 
     @Override
     protected void onNotFoundDeviceException(NotFoundDeviceException e) {
-        BleLog.e(TAG, e.getDescription());
-    }
-
-    @Override
-    protected void onBlueToothNotEnableException(BlueToothNotEnableException e) {
         BleLog.e(TAG, e.getDescription());
     }
 

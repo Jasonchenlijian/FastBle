@@ -10,7 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
-import com.clj.fastble.bluetooth.BleBluetoothPool;
+import com.clj.fastble.bluetooth.MultipleBluetoothController;
 import com.clj.fastble.callback.BleGattCallback;
 import com.clj.fastble.callback.BleIndicateCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
@@ -22,7 +22,6 @@ import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleConnectState;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
-import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.OtherException;
 import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
@@ -30,18 +29,24 @@ import com.clj.fastble.scan.BleScanRuleConfig;
 import com.clj.fastble.scan.BleScanner;
 import com.clj.fastble.utils.BleLog;
 
+import java.util.List;
 import java.util.UUID;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleManager {
 
-    private static Application context;
+    private Application context;
     private BleScanRuleConfig bleScanRuleConfig;
     private BleScanner bleScanner;
     private BluetoothAdapter bluetoothAdapter;
-    private BleBluetoothPool bleBluetoothPool;
+    private MultipleBluetoothController multipleBluetoothController;
     private DefaultBleExceptionHandler bleExceptionHandler;
 
+    private static final int DEFAULT_MAX_MULTIPLE_DEVICE = 7;
+    private static final int DEFAULT_SCAN_TIME = 10000;
+
+    private int maxConnectCount = DEFAULT_MAX_MULTIPLE_DEVICE;
+    private int scanTimeout = DEFAULT_SCAN_TIME;
 
     public static BleManager getInstance() {
         return BleManagerHolder.sBleManager;
@@ -59,19 +64,34 @@ public class BleManager {
             if (bluetoothManager != null)
                 bluetoothAdapter = bluetoothManager.getAdapter();
             bleExceptionHandler = new DefaultBleExceptionHandler();
-            bleBluetoothPool = new BleBluetoothPool();
+            multipleBluetoothController = new MultipleBluetoothController();
             bleScanner = BleScanner.getInstance();
         }
     }
 
+    /**
+     * Get the Context
+     *
+     * @return
+     */
     public Context getContext() {
         return context;
     }
 
+    /**
+     * Get the BluetoothAdapter
+     *
+     * @return
+     */
     public BluetoothAdapter getBluetoothAdapter() {
         return bluetoothAdapter;
     }
 
+    /**
+     * Get the BleScanner
+     *
+     * @return
+     */
     public BleScanner getBleScanner() {
         return bleScanner;
     }
@@ -86,28 +106,70 @@ public class BleManager {
     }
 
     /**
-     * handle Exception Information
+     * Handle Exception Information
      */
     public void handleException(BleException exception) {
         bleExceptionHandler.handleException(exception);
     }
 
     /**
-     * 获取设备镜像池
+     * Get the multiple Bluetooth Controller
      *
      * @return
      */
-    public BleBluetoothPool getBleBluetoothPool() {
-        return bleBluetoothPool;
+    public MultipleBluetoothController getMultipleBluetoothController() {
+        return multipleBluetoothController;
     }
 
     /**
-     * Configuring scan and connection properties
+     * Configure scan and connection properties
      *
      * @param scanRuleConfig
      */
     public void initScanRule(BleScanRuleConfig scanRuleConfig) {
         this.bleScanRuleConfig = scanRuleConfig;
+    }
+
+    /**
+     * Get the maximum number of connections
+     *
+     * @return
+     */
+    public int getMaxConnectCount() {
+        return maxConnectCount;
+    }
+
+    /**
+     * Set the maximum number of connections
+     *
+     * @param maxCount
+     * @return
+     */
+    public BleManager setMaxConnectCount(int maxCount) {
+        if (maxCount > DEFAULT_MAX_MULTIPLE_DEVICE)
+            maxCount = DEFAULT_MAX_MULTIPLE_DEVICE;
+        this.maxConnectCount = maxCount;
+        return this;
+    }
+
+    /**
+     * Get scan timeout
+     *
+     * @return
+     */
+    public int getScanTimeout() {
+        return scanTimeout;
+    }
+
+    /**
+     * Set scan timeout
+     *
+     * @param scanTimeout
+     * @return
+     */
+    public BleManager setScanTimeout(int scanTimeout) {
+        this.scanTimeout = scanTimeout;
+        return this;
     }
 
     /**
@@ -118,11 +180,11 @@ public class BleManager {
      */
     public void scan(BleScanCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("BleScanPresenter can not be Null!");
+            throw new IllegalArgumentException("BleScanCallback can not be Null!");
         }
 
         if (!isBlueEnable()) {
-            handleException(new BlueToothNotEnableException());
+            handleException(new OtherException("BlueTooth not enable!"));
             return;
         }
 
@@ -142,11 +204,11 @@ public class BleManager {
      */
     public void scanAndConnect(BleScanAndConnectCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("BleGattCallback can not be Null!");
+            throw new IllegalArgumentException("BleScanAndConnectCallback can not be Null!");
         }
 
         if (!isBlueEnable()) {
-            handleException(new BlueToothNotEnableException());
+            handleException(new OtherException("BlueTooth not enable!"));
             return;
         }
 
@@ -171,7 +233,7 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new BlueToothNotEnableException());
+            handleException(new OtherException("BlueTooth not enable!"));
             return null;
         }
 
@@ -187,7 +249,7 @@ public class BleManager {
     }
 
     /**
-     * cancel scan
+     * Cancel scan
      */
     public void cancelScan() {
         bleScanner.stopLeScan();
@@ -206,12 +268,12 @@ public class BleManager {
                        String uuid_notify,
                        BleNotifyCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
+            throw new IllegalArgumentException("BleNotifyCallback can not be Null!");
         }
 
-        BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onNotifyFailure(new OtherException("this device not connect!"));
+            callback.onNotifyFailure(new OtherException("This device not connect!"));
         } else {
             bleBluetooth.newBleConnector()
                     .withUUIDString(uuid_service, uuid_notify)
@@ -232,12 +294,12 @@ public class BleManager {
                          String uuid_indicate,
                          BleIndicateCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
+            throw new IllegalArgumentException("BleIndicateCallback can not be Null!");
         }
 
-        BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onIndicateFailure(new OtherException("this device not connect!"));
+            callback.onIndicateFailure(new OtherException("This device not connect!"));
         } else {
             bleBluetooth.newBleConnector()
                     .withUUIDString(uuid_service, uuid_indicate)
@@ -255,7 +317,7 @@ public class BleManager {
     public boolean stopNotify(BleDevice bleDevice,
                               String uuid_service,
                               String uuid_notify) {
-        BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
             return false;
         }
@@ -278,7 +340,7 @@ public class BleManager {
     public boolean stopIndicate(BleDevice bleDevice,
                                 String uuid_service,
                                 String uuid_indicate) {
-        BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
             return false;
         }
@@ -306,7 +368,7 @@ public class BleManager {
                       byte[] data,
                       BleWriteCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
+            throw new IllegalArgumentException("BleWriteCallback can not be Null!");
         }
 
         if (data == null) {
@@ -318,9 +380,9 @@ public class BleManager {
             BleLog.w("data's length beyond 20!");
         }
 
-        BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onWriteFailure(new OtherException("this device not connect!"));
+            callback.onWriteFailure(new OtherException("This device not connect!"));
             return;
         }
 
@@ -342,10 +404,10 @@ public class BleManager {
                      String uuid_read,
                      BleReadCallback callback) {
         if (callback == null) {
-            throw new IllegalArgumentException("BleCharacterCallback can not be Null!");
+            throw new IllegalArgumentException("BleReadCallback can not be Null!");
         }
 
-        BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
             callback.onReadFailure(new OtherException("this device not connect!"));
             return;
@@ -368,9 +430,9 @@ public class BleManager {
             throw new IllegalArgumentException("BleRssiCallback can not be Null!");
         }
 
-        BleBluetooth bleBluetooth = bleBluetoothPool.getBleBluetooth(bleDevice);
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onRssiFailure(new OtherException("this device not connect!"));
+            callback.onRssiFailure(new OtherException("This device not connect!"));
             return;
         }
 
@@ -388,7 +450,7 @@ public class BleManager {
     }
 
     /**
-     * open bluetooth
+     * Open bluetooth
      */
     public void enableBluetooth() {
         if (bluetoothAdapter != null) {
@@ -397,7 +459,7 @@ public class BleManager {
     }
 
     /**
-     * close bluetooth
+     * Disable bluetooth
      */
     public void disableBluetooth() {
         if (bluetoothAdapter != null) {
@@ -410,73 +472,58 @@ public class BleManager {
         return bluetoothAdapter != null && bluetoothAdapter.isEnabled();
     }
 
-
-    /**
-     * 获取连接池中的设备镜像，如果没有连接则返回空
-     *
-     * @param bleDevice
-     * @return
-     */
     public BleBluetooth getBleBluetooth(BleDevice bleDevice) {
-        if (bleBluetoothPool != null) {
-            return bleBluetoothPool.getBleBluetooth(bleDevice);
+        if (multipleBluetoothController != null) {
+            return multipleBluetoothController.getBleBluetooth(bleDevice);
         }
         return null;
     }
 
-    /**
-     * 获取该设备连接状态
-     *
-     * @param bleDevice
-     * @return
-     */
-    public BleConnectState getConnectState(BleDevice bleDevice) {
-        if (bleBluetoothPool != null) {
-            return bleBluetoothPool.getConnectState(bleDevice);
-        }
-        return BleConnectState.CONNECT_DISCONNECT;
+    public List<BleDevice> getAllConnectedDevice() {
+        if (multipleBluetoothController == null)
+            return null;
+        return multipleBluetoothController.getDeviceList();
     }
 
-    /**
-     * 判断该设备是否已连接
-     *
-     * @param bleDevice
-     * @return
-     */
-    public boolean isConnect(BleDevice bleDevice) {
-        if (bleBluetoothPool != null) {
-            return bleBluetoothPool.isContainDevice(bleDevice);
+    public BluetoothGatt getBluetoothGatt(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null) {
+            return bleBluetooth.getBluetoothGatt();
+        }
+        return null;
+    }
+
+    public BleConnectState getConnectState(BleDevice bleDevice) {
+        if (multipleBluetoothController != null) {
+            return multipleBluetoothController.getConnectState(bleDevice);
+        }
+        return BleConnectState.CONNECT_IDLE;
+    }
+
+    public boolean isConnected(BleDevice bleDevice) {
+        if (multipleBluetoothController != null) {
+            return multipleBluetoothController.isContainDevice(bleDevice);
         }
         return false;
     }
 
-    /**
-     * 断开某一个设备
-     *
-     * @param bleDevice
-     */
     public void disconnect(BleDevice bleDevice) {
-        if (bleBluetoothPool != null) {
-            bleBluetoothPool.disconnect(bleDevice);
+        if (multipleBluetoothController != null) {
+            multipleBluetoothController.disconnect(bleDevice);
         }
     }
 
-    /**
-     * 断开所有设备
-     */
     public void disconnectAllDevice() {
-        if (bleBluetoothPool != null) {
-            bleBluetoothPool.disconnectAllDevice();
+        if (multipleBluetoothController != null) {
+            multipleBluetoothController.disconnectAllDevice();
         }
     }
 
-    /**
-     * 清除资源，在退出应用时调用
-     */
     public void destroy() {
-        if (bleBluetoothPool != null) {
-            bleBluetoothPool.destroy();
+        if (multipleBluetoothController != null) {
+            multipleBluetoothController.destroy();
         }
     }
+
 
 }

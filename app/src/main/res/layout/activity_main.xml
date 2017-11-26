@@ -70,16 +70,6 @@
             android:text="连接设置：AutoConnect ?"
             android:textSize="13sp" />
 
-        <Switch
-            android:id="@+id/sw_connect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:text="扫描到符合条件的设备后直接连接？"
-            android:textSize="13sp" />
-
     </LinearLayout>
 
     <TextView
@@ -112,7 +102,7 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
             android:src="@mipmap/ic_loading"
-            android:visibility="invisible"/>
+            android:visibility="invisible" />
 
     </RelativeLayout>
 
@@ -123,8 +113,8 @@
         android:layout_marginTop="10dp"
         android:divider="@android:color/darker_gray"
         android:dividerHeight="0.5dp"
-        android:paddingEnd="10dp"
-        android:paddingStart="10dp"
+        android:paddingEnd="5dp"
+        android:paddingStart="5dp"
         android:scrollbars="none" />
 
 

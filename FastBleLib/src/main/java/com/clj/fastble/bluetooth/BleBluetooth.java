@@ -32,7 +32,7 @@ import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleBluetooth {
 
-    private BleConnectState connectState = BleConnectState.CONNECT_INIT;
+    private BleConnectState connectState = BleConnectState.CONNECT_IDLE;
     private Handler handler = new Handler(Looper.getMainLooper());
 
     private BleGattCallback bleGattCallback;
@@ -45,7 +45,6 @@ public class BleBluetooth {
     private BleBluetooth bleBluetooth;
     private BleDevice bleDevice;
     private BluetoothGatt bluetoothGatt;
-    private boolean isActiveDisconnect = false;             // 是否主动断开连接
 
 
     public BleBluetooth(BleDevice bleDevice) {
@@ -159,18 +158,26 @@ public class BleBluetooth {
     }
 
 
-    public synchronized BluetoothGatt connect(BleDevice scanResult,
+    public synchronized BluetoothGatt connect(BleDevice bleDevice,
                                               boolean autoConnect,
                                               BleGattCallback callback) {
-        BleLog.i("connect device: " + scanResult.getDevice().getName()
-                + "\nmac: " + scanResult.getDevice().getAddress()
+        BleLog.i("connect device: " + bleDevice.getName()
+                + "\nmac: " + bleDevice.getMac()
                 + "\nautoConnect: " + autoConnect);
         addConnectGattCallback(callback);
+
+        BluetoothGatt gatt;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return scanResult.getDevice().connectGatt(BleManager.getInstance().getContext(), autoConnect, coreGattCallback, TRANSPORT_LE);
+            gatt = bleDevice.getDevice().connectGatt(BleManager.getInstance().getContext(), autoConnect, coreGattCallback, TRANSPORT_LE);
         } else {
-            return scanResult.getDevice().connectGatt(BleManager.getInstance().getContext(), autoConnect, coreGattCallback);
+            gatt = bleDevice.getDevice().connectGatt(BleManager.getInstance().getContext(), autoConnect, coreGattCallback);
         }
+        if (gatt != null) {
+            if (bleGattCallback != null)
+                bleGattCallback.onStartConnect();
+            connectState = BleConnectState.CONNECT_CONNECTING;
+        }
+        return gatt;
     }
 
     public synchronized boolean refreshDeviceCache() {
@@ -189,9 +196,7 @@ public class BleBluetooth {
     }
 
     public synchronized void disconnect() {
-        connectState = BleConnectState.CONNECT_DISCONNECT;
         if (bluetoothGatt != null) {
-            isActiveDisconnect = true;
             bluetoothGatt.disconnect();
         }
         if (handler != null) {
@@ -206,6 +211,7 @@ public class BleBluetooth {
     }
 
     public synchronized void destroy() {
+        connectState = BleConnectState.CONNECT_IDLE;
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
         }
@@ -226,7 +232,7 @@ public class BleBluetooth {
     private BluetoothGattCallback coreGattCallback = new BluetoothGattCallback() {
 
         @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+        public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
             BleLog.i("BluetoothGattCallback：onConnectionStateChange "
                     + '\n' + "status: " + status
                     + '\n' + "newState: " + newState
@@ -237,56 +243,80 @@ public class BleBluetooth {
 
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 closeBluetoothGatt();
-                if (bleGattCallback != null) {
-                    BleManager.getInstance().getBleBluetoothPool().removeBleBluetooth(bleBluetooth);
-                    if (status == BluetoothGatt.GATT_SUCCESS) {
-                        connectState = BleConnectState.CONNECT_DISCONNECT;
-                        bleGattCallback.onDisConnected(isActiveDisconnect, gatt, newState);
-                    } else {
-                        connectState = BleConnectState.CONNECT_FAILURE;
-                        bleGattCallback.onConnectFail(new ConnectException(gatt, status));
-                    }
-                }
 
-            } else if (newState == BluetoothGatt.STATE_CONNECTING) {
-                connectState = BleConnectState.CONNECT_PROCESS;
-                bleGattCallback.onConnecting(gatt, newState);
+                BleManager.getInstance().getMultipleBluetoothController().removeBleBluetooth(bleBluetooth);
+
+                if (connectState == BleConnectState.CONNECT_CONNECTING) {
+                    connectState = BleConnectState.CONNECT_FAILURE;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (bleGattCallback != null)
+                                bleGattCallback.onConnectFail(new ConnectException(gatt, status));
+                        }
+                    });
+
+                } else if (connectState == BleConnectState.CONNECT_CONNECTED) {
+                    connectState = BleConnectState.CONNECT_DISCONNECT;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (bleGattCallback != null)
+                                bleGattCallback.onDisConnected(status == BluetoothGatt.GATT_SUCCESS, bleBluetooth.getDevice(), gatt, newState);
+                        }
+                    });
+                }
             }
         }
 
         @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+        public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
             BleLog.i("BluetoothGattCallback：onServicesDiscovered "
                     + '\n' + "status: " + status
                     + '\n' + "currentThread: " + Thread.currentThread().getId());
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 bluetoothGatt = gatt;
-                connectState = BleConnectState.CONNECT_SUCCESS;
-                if (bleGattCallback != null) {
-                    isActiveDisconnect = false;
-                    BleManager.getInstance().getBleBluetoothPool().addBleBluetooth(bleBluetooth);
-                    bleGattCallback.onConnectSuccess(bleDevice, gatt, status);
-                }
+                connectState = BleConnectState.CONNECT_CONNECTED;
+
+                BleManager.getInstance().getMultipleBluetoothController().addBleBluetooth(bleBluetooth);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (bleGattCallback != null)
+                            bleGattCallback.onConnectSuccess(bleDevice, gatt, status);
+                    }
+                });
             } else {
                 closeBluetoothGatt();
-                if (bleGattCallback != null) {
-                    bleGattCallback.onConnectFail(new ConnectException(gatt, status));
-                }
+                connectState = BleConnectState.CONNECT_FAILURE;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (bleGattCallback != null)
+                            bleGattCallback.onConnectFail(new ConnectException(gatt, status));
+                    }
+                });
             }
         }
 
         @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicChanged(final BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
             BleLog.i("BluetoothGattCallback：onCharacteristicChanged ");
 
             Iterator iterator = bleNotifyCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                Object call = entry.getValue();
+                final Object call = entry.getValue();
                 if (call instanceof BleNotifyCallback) {
                     if (characteristic.getUuid().toString().equals(((BleNotifyCallback) call).getKey())) {
-                        ((BleNotifyCallback) call).onCharacteristicChanged(characteristic.getValue());
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (bleGattCallback != null)
+                                    ((BleNotifyCallback) call).onCharacteristicChanged(characteristic.getValue());
+                            }
+                        });
                     }
                 }
             }
@@ -294,10 +324,16 @@ public class BleBluetooth {
             iterator = bleIndicateCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                Object call = entry.getValue();
+                final Object call = entry.getValue();
                 if (call instanceof BleIndicateCallback) {
                     if (characteristic.getUuid().toString().equals(((BleIndicateCallback) call).getKey())) {
-                        ((BleIndicateCallback) call).onCharacteristicChanged(characteristic.getValue());
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (bleGattCallback != null)
+                                    ((BleIndicateCallback) call).onCharacteristicChanged(characteristic.getValue());
+                            }
+                        });
                     }
                 }
             }
@@ -305,21 +341,26 @@ public class BleBluetooth {
         }
 
         @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, final int status) {
             BleLog.i("BleGattCallback：onDescriptorWrite ");
 
             Iterator iterator = bleNotifyCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                Object call = entry.getValue();
+                final Object call = entry.getValue();
                 if (call instanceof BleNotifyCallback) {
                     if (descriptor.getCharacteristic().getUuid().toString().equals(((BleNotifyCallback) call).getKey())) {
                         ((BleNotifyCallback) call).getBleConnector().notifySuccess();
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            ((BleNotifyCallback) call).onNotifySuccess();
-                        } else {
-                            ((BleNotifyCallback) call).onNotifyFailure(new GattException(status));
-                        }
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (status == BluetoothGatt.GATT_SUCCESS) {
+                                    ((BleNotifyCallback) call).onNotifySuccess();
+                                } else {
+                                    ((BleNotifyCallback) call).onNotifyFailure(new GattException(status));
+                                }
+                            }
+                        });
                     }
                 }
             }
@@ -327,72 +368,94 @@ public class BleBluetooth {
             iterator = bleIndicateCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                Object call = entry.getValue();
+                final Object call = entry.getValue();
                 if (call instanceof BleIndicateCallback) {
                     if (descriptor.getCharacteristic().getUuid().toString().equals(((BleIndicateCallback) call).getKey())) {
                         ((BleIndicateCallback) call).getBleConnector().indicateSuccess();
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            ((BleIndicateCallback) call).onIndicateSuccess();
-                        } else {
-                            ((BleIndicateCallback) call).onIndicateFailure(new GattException(status));
-                        }
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (status == BluetoothGatt.GATT_SUCCESS) {
+                                    ((BleIndicateCallback) call).onIndicateSuccess();
+                                } else {
+                                    ((BleIndicateCallback) call).onIndicateFailure(new GattException(status));
+                                }
+                            }
+                        });
                     }
                 }
             }
         }
 
         @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, final int status) {
             BleLog.i("BluetoothGattCallback：onCharacteristicWrite ");
 
             Iterator iterator = bleWriteCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                Object call = entry.getValue();
+                final Object call = entry.getValue();
                 if (call instanceof BleWriteCallback) {
                     if (characteristic.getUuid().toString().equals(((BleWriteCallback) call).getKey())) {
                         ((BleWriteCallback) call).getBleConnector().writeSuccess();
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            ((BleWriteCallback) call).onWriteSuccess();
-                        } else {
-                            ((BleWriteCallback) call).onWriteFailure(new GattException(status));
-                        }
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (status == BluetoothGatt.GATT_SUCCESS) {
+                                    ((BleWriteCallback) call).onWriteSuccess();
+                                } else {
+                                    ((BleWriteCallback) call).onWriteFailure(new GattException(status));
+                                }
+                            }
+                        });
                     }
                 }
             }
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             BleLog.i("BluetoothGattCallback：onCharacteristicRead ");
 
             Iterator iterator = bleReadCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                Object call = entry.getValue();
+                final Object call = entry.getValue();
                 if (call instanceof BleReadCallback) {
                     if (characteristic.getUuid().toString().equals(((BleReadCallback) call).getKey())) {
                         ((BleReadCallback) call).getBleConnector().readSuccess();
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            ((BleReadCallback) call).onReadSuccess(characteristic.getValue());
-                        } else {
-                            ((BleReadCallback) call).onReadFailure(new GattException(status));
-                        }
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (status == BluetoothGatt.GATT_SUCCESS) {
+                                    ((BleReadCallback) call).onReadSuccess(characteristic.getValue());
+                                } else {
+                                    ((BleReadCallback) call).onReadFailure(new GattException(status));
+                                }
+                            }
+                        });
                     }
                 }
             }
         }
 
         @Override
-        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+        public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, final int status) {
             BleLog.i("BluetoothGattCallback：onReadRemoteRssi ");
 
             bleRssiCallback.getBleConnector().rssiSuccess();
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                bleRssiCallback.onRssiSuccess(rssi);
-            } else {
-                bleRssiCallback.onRssiFailure(new GattException(status));
-            }
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        bleRssiCallback.onRssiSuccess(rssi);
+                    } else {
+                        bleRssiCallback.onRssiFailure(new GattException(status));
+                    }
+                }
+            });
         }
+
     };
+
 }

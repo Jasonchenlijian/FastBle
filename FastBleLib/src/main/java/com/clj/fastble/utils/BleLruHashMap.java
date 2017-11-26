@@ -1,23 +1,25 @@
-package com.clj.fastble.bluetooth;
+package com.clj.fastble.utils;
 
+
+import com.clj.fastble.bluetooth.BleBluetooth;
 
 import java.util.LinkedHashMap;
 
 public class BleLruHashMap<K, V> extends LinkedHashMap<K, V> {
 
-    private final int MAX_SAVE_SIZE;
+    private final int MAX_SIZE;
 
     public BleLruHashMap(int saveSize) {
         super((int) Math.ceil(saveSize / 0.75) + 1, 0.75f, true);
-        MAX_SAVE_SIZE = saveSize;
+        MAX_SIZE = saveSize;
     }
 
     @Override
     protected boolean removeEldestEntry(Entry eldest) {
-        if (size() > MAX_SAVE_SIZE && eldest.getValue() instanceof BleBluetooth) {
+        if (size() > MAX_SIZE && eldest.getValue() instanceof BleBluetooth) {
             ((BleBluetooth) eldest.getValue()).disconnect();
         }
-        return size() > MAX_SAVE_SIZE;
+        return size() > MAX_SIZE;
     }
 
     @Override

@@ -304,7 +304,6 @@ public class BleConnector {
         if (characteristic != null
                 && (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
 
-//            setCharacteristicNotification(bluetoothGatt, characteristic, false, bleReadCallback);
             handleCharacteristicReadCallback(bleReadCallback, uuid_read);
 
             boolean success = bluetoothGatt.readCharacteristic(characteristic);
@@ -331,7 +330,7 @@ public class BleConnector {
     }
 
 
-    /**************************************** handle call back ******************************************/
+    /**************************************** Handle call back ******************************************/
 
     /**
      * notify
