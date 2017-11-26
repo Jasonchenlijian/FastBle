@@ -122,29 +122,14 @@ public class BleBluetooth {
     }
 
 
-    /**
-     * 获取设备唯一标识
-     *
-     * @return
-     */
     public String getDeviceKey() {
         return bleDevice.getKey();
     }
 
-    /**
-     * 获取设备连接状态
-     *
-     * @return 返回设备连接状态
-     */
     public BleConnectState getConnectState() {
         return connectState;
     }
 
-    /**
-     * 获取设备详细信息
-     *
-     * @return
-     */
     public BleDevice getDevice() {
         return bleDevice;
     }
