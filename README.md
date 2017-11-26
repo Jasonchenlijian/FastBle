@@ -17,12 +17,12 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 # Download
 
-####APK
+###APK
 
- [FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk) 如果想快速预览所有功能，可以直接下载apk作为测试工具使用.
+ [FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk) 如果想快速预览所有功能，可以直接下载APK作为测试工具使用.
 
 
-####Maven
+###Maven
 
 	<dependency>
        <groupId>com.clj.fastble</groupId>
@@ -31,7 +31,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	   <type>pom</type>
 	</dependency>
 
-####Gradle:
+###Gradle:
 
 	compile 'com.clj.fastble:FastBleLib:2.1.0'
 
@@ -210,7 +210,7 @@ FastBle 所有代码均可以加入混淆。
                     }
                 });
 
-- #### （方法说明）取消订阅通知notify，并移除回调监听
+- #### （方法说明）取消订阅通知notify，并移除数据接收的回调监听
 
 	`boolean stopNotify(BleDevice bleDevice,
                               String uuid_service,
@@ -246,7 +246,7 @@ FastBle 所有代码均可以加入混淆。
                     }
                 });
 
-- #### （方法说明）取消订阅通知indicate，并移除回调监听
+- #### （方法说明）取消订阅通知indicate，并移除数据接收的回调监听
 
     `boolean stopIndicate(BleDevice bleDevice,
                                 String uuid_service,
