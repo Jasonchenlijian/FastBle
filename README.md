@@ -15,14 +15,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 	
 
-# Download
 
-###APK
+##APK
 
  [FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk) 如果想快速预览所有功能，可以直接下载APK作为测试工具使用.
 
 
-###Maven
+##Maven
 
 	<dependency>
        <groupId>com.clj.fastble</groupId>
@@ -31,7 +30,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	   <type>pom</type>
 	</dependency>
 
-###Gradle:
+##Gradle
 
 	compile 'com.clj.fastble:FastBleLib:2.1.0'
 
@@ -94,17 +93,17 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().scan(new BleScanCallback() {
             @Override
             public void onScanStarted(boolean success) {
-				// 开始扫描
+				// 开始扫描（UI线程）
             }
 
             @Override
             public void onScanning(BleDevice bleDevice) {
-				// 扫描到一个符合扫描规则的BLE设备
+				// 扫描到一个符合扫描规则的BLE设备（UI线程）
             }
 
             @Override
             public void onScanFinished(List<BleDevice> scanResultList) {
-				// 扫描结束，列出所有扫描到的符合扫描规则的BLE设备
+				// 扫描结束，列出所有扫描到的符合扫描规则的BLE设备（UI线程）
             }
         });
 
@@ -115,22 +114,22 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
             @Override
             public void onStartConnect() {
-				// 开始连接
+				// 开始连接（UI线程）
             }
 
             @Override
             public void onConnectFail(BleException exception) {
-				// 连接失败
+				// 连接失败（UI线程）
             }
 
             @Override
             public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-				// 连接成功，BleDevice即为所连接的BLE设备
+				// 连接成功，BleDevice即为所连接的BLE设备（UI线程）
             }
 
             @Override
             public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
-				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法
+				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法（UI线程）
             }
         });
 
@@ -143,44 +142,44 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().scanAndConnect(new BleScanAndConnectCallback() {
             @Override
             public void onScanStarted(boolean success) {
-				// 开始扫描
+				// 开始扫描（UI线程）
             }
 
             @Override
             public void onScanFinished(BleDevice scanResult) {
-				// 扫描结束，结果即为扫描到的第一个符合扫描规则的BLE设备，如果为空表示未搜索到
+				// 扫描结束，结果即为扫描到的第一个符合扫描规则的BLE设备，如果为空表示未搜索到（UI线程）
             }
 
             @Override
             public void onStartConnect() {
-				// 开始连接
+				// 开始连接（UI线程）
             }
 
             @Override
             public void onConnectFail(BleException exception) {
-				// 连接失败
+				// 连接失败（UI线程）
             }
 
             @Override
             public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-				// 连接成功，BleDevice即为所连接的BLE设备
+				// 连接成功，BleDevice即为所连接的BLE设备（UI线程）
             }
 
             @Override
             public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
-				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法
+				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法（UI线程）
             }
         });    
 
 
-- #### （方法说明）停止扫描
-	中止扫描操作
+- #### （方法说明）中止扫描
+	扫描过程中，中止扫描操作
 
 	`void cancelScan()`
 
 		BleManager.getInstance().cancelScan();
 
-	调用该方法后，会回调BleScanCallback的onScanFinished方法，或者BleGattCallback的onConnectError方法。
+	调用该方法后，会回调onScanFinished方法。
 
 
 - #### （方法说明）订阅通知notify
@@ -196,17 +195,17 @@ FastBle 所有代码均可以加入混淆。
                 new BleNotifyCallback() {
                     @Override
                     public void onNotifySuccess() {
-						// 打开通知操作成功
+						// 打开通知操作成功（UI线程）
                     }
 
                     @Override
                     public void onNotifyFailure() {
-						// 打开通知操作失败
+						// 打开通知操作失败（UI线程）
                     }
 
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
-						// 打开通知后，设备发过来的数据将在这里出现
+						// 打开通知后，设备发过来的数据将在这里出现（UI线程）
                     }
                 });
 
@@ -232,17 +231,17 @@ FastBle 所有代码均可以加入混淆。
                 new BleIndicateCallback() {
                     @Override
                     public void onIndicateSuccess() {
-						// 打开通知操作成功
+						// 打开通知操作成功（UI线程）
                     }
 
                     @Override
                     public void onIndicateFailure() {
-						// 打开通知操作失败
+						// 打开通知操作失败（UI线程）
                     }
 
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
-						// 打开通知后，设备发过来的数据将在这里出现
+						// 打开通知后，设备发过来的数据将在这里出现（UI线程）
                     }
                 });
 
@@ -264,18 +263,18 @@ FastBle 所有代码均可以加入混淆。
 
         BleManager.getInstance().write(
 				bleDevice,
-                uuid_service,
-                uuid_characteristic_write,
-                data,
-                new BleWriteCallback() {
+				uuid_service,
+				uuid_characteristic_write,
+				data,
+				new BleWriteCallback() {
                     @Override
                     public void onWriteSuccess() {
-						// 发送数据到设备成功
+						// 发送数据到设备成功（UI线程）
                     }
 
                     @Override
                     public void onWriteFailure(BleException exception) {
-						// 发送数据到设备失败
+						// 发送数据到设备失败（UI线程）
                     }
                 });
 
@@ -288,17 +287,17 @@ FastBle 所有代码均可以加入混淆。
 
         BleManager.getInstance().read(
 				bleDevice,
-                uuid_service,
+				uuid_service,
                 uuid_characteristic_read,
                 new BleReadCallback() {
                     @Override
                     public void onReadSuccess() {
-						// 读特征值数据成功
+						// 读特征值数据成功（UI线程）
                     }
 
                     @Override
                     public void onReadFailure(BleException exception) {
-						// 读特征值数据失败
+						// 读特征值数据失败（UI线程）
                     }
                 });
 
@@ -310,12 +309,12 @@ FastBle 所有代码均可以加入混淆。
 		BleManager.getInstance().readRssi(new BleRssiCallback() {
             @Override
             public void onSuccess(int rssi) {
-				// 读取设备的信号强度成功
+				// 读取设备的信号强度成功（UI线程）
             }
 
             @Override
             public void onRssiFailure(BleException exception) {
-				// 读取设备的信号强度失败
+				// 读取设备的信号强度失败（UI线程）
             }
         });
 
@@ -380,7 +379,7 @@ FastBle 所有代码均可以加入混淆。
 
     `byte[] getScanRecord()` 广播数据
 
-    `int getRssi()` 信号强度
+    `int getRssi()` 初始信号强度
 		
 
 - #### （类说明）BleException
@@ -412,7 +411,7 @@ FastBle 所有代码均可以加入混淆。
 
 - FastBle当前版本仅支持对BLE蓝牙进行操作，不支持经典蓝牙。
 
-- 使用蓝牙功能，必须先声明蓝牙相关的权限。Android 6.0以上的系统，需要额外申请位置相关的权限，并且是危险权限建议在运行时动态获取。为使使用更灵活，FastBle库中并不包含权限相关的操作，使用者根据程序的实际情况在外层自行嵌套。示例代码中有相关代码演示，供参考。
+- 使用蓝牙功能，必须先声明蓝牙相关的权限。Android 6.0以上的系统，需要额外申请位置相关的权限，并且是危险权限建议在运行时动态获取。为使使用更灵活，FastBle库中并不包含权限相关的操作，使用者根据程序的实际情况在外层自行嵌套。示例代码中有相关代码演示，供参考。在部分型号的Android设备上，可能还需要手动打开定位功能。
 
 - 蓝牙操作与硬件关联很大，开发过程中要保持和硬件协议的沟通，某些问题的解决需要硬件方面做一些适配。
 
@@ -424,20 +423,18 @@ FastBle 所有代码均可以加入混淆。
 
 - FastBle中开放的蓝牙操作的相关方法均要求在主线程中执行。
 
-- 一个简单的使用场景：打开蓝牙，在主线程扫描设备，连接，连接成功并发现服务之后，在`onServicesDiscovered`的异步回调方法中，延时100ms，再切换到主线程，再去调用notify、write等方法。这就是一个基本的操作。
+- 一个简单的使用场景：打开蓝牙，在主线程扫描设备，连接，连接成功之后，在`onConnectSuccess`的回调方法中，延时100ms，再去调用notify、write等方法。这就是一个基本的操作。
 
-- 连接及连接后的过程中，时刻关注BleGattCallback，蓝牙的连接情况会实时反映在其各个回调方法中，尤其是`onDisConnected`方法。
+- 连接及连接后的过程中，时刻关注`onDisConnected`方法，然后做处理。
 
-- 连接过程中，假如外设突然中断（或关闭）了蓝牙，Android设备维持的BLE连接并不会马上回调`onDisConnected`方法，而是会延迟一段时间才会通知连接断开，开发时需注意，假如对实时性要求较高的程序，可能需要借助其他辅助方法来判断设备是否中断，比如心跳包等。
+- 连接过程中，假如外设突然中断（或关闭）了蓝牙，由于某些蓝牙外设的不完善，导致Android设备维持的BLE连接并不会马上回调`onDisConnected`方法，而是会延迟一段时间才会通知连接断开，开发时需注意，假如对实时性要求较高的程序，可能需要借助其他辅助方法来判断设备是否中断，比如心跳包等。
 
 - 蓝牙应用开发中，存在两种角色，分别是central和peripheral ,中文就是中心和外设。比如手机去连接智能设备，那手机就是central，智能设备就是peripheral。
 
 - FastBle当前版本仅支持中心模式 （central model），即"以App作为中心，连接其他BLE外设"。把手机作为外设目前版本是行不通的。
 - 连接之后的操作有：write，read，notify，indicate，response or not等。indicate和notify的区别就在于，indicate是一定会收到数据，notify有可能会丢失数据（不会有central收到数据的回应），write也分为response和no response，如果是response，那么write成功回收到peripheral的确认消息，但是会降低写入的速率，换一个角度说就是 write no response写的速率更快。
 
-- 连接断开之后的重连很简单，在`void onDisConnected(BluetoothGatt gatt, int status, BleException exception)`调用`boolean gatt.connect()`方法即可，当外设再次处于可连接状态时，就会自动连上。
-
-- 连接断开之后可以根据实际情况进行重连，但如果是连接失败的情况，建议不要立即重连，而是调用`void closeBluetoothGatt()`清空一下状态，并延迟一段时间等待复位，否则会把gatt阻塞，导致手机不重启蓝牙就再也无法连接任何设备的严重情况。
+- 连接断开之后可以根据实际情况进行重连，但如果是连接失败的情况，建议不要立即重连，而是调用`void closeBluetoothGatt(BleDevice bleDevice)`清空一下状态，并延迟一段时间等待复位，否则会把gatt阻塞，导致手机不重启蓝牙就再也无法连接任何设备的严重情况。
 
 - 调用`bleManager.closeBluetoothGatt()`之后，最好不要紧接着调用`bleManager = null`，因为Android原生蓝牙API中的`gatt.close()`方法需要一段时间保证完成，我们建议延迟一段时间。延时操作在Android蓝牙开发中是一个重要的技巧。
 
