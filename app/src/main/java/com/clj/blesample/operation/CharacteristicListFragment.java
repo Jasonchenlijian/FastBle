@@ -20,7 +20,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.clj.blesample.R;
-import com.clj.blesample.BluetoothService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,15 +28,6 @@ import java.util.List;
 public class CharacteristicListFragment extends Fragment {
 
     private ResultAdapter mResultAdapter;
-
-    private BluetoothService mBluetoothService;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        mBluetoothService = ((OperationActivity) getActivity()).getBluetoothService();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,15 +74,15 @@ public class CharacteristicListFragment extends Fragment {
                             .setItems(propNameList.toArray(new String[propNameList.size()]), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    mBluetoothService.setCharacteristic(characteristic);
-                                    mBluetoothService.setCharaProp(propList.get(which));
+                                    ((OperationActivity) getActivity()).setCharacteristic(characteristic);
+                                    ((OperationActivity) getActivity()).setCharaProp(propList.get(which));
                                     ((OperationActivity) getActivity()).changePage(2);
                                 }
                             })
                             .show();
                 } else if (propList.size() > 0) {
-                    mBluetoothService.setCharaProp(propList.get(0));
-                    mBluetoothService.setCharacteristic(characteristic);
+                    ((OperationActivity) getActivity()).setCharacteristic(characteristic);
+                    ((OperationActivity) getActivity()).setCharaProp(propList.get(0));
                     ((OperationActivity) getActivity()).changePage(2);
                 }
             }
@@ -100,7 +90,7 @@ public class CharacteristicListFragment extends Fragment {
     }
 
     public void showData() {
-        BluetoothGattService service = mBluetoothService.getService();
+        BluetoothGattService service = ((OperationActivity) getActivity()).getBluetoothGattService();
         mResultAdapter.clear();
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
             mResultAdapter.addResult(characteristic);
@@ -118,11 +108,11 @@ public class CharacteristicListFragment extends Fragment {
             characteristicList = new ArrayList<>();
         }
 
-        public void addResult(BluetoothGattCharacteristic characteristic) {
+        void addResult(BluetoothGattCharacteristic characteristic) {
             characteristicList.add(characteristic);
         }
 
-        public void clear() {
+        void clear() {
             characteristicList.clear();
         }
 

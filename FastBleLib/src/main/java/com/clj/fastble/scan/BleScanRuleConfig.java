@@ -1,6 +1,8 @@
 package com.clj.fastble.scan;
 
 
+import com.clj.fastble.BleManager;
+
 import java.util.UUID;
 
 public class BleScanRuleConfig {
@@ -10,7 +12,7 @@ public class BleScanRuleConfig {
     private String mDeviceMac = null;
     private boolean mAutoConnect = false;
     private boolean mFuzzy = false;
-    private long mTimeOut = 5000;
+    private long mTimeOut = BleManager.getInstance().getScanTimeout();
 
     public UUID[] getServiceUuids() {
         return mServiceUuids;
@@ -66,7 +68,7 @@ public class BleScanRuleConfig {
             return this;
         }
 
-        public Builder setTimeOut(long timeOut) {
+        public Builder setScanTimeOut(long timeOut) {
             this.mTimeOut = timeOut;
             return this;
         }

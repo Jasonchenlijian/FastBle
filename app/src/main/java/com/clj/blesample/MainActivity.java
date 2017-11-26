@@ -4,17 +4,14 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.ComponentName;
+import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -23,12 +20,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -38,31 +32,37 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.clj.blesample.adapter.DeviceAdapter;
+import com.clj.blesample.comm.ObserverManager;
 import com.clj.blesample.operation.OperationActivity;
-import com.clj.fastble.data.ScanResult;
+import com.clj.fastble.BleManager;
+import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleScanCallback;
+import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.exception.BleException;
+import com.clj.fastble.scan.BleScanRuleConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+
+    private static final int REQUEST_CODE_OPEN_GPS = 1;
+    private static final int REQUEST_CODE_PERMISSION_LOCATION = 2;
 
     private LinearLayout layout_setting;
     private TextView txt_setting;
     private Button btn_scan;
     private EditText et_name, et_mac, et_uuid;
-    private Switch sw_auto, sw_connect;
+    private Switch sw_auto;
     private ImageView img_loading;
 
     private Animation operatingAnim;
-    private ResultAdapter mResultAdapter;
+    private DeviceAdapter mDeviceAdapter;
     private ProgressDialog progressDialog;
-
-    private String[] names;
-    private String mac;
-    private String[] uuids;
-    private boolean isAutoConnect, isNeedConnect;
-    private BluetoothService mBluetoothService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +70,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setContentView(R.layout.activity_main);
         initView();
+
+        BleManager.getInstance().init(getApplication());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showConnectedDevice();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mBluetoothService != null)
-            unbindService();
+        BleManager.getInstance().disconnectAllDevice();
+        BleManager.getInstance().destroy();
     }
 
     @Override
@@ -84,12 +92,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn_scan:
                 if (btn_scan.getText().equals("开始扫描")) {
-                    initData();
                     checkPermissions();
                 } else if (btn_scan.getText().equals("停止扫描")) {
-                    if (mBluetoothService != null) {
-                        mBluetoothService.cancelScan();
-                    }
+                    BleManager.getInstance().cancelScan();
                 }
                 break;
 
@@ -117,7 +122,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_mac = (EditText) findViewById(R.id.et_mac);
         et_uuid = (EditText) findViewById(R.id.et_uuid);
         sw_auto = (Switch) findViewById(R.id.sw_auto);
-        sw_connect = (Switch) findViewById(R.id.sw_connect);
 
         layout_setting = (LinearLayout) findViewById(R.id.layout_setting);
         txt_setting = (TextView) findViewById(R.id.txt_setting);
@@ -130,24 +134,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         operatingAnim.setInterpolator(new LinearInterpolator());
         progressDialog = new ProgressDialog(this);
 
-        mResultAdapter = new ResultAdapter(this);
-        ListView listView_device = (ListView) findViewById(R.id.list_device);
-        listView_device.setAdapter(mResultAdapter);
-        listView_device.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mDeviceAdapter = new DeviceAdapter(this);
+        mDeviceAdapter.setOnDeviceClickListener(new DeviceAdapter.OnDeviceClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (mBluetoothService != null) {
-                    mBluetoothService.cancelScan();
-                    mBluetoothService.connect(mResultAdapter.getItem(position));
-                    mResultAdapter.clear();
-                    mResultAdapter.notifyDataSetChanged();
+            public void onConnect(BleDevice bleDevice) {
+                if (!BleManager.getInstance().isConnected(bleDevice)) {
+                    BleManager.getInstance().cancelScan();
+                    connect(bleDevice);
+                }
+            }
+
+            @Override
+            public void onDisConnect(BleDevice bleDevice) {
+                if (BleManager.getInstance().isConnected(bleDevice)) {
+                    BleManager.getInstance().disconnect(bleDevice);
+                }
+            }
+
+            @Override
+            public void onDetail(BleDevice bleDevice) {
+                if (BleManager.getInstance().isConnected(bleDevice)) {
+                    Intent intent = new Intent(MainActivity.this, OperationActivity.class);
+                    intent.putExtra(OperationActivity.KEY_DATA, bleDevice);
+                    startActivity(intent);
                 }
             }
         });
-
+        ListView listView_device = (ListView) findViewById(R.id.list_device);
+        listView_device.setAdapter(mDeviceAdapter);
     }
 
-    private void initData() {
+    private void showConnectedDevice() {
+        List<BleDevice> deviceList = BleManager.getInstance().getAllConnectedDevice();
+        mDeviceAdapter.clearConnectedDevice();
+        for (BleDevice bleDevice : deviceList) {
+            mDeviceAdapter.addDevice(bleDevice);
+        }
+        mDeviceAdapter.notifyDataSetChanged();
+    }
+
+    private void setScanRule() {
+        String[] uuids;
+        String str_uuid = et_uuid.getText().toString();
+        if (TextUtils.isEmpty(str_uuid)) {
+            uuids = null;
+        } else {
+            uuids = str_uuid.split(",");
+        }
+        UUID[] serviceUuids = null;
+        if (uuids != null && uuids.length > 0) {
+            serviceUuids = new UUID[uuids.length];
+            for (int i = 0; i < uuids.length; i++) {
+                serviceUuids[i] = UUID.fromString(uuids[i]);
+            }
+        }
+
+        String[] names;
         String str_name = et_name.getText().toString();
         if (TextUtils.isEmpty(str_name)) {
             names = null;
@@ -155,172 +197,82 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             names = str_name.split(",");
         }
 
-        mac = et_mac.getText().toString();
+        String mac = et_mac.getText().toString();
 
-        String str_uuid = et_uuid.getText().toString();
-        if (TextUtils.isEmpty(str_uuid)) {
-            uuids = null;
-        } else {
-            uuids = str_uuid.split(",");
-        }
+        boolean isAutoConnect = sw_auto.isChecked();
 
-        isAutoConnect = sw_auto.isChecked();
-        isNeedConnect = sw_connect.isChecked();
+        BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
+                .setServiceUuids(serviceUuids)
+                .setDeviceName(true, names)
+                .setDeviceMac(mac)
+                .setAutoConnect(isAutoConnect)
+                .setScanTimeOut(8000)
+                .build();
+        BleManager.getInstance().initScanRule(scanRuleConfig);
     }
-
-    private class ResultAdapter extends BaseAdapter {
-
-        private Context context;
-        private List<ScanResult> scanResultList;
-
-        ResultAdapter(Context context) {
-            this.context = context;
-            scanResultList = new ArrayList<>();
-        }
-
-        void addResult(ScanResult result) {
-            scanResultList.add(result);
-        }
-
-        void clear() {
-            scanResultList.clear();
-        }
-
-        @Override
-        public int getCount() {
-            return scanResultList.size();
-        }
-
-        @Override
-        public ScanResult getItem(int position) {
-            if (position > scanResultList.size())
-                return null;
-            return scanResultList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ResultAdapter.ViewHolder holder;
-            if (convertView != null) {
-                holder = (ResultAdapter.ViewHolder) convertView.getTag();
-            } else {
-                convertView = View.inflate(context, R.layout.adapter_scan_result, null);
-                holder = new ResultAdapter.ViewHolder();
-                convertView.setTag(holder);
-                holder.txt_name = (TextView) convertView.findViewById(R.id.txt_name);
-                holder.txt_mac = (TextView) convertView.findViewById(R.id.txt_mac);
-                holder.txt_rssi = (TextView) convertView.findViewById(R.id.txt_rssi);
-            }
-
-            ScanResult result = scanResultList.get(position);
-            BluetoothDevice device = result.getDevice();
-            String name = device.getName();
-            String mac = device.getAddress();
-            int rssi = result.getRssi();
-            holder.txt_name.setText(name);
-            holder.txt_mac.setText(mac);
-            holder.txt_rssi.setText(String.valueOf(rssi));
-            return convertView;
-        }
-
-        class ViewHolder {
-            TextView txt_name;
-            TextView txt_mac;
-            TextView txt_rssi;
-        }
-    }
-
-    private void bindService() {
-        Intent bindIntent = new Intent(this, BluetoothService.class);
-        this.bindService(bindIntent, mFhrSCon, Context.BIND_AUTO_CREATE);
-    }
-
-    private void unbindService() {
-        this.unbindService(mFhrSCon);
-    }
-
-    private ServiceConnection mFhrSCon = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mBluetoothService = ((BluetoothService.BluetoothBinder) service).getService();
-            mBluetoothService.setScanCallback(callback);
-            mBluetoothService.setting(names, mac, uuids, isAutoConnect);
-            mBluetoothService.scanDevice(isNeedConnect);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mBluetoothService = null;
-        }
-    };
-
-    private BluetoothService.Callback callback = new BluetoothService.Callback() {
-        @Override
-        public void onStartScan() {
-            mResultAdapter.clear();
-            mResultAdapter.notifyDataSetChanged();
-            img_loading.startAnimation(operatingAnim);
-            img_loading.setVisibility(View.VISIBLE);
-            btn_scan.setText("停止扫描");
-        }
-
-        @Override
-        public void onScanning(ScanResult result) {
-            mResultAdapter.addResult(result);
-            mResultAdapter.notifyDataSetChanged();
-        }
-
-        @Override
-        public void onScanComplete() {
-            img_loading.clearAnimation();
-            img_loading.setVisibility(View.INVISIBLE);
-            btn_scan.setText("开始扫描");
-        }
-
-        @Override
-        public void onConnecting() {
-            progressDialog.show();
-        }
-
-        @Override
-        public void onConnectFail() {
-            img_loading.clearAnimation();
-            img_loading.setVisibility(View.INVISIBLE);
-            btn_scan.setText("开始扫描");
-            progressDialog.dismiss();
-            Toast.makeText(MainActivity.this, "连接失败", Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        public void onDisConnected() {
-            progressDialog.dismiss();
-            mResultAdapter.clear();
-            mResultAdapter.notifyDataSetChanged();
-            img_loading.clearAnimation();
-            img_loading.setVisibility(View.INVISIBLE);
-            btn_scan.setText("开始扫描");
-            Toast.makeText(MainActivity.this, "连接断开", Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        public void onServicesDiscovered() {
-            progressDialog.dismiss();
-            startActivity(new Intent(MainActivity.this, OperationActivity.class));
-        }
-    };
 
     private void startScan() {
-        if (mBluetoothService == null) {
-            bindService();
-        } else {
-            mBluetoothService.setting(names, mac, uuids, isAutoConnect);
-            mBluetoothService.scanDevice(isNeedConnect);
-        }
+        BleManager.getInstance().scan(new BleScanCallback() {
+            @Override
+            public void onScanStarted(boolean success) {
+                mDeviceAdapter.clearScanDevice();
+                mDeviceAdapter.notifyDataSetChanged();
+                img_loading.startAnimation(operatingAnim);
+                img_loading.setVisibility(View.VISIBLE);
+                btn_scan.setText("停止扫描");
+            }
+
+            @Override
+            public void onScanning(BleDevice bleDevice) {
+                mDeviceAdapter.addDevice(bleDevice);
+                mDeviceAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onScanFinished(List<BleDevice> scanResultList) {
+                img_loading.clearAnimation();
+                img_loading.setVisibility(View.INVISIBLE);
+                btn_scan.setText("开始扫描");
+            }
+        });
+    }
+
+    private void connect(BleDevice bleDevice) {
+        BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
+            @Override
+            public void onStartConnect() {
+                progressDialog.show();
+            }
+
+            @Override
+            public void onConnectFail(BleException exception) {
+                img_loading.clearAnimation();
+                img_loading.setVisibility(View.INVISIBLE);
+                btn_scan.setText("开始扫描");
+                progressDialog.dismiss();
+                Toast.makeText(MainActivity.this, "连接失败", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                progressDialog.dismiss();
+                mDeviceAdapter.addDevice(bleDevice);
+                mDeviceAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                progressDialog.dismiss();
+
+                mDeviceAdapter.removeDevice(bleDevice);
+                mDeviceAdapter.notifyDataSetChanged();
+
+                if (!isActiveDisConnected) {
+                    Toast.makeText(MainActivity.this, "连接断开", Toast.LENGTH_LONG).show();
+                    ObserverManager.getInstance().notifyObserver();
+                }
+            }
+        });
     }
 
     @Override
@@ -329,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                  @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case 12:
+            case REQUEST_CODE_PERMISSION_LOCATION:
                 if (grantResults.length > 0) {
                     for (int i = 0; i < grantResults.length; i++) {
                         if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
@@ -360,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (!permissionDeniedList.isEmpty()) {
             String[] deniedPermissions = permissionDeniedList.toArray(new String[permissionDeniedList.size()]);
-            ActivityCompat.requestPermissions(this, deniedPermissions, 12);
+            ActivityCompat.requestPermissions(this, deniedPermissions, REQUEST_CODE_PERMISSION_LOCATION);
         }
     }
 
@@ -383,13 +335,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                                            startActivityForResult(intent, 1);
+                                            startActivityForResult(intent, REQUEST_CODE_OPEN_GPS);
                                         }
                                     })
 
                             .setCancelable(false)
                             .show();
                 } else {
+                    setScanRule();
                     startScan();
                 }
                 break;
@@ -406,8 +359,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1) {
+        if (requestCode == REQUEST_CODE_OPEN_GPS) {
             if (checkGPSIsOpen()) {
+                setScanRule();
                 startScan();
             }
         }

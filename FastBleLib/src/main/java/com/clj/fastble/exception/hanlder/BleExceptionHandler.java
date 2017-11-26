@@ -1,12 +1,10 @@
 package com.clj.fastble.exception.hanlder;
 
 import com.clj.fastble.exception.BleException;
-import com.clj.fastble.exception.BlueToothNotEnableException;
 import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.OtherException;
-import com.clj.fastble.exception.ScanFailedException;
 import com.clj.fastble.exception.TimeoutException;
 
 
@@ -27,12 +25,6 @@ public abstract class BleExceptionHandler {
 
             } else if (exception instanceof NotFoundDeviceException) {
                 onNotFoundDeviceException((NotFoundDeviceException) exception);
-
-            } else if (exception instanceof BlueToothNotEnableException) {
-                onBlueToothNotEnableException((BlueToothNotEnableException) exception);
-
-            } else if (exception instanceof ScanFailedException) {
-                onScanFailedException((ScanFailedException) exception);
 
             } else {
                 onOtherException((OtherException) exception);
@@ -60,16 +52,6 @@ public abstract class BleExceptionHandler {
      * not found device error
      */
     protected abstract void onNotFoundDeviceException(NotFoundDeviceException e);
-
-    /**
-     * bluetooth not enable error
-     */
-    protected abstract void onBlueToothNotEnableException(BlueToothNotEnableException e);
-
-    /**
-     * scan failed error
-     */
-    protected abstract void onScanFailedException(ScanFailedException e);
 
     /**
      * other exceptions

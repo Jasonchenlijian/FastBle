@@ -15,8 +15,9 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.clj.blesample.BluetoothService;
 import com.clj.blesample.R;
+import com.clj.fastble.BleManager;
+import com.clj.fastble.data.BleDevice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,15 +27,6 @@ public class ServiceListFragment extends Fragment {
 
     private TextView txt_name, txt_mac;
     private ResultAdapter mResultAdapter;
-
-    private BluetoothService mBluetoothService;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        mBluetoothService = ((OperationActivity) getActivity()).getBluetoothService();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -55,21 +47,23 @@ public class ServiceListFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 BluetoothGattService service = mResultAdapter.getItem(position);
-                mBluetoothService.setService(service);
+                ((OperationActivity) getActivity()).setBluetoothGattService(service);
                 ((OperationActivity) getActivity()).changePage(1);
             }
         });
     }
 
     private void showData() {
-        String name = mBluetoothService.getName();
-        String mac = mBluetoothService.getMac();
-        BluetoothGatt gatt = mBluetoothService.getGatt();
+        BleDevice bleDevice = ((OperationActivity) getActivity()).getBleDevice();
+        String name = bleDevice.getName();
+        String mac = bleDevice.getMac();
+        BluetoothGatt gatt = BleManager.getInstance().getBluetoothGatt(bleDevice);
+
         txt_name.setText(String.valueOf("设备广播名：" + name));
         txt_mac.setText(String.valueOf("MAC地址: " + mac));
 
         mResultAdapter.clear();
-        for (final BluetoothGattService service : gatt.getServices()) {
+        for (BluetoothGattService service : gatt.getServices()) {
             mResultAdapter.addResult(service);
         }
         mResultAdapter.notifyDataSetChanged();
