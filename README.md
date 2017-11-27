@@ -16,12 +16,12 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	
 
 
-##APK
+### APK
 
  [FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk) 如果想快速预览所有功能，可以直接下载APK作为测试工具使用.
 
 
-##Maven
+### Maven
 
 	<dependency>
        <groupId>com.clj.fastble</groupId>
@@ -30,7 +30,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	   <type>pom</type>
 	</dependency>
 
-##Gradle
+### Gradle
 
 	compile 'com.clj.fastble:FastBleLib:2.1.0'
 
@@ -69,6 +69,12 @@ FastBle 所有代码均可以加入混淆。
 - #### （方法说明）打印异常信息
 	
 		void handleException(BleException exception);
+
+- #### （方法说明）是否打印日志，默认开启
+
+	`BleManager enableLog(boolean enable)`
+
+		BleManager.getInstance().enableLog(false);
 
 - #### （方法说明）配置扫描规则
 
@@ -179,7 +185,7 @@ FastBle 所有代码均可以加入混淆。
 
 		BleManager.getInstance().cancelScan();
 
-	调用该方法后，会回调onScanFinished方法。
+	调用该方法后，会立即结束之前的扫描流程，并回调onScanFinished方法。
 
 
 - #### （方法说明）订阅通知notify
@@ -189,23 +195,23 @@ FastBle 所有代码均可以加入混淆。
                        BleNotifyCallback callback)`
                         
         BleManager.getInstance().notify(
-				bleDevice，
+                bleDevice,
                 uuid_service,
                 uuid_characteristic_notify,
                 new BleNotifyCallback() {
                     @Override
                     public void onNotifySuccess() {
-						// 打开通知操作成功（UI线程）
+                        // 打开通知操作成功（UI线程）
                     }
 
                     @Override
                     public void onNotifyFailure() {
-						// 打开通知操作失败（UI线程）
+                        // 打开通知操作失败（UI线程）
                     }
 
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
-						// 打开通知后，设备发过来的数据将在这里出现（UI线程）
+                        // 打开通知后，设备发过来的数据将在这里出现（UI线程）
                     }
                 });
 
@@ -225,23 +231,23 @@ FastBle 所有代码均可以加入混淆。
                          BleIndicateCallback callback)`
 
         BleManager.getInstance().indicate(
-				bleDevice，
+                bleDevice,
                 uuid_service,
                 uuid_characteristic_indicate,
                 new BleIndicateCallback() {
                     @Override
                     public void onIndicateSuccess() {
-						// 打开通知操作成功（UI线程）
+                        // 打开通知操作成功（UI线程）
                     }
 
                     @Override
                     public void onIndicateFailure() {
-						// 打开通知操作失败（UI线程）
+                        // 打开通知操作失败（UI线程）
                     }
 
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
-						// 打开通知后，设备发过来的数据将在这里出现（UI线程）
+                        // 打开通知后，设备发过来的数据将在这里出现（UI线程）
                     }
                 });
 
@@ -262,19 +268,19 @@ FastBle 所有代码均可以加入混淆。
                       BleWriteCallback callback)`
 
         BleManager.getInstance().write(
-				bleDevice,
-				uuid_service,
-				uuid_characteristic_write,
-				data,
-				new BleWriteCallback() {
+                bleDevice,
+                uuid_service,
+                uuid_characteristic_write,
+                data,
+                new BleWriteCallback() {
                     @Override
                     public void onWriteSuccess() {
-						// 发送数据到设备成功（UI线程）
+                        // 发送数据到设备成功（UI线程）
                     }
 
                     @Override
                     public void onWriteFailure(BleException exception) {
-						// 发送数据到设备失败（UI线程）
+                        // 发送数据到设备失败（UI线程）
                     }
                 });
 
@@ -286,37 +292,39 @@ FastBle 所有代码均可以加入混淆。
                      BleReadCallback callback)`
 
         BleManager.getInstance().read(
-				bleDevice,
-				uuid_service,
+                bleDevice,
+                uuid_service,
                 uuid_characteristic_read,
                 new BleReadCallback() {
                     @Override
-                    public void onReadSuccess() {
-						// 读特征值数据成功（UI线程）
+                    public void onReadSuccess(byte[] data) {
+                        // 读特征值数据成功（UI线程）
                     }
 
                     @Override
                     public void onReadFailure(BleException exception) {
-						// 读特征值数据失败（UI线程）
+                        // 读特征值数据失败（UI线程）
                     }
                 });
 
 - #### （方法说明）读外设的Rssi
 
-	`void readRssi(BleDevice bleDevice,
-                         BleRssiCallback callback)`
+	`void readRssi(BleDevice bleDevice, BleRssiCallback callback)`
 
-		BleManager.getInstance().readRssi(new BleRssiCallback() {
-            @Override
-            public void onSuccess(int rssi) {
-				// 读取设备的信号强度成功（UI线程）
-            }
+        BleManager.getInstance().readRssi(
+                bleDevice,
+                new BleRssiCallback() {
 
-            @Override
-            public void onRssiFailure(BleException exception) {
-				// 读取设备的信号强度失败（UI线程）
-            }
-        });
+                    @Override
+                    public void onRssiFailure(BleException exception) {
+                        // 读取设备的信号强度失败（UI线程）
+                    }
+
+                    @Override
+                    public void onRssiSuccess(int rssi) {
+
+                    }
+                });
 
 - #### （方法说明）获取所有已连接设备
 
@@ -359,14 +367,14 @@ FastBle 所有代码均可以加入混淆。
 
     数据操作工具类
 
-		// byte[]转String，参数addSpace表示每一位之间是否增加空格，常用于打印日志。
-        String formatHexString(byte[] data, boolean addSpace)； 
+    `String formatHexString(byte[] data, boolean addSpace)`
+	byte[]转String，参数addSpace表示每一位之间是否增加空格，常用于打印日志。
 
-		// String转byte[]
-        byte[] hexStringToBytes(String hexString)
+	`byte[] hexStringToBytes(String hexString)`
+	String转byte[]
 
-		// byte[]转char[]，参数toLowerCase表示大小写
-		char[] encodeHex(byte[] data, boolean toLowerCase)
+	`char[] encodeHex(byte[] data, boolean toLowerCase)`
+	byte[]转char[]，参数toLowerCase表示大小写
 
 
 - #### （类说明）BleDevice
@@ -435,8 +443,6 @@ FastBle 所有代码均可以加入混淆。
 - 连接之后的操作有：write，read，notify，indicate，response or not等。indicate和notify的区别就在于，indicate是一定会收到数据，notify有可能会丢失数据（不会有central收到数据的回应），write也分为response和no response，如果是response，那么write成功回收到peripheral的确认消息，但是会降低写入的速率，换一个角度说就是 write no response写的速率更快。
 
 - 连接断开之后可以根据实际情况进行重连，但如果是连接失败的情况，建议不要立即重连，而是调用`void closeBluetoothGatt(BleDevice bleDevice)`清空一下状态，并延迟一段时间等待复位，否则会把gatt阻塞，导致手机不重启蓝牙就再也无法连接任何设备的严重情况。
-
-- 调用`bleManager.closeBluetoothGatt()`之后，最好不要紧接着调用`bleManager = null`，因为Android原生蓝牙API中的`gatt.close()`方法需要一段时间保证完成，我们建议延迟一段时间。延时操作在Android蓝牙开发中是一个重要的技巧。
 
 - 很多Android设备是可以强制打开用户手机蓝牙的，打开蓝牙需要一段时间（部分手机上需要向用户请求）。虽然时间比较短，但也不能调用完打开蓝牙方法后直接去调用扫描方法，此时蓝牙多半是还未开启完毕状态。建议的做法是维持一个蓝牙状态的广播，调用打开蓝牙方法后，在一段时间内阻塞线程，如果在这段时间内收到蓝牙打开广播后，再进行后续操作。而后续操作过程中，如果收到蓝牙正在关闭或关闭的广播，也可以及时对当前的情况做一个妥善处理。
 

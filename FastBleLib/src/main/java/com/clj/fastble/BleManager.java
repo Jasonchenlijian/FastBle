@@ -143,7 +143,7 @@ public class BleManager {
      * Set the maximum number of connections
      *
      * @param maxCount
-     * @return
+     * @return BleManager
      */
     public BleManager setMaxConnectCount(int maxCount) {
         if (maxCount > DEFAULT_MAX_MULTIPLE_DEVICE)
@@ -165,10 +165,21 @@ public class BleManager {
      * Set scan timeout
      *
      * @param scanTimeout
-     * @return
+     * @return BleManager
      */
     public BleManager setScanTimeout(int scanTimeout) {
         this.scanTimeout = scanTimeout;
+        return this;
+    }
+
+    /**
+     * print log?
+     *
+     * @param enable
+     * @return BleManager
+     */
+    public BleManager enableLog(boolean enable) {
+        BleLog.isPrint = enable;
         return this;
     }
 

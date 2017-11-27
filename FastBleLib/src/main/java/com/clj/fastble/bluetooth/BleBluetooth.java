@@ -34,6 +34,7 @@ public class BleBluetooth {
 
     private BleConnectState connectState = BleConnectState.CONNECT_IDLE;
     private Handler handler = new Handler(Looper.getMainLooper());
+    private boolean isActivityDisconnect = false;
 
     private BleGattCallback bleGattCallback;
     private BleRssiCallback bleRssiCallback;
@@ -182,6 +183,7 @@ public class BleBluetooth {
 
     public synchronized void disconnect() {
         if (bluetoothGatt != null) {
+            isActivityDisconnect = true;
             bluetoothGatt.disconnect();
         }
         if (handler != null) {
@@ -189,7 +191,7 @@ public class BleBluetooth {
         }
     }
 
-    public synchronized void closeBluetoothGatt() {
+    private synchronized void closeBluetoothGatt() {
         if (bluetoothGatt != null) {
             bluetoothGatt.close();
         }
@@ -247,7 +249,7 @@ public class BleBluetooth {
                         @Override
                         public void run() {
                             if (bleGattCallback != null)
-                                bleGattCallback.onDisConnected(status == BluetoothGatt.GATT_SUCCESS, bleBluetooth.getDevice(), gatt, newState);
+                                bleGattCallback.onDisConnected(isActivityDisconnect, bleBluetooth.getDevice(), gatt, newState);
                         }
                     });
                 }
@@ -264,6 +266,7 @@ public class BleBluetooth {
                 bluetoothGatt = gatt;
                 connectState = BleConnectState.CONNECT_CONNECTED;
 
+                isActivityDisconnect = false;
                 BleManager.getInstance().getMultipleBluetoothController().addBleBluetooth(bleBluetooth);
                 handler.post(new Runnable() {
                     @Override

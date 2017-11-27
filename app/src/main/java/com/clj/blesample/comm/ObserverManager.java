@@ -1,6 +1,8 @@
 package com.clj.blesample.comm;
 
 
+import com.clj.fastble.data.BleDevice;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +32,10 @@ public class ObserverManager implements Observable {
     }
 
     @Override
-    public void notifyObserver() {
+    public void notifyObserver(BleDevice bleDevice) {
         for (int i = 0; i < observers.size(); i++) {
             Observer o = observers.get(i);
-            o.disConnected();
+            o.disConnected(bleDevice);
         }
     }
 

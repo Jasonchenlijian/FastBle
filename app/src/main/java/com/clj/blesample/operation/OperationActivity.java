@@ -31,7 +31,7 @@ public class OperationActivity extends AppCompatActivity implements Observer {
     private Toolbar toolbar;
     private List<Fragment> fragments = new ArrayList<>();
     private int currentPage = 0;
-    private String[] titles = new String[]{"服务列表", "特征列表", "操作控制台"};
+    private String[] titles = new String[3];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +52,10 @@ public class OperationActivity extends AppCompatActivity implements Observer {
     }
 
     @Override
-    public void disConnected() {
-        finish();
+    public void disConnected(BleDevice device) {
+        if (device != null && bleDevice != null && device.getKey().equals(bleDevice.getKey())) {
+            finish();
+        }
     }
 
     @Override
@@ -73,7 +75,6 @@ public class OperationActivity extends AppCompatActivity implements Observer {
 
     private void initView() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("特征列表");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -93,6 +94,11 @@ public class OperationActivity extends AppCompatActivity implements Observer {
         bleDevice = getIntent().getParcelableExtra(KEY_DATA);
         if (bleDevice == null)
             finish();
+
+        titles = new String[]{
+                getString(R.string.service_list),
+                getString(R.string.characteristic_list),
+                getString(R.string.console)};
     }
 
     private void initPage() {

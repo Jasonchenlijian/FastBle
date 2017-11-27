@@ -6,12 +6,6 @@ public final class BleLog {
 	public static boolean isPrint = true;
 	private static String defaultTag = "FastBle";
 
-	private BleLog() {}
-
-	public static void setTag(String tag) {
-		defaultTag = tag;
-	}
-
 	public static int i(Object o) {
 		return isPrint && o != null ? android.util.Log.i(defaultTag, o.toString()) : -1;
 	}

@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,15 +63,15 @@ public class CharacteristicOperationFragment extends Fragment {
             layout_container.getChildAt(i).setVisibility(View.GONE);
         }
         if (childList.contains(child)) {
-            layout_container.findViewWithTag(bleDevice.getKey()+ characteristic.getUuid().toString() + charaProp).setVisibility(View.VISIBLE);
+            layout_container.findViewWithTag(bleDevice.getKey() + characteristic.getUuid().toString() + charaProp).setVisibility(View.VISIBLE);
         } else {
             childList.add(child);
 
             View view = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation, null);
-            view.setTag(bleDevice.getKey()+ characteristic.getUuid().toString() + charaProp);
+            view.setTag(bleDevice.getKey() + characteristic.getUuid().toString() + charaProp);
             LinearLayout layout_add = (LinearLayout) view.findViewById(R.id.layout_add);
             final TextView txt_title = (TextView) view.findViewById(R.id.txt_title);
-            txt_title.setText(String.valueOf(characteristic.getUuid().toString() + "的数据变化："));
+            txt_title.setText(String.valueOf(characteristic.getUuid().toString() + getActivity().getString(R.string.data_changed)));
             final TextView txt = (TextView) view.findViewById(R.id.txt);
             txt.setMovementMethod(ScrollingMovementMethod.getInstance());
 
@@ -80,7 +79,7 @@ public class CharacteristicOperationFragment extends Fragment {
                 case PROPERTY_READ: {
                     View view_add = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation_button, null);
                     Button btn = (Button) view_add.findViewById(R.id.btn);
-                    btn.setText("读");
+                    btn.setText(getActivity().getString(R.string.read));
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -130,7 +129,7 @@ public class CharacteristicOperationFragment extends Fragment {
                     View view_add = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation_et, null);
                     final EditText et = (EditText) view_add.findViewById(R.id.et);
                     Button btn = (Button) view_add.findViewById(R.id.btn);
-                    btn.setText("写");
+                    btn.setText(getActivity().getString(R.string.write));
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -185,7 +184,7 @@ public class CharacteristicOperationFragment extends Fragment {
                     View view_add = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation_et, null);
                     final EditText et = (EditText) view_add.findViewById(R.id.et);
                     Button btn = (Button) view_add.findViewById(R.id.btn);
-                    btn.setText("写");
+                    btn.setText(getActivity().getString(R.string.write));
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -239,12 +238,12 @@ public class CharacteristicOperationFragment extends Fragment {
                 case PROPERTY_NOTIFY: {
                     View view_add = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation_button, null);
                     final Button btn = (Button) view_add.findViewById(R.id.btn);
-                    btn.setText("打开通知");
+                    btn.setText(getActivity().getString(R.string.open_notification));
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            if (btn.getText().toString().equals("打开通知")) {
-                                btn.setText("关闭通知");
+                            if (btn.getText().toString().equals(getActivity().getString(R.string.open_notification))) {
+                                btn.setText(getActivity().getString(R.string.close_notification));
                                 BleManager.getInstance().notify(
                                         bleDevice,
                                         characteristic.getService().getUuid().toString(),
@@ -287,7 +286,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             }
                                         });
                             } else {
-                                btn.setText("打开通知");
+                                btn.setText(getActivity().getString(R.string.open_notification));
                                 BleManager.getInstance().stopNotify(
                                         bleDevice,
                                         characteristic.getService().getUuid().toString(),
@@ -302,12 +301,12 @@ public class CharacteristicOperationFragment extends Fragment {
                 case PROPERTY_INDICATE: {
                     View view_add = LayoutInflater.from(getActivity()).inflate(R.layout.layout_characteric_operation_button, null);
                     final Button btn = (Button) view_add.findViewById(R.id.btn);
-                    btn.setText("打开通知");
+                    btn.setText(getActivity().getString(R.string.open_notification));
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            if (btn.getText().toString().equals("打开通知")) {
-                                btn.setText("关闭通知");
+                            if (btn.getText().toString().equals(getActivity().getString(R.string.open_notification))) {
+                                btn.setText(getActivity().getString(R.string.close_notification));
                                 BleManager.getInstance().indicate(
                                         bleDevice,
                                         characteristic.getService().getUuid().toString(),
@@ -350,7 +349,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             }
                                         });
                             } else {
-                                btn.setText("打开通知");
+                                btn.setText(getActivity().getString(R.string.open_notification));
                                 BleManager.getInstance().stopIndicate(
                                         bleDevice,
                                         characteristic.getService().getUuid().toString(),

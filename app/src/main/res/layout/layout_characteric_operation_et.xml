@@ -14,7 +14,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="请输入HEX格式指令"
+            android:hint="@string/input_hex"
             android:inputType="text"
             android:textSize="15sp" />
 

@@ -11,6 +11,8 @@ import android.text.TextUtils;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.utils.BleLog;
+import com.clj.fastble.utils.HexUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,8 +77,15 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
 
     private void next(BleDevice bleDevice) {
         if (mNeedConnect) {
+            BleLog.i("onScanning--------"
+                    + "  name:" + bleDevice.getName()
+                    + "  mac:" + bleDevice.getMac()
+                    + "  Rssi:" + bleDevice.getRssi()
+                    + "  scanRecord:" + HexUtil.formatHexString(bleDevice.getScanRecord()));
+
             mBleDeviceList.add(bleDevice);
             BleManager.getInstance().getBleScanner().stopLeScan();
+
         } else {
             AtomicBoolean hasFound = new AtomicBoolean(false);
             for (BleDevice result : mBleDeviceList) {
@@ -85,6 +94,12 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                 }
             }
             if (!hasFound.get()) {
+                BleLog.i("onScanning  ------"
+                        + "  name: " + bleDevice.getName()
+                        + "  mac: " + bleDevice.getMac()
+                        + "  Rssi: " + bleDevice.getRssi()
+                        + "  scanRecord: " + HexUtil.formatHexString(bleDevice.getScanRecord()));
+
                 mBleDeviceList.add(bleDevice);
                 onScanning(bleDevice);
             }
