@@ -26,13 +26,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.1.0</version>
+       <version>2.1.1</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.1.0'
+	compile 'com.clj.fastble:FastBleLib:2.1.1'
 
 
 ## 其他说明
@@ -81,11 +81,11 @@ FastBle 所有代码均可以加入混淆。
 	`void initScanRule(BleScanRuleConfig scanRuleConfig)`
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                .setServiceUuids(serviceUuids)	// 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)		// 只扫描指定广播名的设备，可选
-                .setDeviceMac(mac)				// 只扫描指定mac的设备，可选
-                .setAutoConnect(isAuto)			// 连接时的autoConnect参数，可选，默认false
-                .setTimeOut(5000)				// 扫描超时时间，可选，默认10秒
+                .setServiceUuids(serviceUuids)          // 只扫描指定的服务的设备，可选
+                .setDeviceName(true, names)				// 只扫描指定广播名的设备，可选
+                .setDeviceMac(mac)				        // 只扫描指定mac的设备，可选
+                .setAutoConnect(isAuto)			        // 连接时的autoConnect参数，可选，默认false
+                .setTimeOut(5000)				        // 扫描超时时间，可选，默认10秒
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
 
@@ -109,7 +109,7 @@ FastBle 所有代码均可以加入混淆。
 
             @Override
             public void onScanFinished(List<BleDevice> scanResultList) {
-				// 扫描结束，列出所有扫描到的符合扫描规则的BLE设备（UI线程）
+				// 扫描结束，列出所有扫描到的符合扫描规则的BLE设备，可能为空（UI线程）
             }
         });
 
@@ -322,7 +322,7 @@ FastBle 所有代码均可以加入混淆。
 
                     @Override
                     public void onRssiSuccess(int rssi) {
-
+                        // 读取设备的信号强度成功（UI线程）
                     }
                 });
 
@@ -448,7 +448,7 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
-- v2.1.0（2017-11-26）
+- v2.1.1（2017-11-27）
     - 增加多设备连接操作
     - 优化扫描策略
     - 优化扫描、连接的结果回调，对扫描、连接、读写通知等操作的结果回调默认切换到主线程
