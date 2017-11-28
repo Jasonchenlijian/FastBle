@@ -107,21 +107,20 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     }
 
     public final void notifyScanStarted(boolean success) {
-        if (success) {
-            mBleDeviceList.clear();
-            onScanStarted(true);
-            if (mScanTimeout > 0) {
-                removeHandlerMsg();
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        BleManager.getInstance().getBleScanner().stopLeScan();
-                    }
-                }, mScanTimeout);
-            }
-        } else {
-            onScanStarted(false);
+        mBleDeviceList.clear();
+
+        removeHandlerMsg();
+
+        if (success && mScanTimeout > 0) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    BleManager.getInstance().getBleScanner().stopLeScan();
+                }
+            }, mScanTimeout);
         }
+
+        onScanStarted(success);
     }
 
     public final void notifyScanStopped() {

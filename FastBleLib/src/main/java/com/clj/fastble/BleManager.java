@@ -21,6 +21,7 @@ import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleConnectState;
 import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.data.BleScanState;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.OtherException;
@@ -44,9 +45,11 @@ public class BleManager {
 
     private static final int DEFAULT_MAX_MULTIPLE_DEVICE = 7;
     private static final int DEFAULT_SCAN_TIME = 10000;
+    private static final int DEFAULT_OPERATE_TIME = 5000;
 
     private int maxConnectCount = DEFAULT_MAX_MULTIPLE_DEVICE;
     private int scanTimeout = DEFAULT_SCAN_TIME;
+    private int operateTimeout = DEFAULT_OPERATE_TIME;
 
     public static BleManager getInstance() {
         return BleManagerHolder.sBleManager;
@@ -169,6 +172,26 @@ public class BleManager {
      */
     public BleManager setScanTimeout(int scanTimeout) {
         this.scanTimeout = scanTimeout;
+        return this;
+    }
+
+    /**
+     * Get operate timeout
+     *
+     * @return
+     */
+    public int getOperateTimeout() {
+        return operateTimeout;
+    }
+
+    /**
+     * Set operate timeout
+     *
+     * @param operateTimeout
+     * @return BleManager
+     */
+    public BleManager setOperateTimeout(int operateTimeout) {
+        this.operateTimeout = operateTimeout;
         return this;
     }
 
@@ -501,6 +524,10 @@ public class BleManager {
             return bleBluetooth.getBluetoothGatt();
         }
         return null;
+    }
+
+    public BleScanState getScanSate() {
+        return bleScanner.getScanState();
     }
 
     public BleConnectState getConnectState(BleDevice bleDevice) {

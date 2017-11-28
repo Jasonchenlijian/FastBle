@@ -26,7 +26,7 @@ public class BleScanner {
         private static final BleScanner sBleScanner = new BleScanner();
     }
 
-    private BleScanPresenter scanCallback;
+    private BleScanPresenter bleScanPresenter;
     private BleScanState scanState = BleScanState.STATE_IDLE;
 
     public void scan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
@@ -55,33 +55,6 @@ public class BleScanner {
             }
         });
 
-    }
-
-    private synchronized void startLeScan(UUID[] serviceUuids, BleScanPresenter callback) {
-        if (callback == null)
-            return;
-        this.scanCallback = callback;
-        boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, scanCallback);
-        if (success) {
-            scanState = BleScanState.STATE_SCANNING;
-            scanCallback.notifyScanStarted(true);
-        } else {
-            scanCallback.notifyScanStarted(false);
-            callback.removeHandlerMsg();
-        }
-    }
-
-    public synchronized void stopLeScan() {
-        if (scanCallback == null)
-            return;
-
-        BleManager.getInstance().getBluetoothAdapter().stopLeScan(scanCallback);
-        scanCallback.notifyScanStopped();
-        scanCallback = null;
-
-        if (scanState == BleScanState.STATE_SCANNING) {
-            scanState = BleScanState.STATE_IDLE;
-        }
     }
 
     public void scanAndConnect(UUID[] serviceUuids, String[] names, final String mac, boolean fuzzy,
@@ -120,6 +93,29 @@ public class BleScanner {
                 }
             }
         });
+    }
+
+    private synchronized void startLeScan(UUID[] serviceUuids, BleScanPresenter presenter) {
+        if (presenter == null)
+            return;
+
+        this.bleScanPresenter = presenter;
+        boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, bleScanPresenter);
+        scanState = BleScanState.STATE_SCANNING;
+        bleScanPresenter.notifyScanStarted(success);
+    }
+
+    public synchronized void stopLeScan() {
+        if (bleScanPresenter == null)
+            return;
+
+        BleManager.getInstance().getBluetoothAdapter().stopLeScan(bleScanPresenter);
+        scanState = BleScanState.STATE_IDLE;
+        bleScanPresenter.notifyScanStopped();
+    }
+
+    public BleScanState getScanState() {
+        return scanState;
     }
 
 }

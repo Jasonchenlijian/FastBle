@@ -139,10 +139,6 @@ public class BleBluetooth {
         return bluetoothGatt;
     }
 
-    public BleConnectState getConnectionState() {
-        return connectState;
-    }
-
 
     public synchronized BluetoothGatt connect(BleDevice bleDevice,
                                               boolean autoConnect,
