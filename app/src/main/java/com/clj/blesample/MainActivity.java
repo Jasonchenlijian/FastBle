@@ -19,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -37,6 +38,8 @@ import com.clj.blesample.comm.ObserverManager;
 import com.clj.blesample.operation.OperationActivity;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleMtuChangedCallback;
+import com.clj.fastble.callback.BleRssiCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
@@ -49,7 +52,7 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CODE_OPEN_GPS = 1;
     private static final int REQUEST_CODE_PERMISSION_LOCATION = 2;
 
@@ -72,6 +75,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initView();
 
         BleManager.getInstance().init(getApplication());
+
+        BleManager.getInstance()
+                .enableLog(true)
+                .setMaxConnectCount(7)
+                .setOperateTimeout(5000);
     }
 
     @Override
@@ -202,11 +210,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean isAutoConnect = sw_auto.isChecked();
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                .setServiceUuids(serviceUuids)
-                .setDeviceName(true, names)
-                .setDeviceMac(mac)
-                .setAutoConnect(isAutoConnect)
-                .setScanTimeOut(8000)
+                .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
+                .setDeviceName(true, names)   // 只扫描指定广播名的设备，可选
+                .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
+                .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
+                .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
     }
@@ -258,6 +266,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 progressDialog.dismiss();
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
+
+                readRssi(bleDevice);
+                setMtu(bleDevice, 23);
             }
 
             @Override
@@ -271,6 +282,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, getString(R.string.disconnected), Toast.LENGTH_LONG).show();
                     ObserverManager.getInstance().notifyObserver(bleDevice);
                 }
+            }
+        });
+    }
+
+    private void readRssi(BleDevice bleDevice) {
+        BleManager.getInstance().readRssi(bleDevice, new BleRssiCallback() {
+            @Override
+            public void onRssiFailure(BleException exception) {
+                Log.i(TAG, "onRssiFailure" + exception.toString());
+            }
+
+            @Override
+            public void onRssiSuccess(int rssi) {
+                Log.i(TAG, "onRssiSuccess: " + rssi);
+            }
+        });
+    }
+
+    private void setMtu(BleDevice bleDevice, int mtu) {
+        BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
+            @Override
+            public void onsetMTUFailure(BleException exception) {
+                Log.i(TAG, "onsetMTUFailure" + exception.toString());
+            }
+
+            @Override
+            public void onMtuChanged(int mtu) {
+                Log.i(TAG, "onMtuChanged: " + mtu);
             }
         });
     }

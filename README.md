@@ -1,8 +1,7 @@
 # FastBle
 Android Bluetooth Low Energy 蓝牙快速开发框架。
 
-使用简单的方式进行搜索、连接、读写、通知的订阅与取消等Android与外围设备的蓝牙相互通信。
-
+>使用简单的方式进行 过滤、扫描、连接、读、写、通知订阅与取消、获取信号强度、设置最大传输单元、多设备连接等蓝牙通信功能。
 
 
 
@@ -26,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.1.1</version>
+       <version>2.1.2</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.1.1'
+	compile 'com.clj.fastble:FastBleLib:2.1.2'
 
 
 ## 其他说明
@@ -76,16 +75,24 @@ FastBle 所有代码均可以加入混淆。
 
 		BleManager.getInstance().enableLog(false);
 
+- #### （方法说明）设置操作超时时间，默认5秒
+
+	`BleManager setOperateTimeout(int operateTimeout)`
+
+		BleManager.getInstance().setOperateTimeout(5000);
+
+	此处的超时时间指的是：连接上一台设备之后，对这台设备进行 readRssi、setMtu、write、read、notify、indicate 这6种操作的超时时间。
+
 - #### （方法说明）配置扫描规则
 
 	`void initScanRule(BleScanRuleConfig scanRuleConfig)`
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                .setServiceUuids(serviceUuids)          // 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)				// 只扫描指定广播名的设备，可选
-                .setDeviceMac(mac)				        // 只扫描指定mac的设备，可选
-                .setAutoConnect(isAuto)			        // 连接时的autoConnect参数，可选，默认false
-                .setTimeOut(5000)				        // 扫描超时时间，可选，默认10秒
+                .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
+                .setDeviceName(true, names)   // 只扫描指定广播名的设备，可选
+                .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
+                .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
+                .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
 
@@ -185,7 +192,7 @@ FastBle 所有代码均可以加入混淆。
 
 		BleManager.getInstance().cancelScan();
 
-	调用该方法后，会立即结束之前的扫描流程，并回调onScanFinished方法。
+	调用该方法后，如果当前还处在扫描状态，会立即结束当前的扫描，并回调onScanFinished方法。
 
 
 - #### （方法说明）订阅通知notify
@@ -307,7 +314,7 @@ FastBle 所有代码均可以加入混淆。
                     }
                 });
 
-- #### （方法说明）读外设的Rssi
+- #### （方法说明）获取设备的信号强度Rssi
 
 	`void readRssi(BleDevice bleDevice, BleRssiCallback callback)`
 
@@ -325,6 +332,36 @@ FastBle 所有代码均可以加入混淆。
                         // 读取设备的信号强度成功（UI线程）
                     }
                 });
+
+	需要注意的是：
+	- 获取设备的信号强度，需要在设备连接之后进行。
+	- 某些设备可能无法读取Rssi，不会回调onRssiSuccess(),而会因为超时而回调onRssiFailure()。
+
+- #### （方法说明）设置最大传输单元MTU
+
+	`void setMtu(BleDevice bleDevice,
+                       int mtu,
+                       BleMtuChangedCallback callback)`
+
+        BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
+            @Override
+            public void onsetMTUFailure(BleException exception) {
+                // 设置MTU失败
+            }
+
+            @Override
+            public void onMtuChanged(int mtu) {
+                // 设置MTU成功，并获得当前设备传输支持的MTU值
+            }
+        });
+
+	需要注意的是：
+	- 设置MTU，需要在设备连接之后进行操作。
+	- 默认每一个BLE设备都必须支持的MTU为23。
+	- 在Android 低版本(API-17 到 API-20)上，没有这个限制。所以只有在API21以上的设备，才会有拓展MTU这个需求。
+	- 该方法的参数mtu，最小设置为23，最大设置为512。
+	- 并不是每台设备都支持拓展MTU，需要通讯双方都支持才行，也就是说，需要设备硬件也支持拓展MTU该方法才会起效果。调用该方法后，可以通过onMtuChanged(int mtu)查看最终设置完后，设备的最大传输单元被拓展到多少。如果设备不支持，可能无论设置多少，最终的mtu还是23。
+
 
 - #### （方法说明）获取所有已连接设备
 
@@ -423,15 +460,11 @@ FastBle 所有代码均可以加入混淆。
 
 - 蓝牙操作与硬件关联很大，开发过程中要保持和硬件协议的沟通，某些问题的解决需要硬件方面做一些适配。
 
-- BLE的MTU（最大传输单元）是20字节，即一次最多能发送20个字节，若超过20个字节，建议采用分包传输的方式。
-
 - 蓝牙连接之后，列出当前外设模块的所有service，每个service可能有一个或多个的characteristic，每一个characteristic有其对应的property（即可操作的属性类别）,假如一个characteristic的property对应的是write，那么对这个characteristic做notify处理显然是行不通的。
 
-- 两次操作之间最好间隔一小段时间，如100ms（具体时间可以根据自己实际蓝牙外设自行尝试延长或缩短）。举例，连接成功之后，延迟100ms进行notify，成功之后延迟100ms进行write，write成功之后，notify的数据回调接口将返回外设传输过来的数据。
+- 两次操作之间最好间隔一小段时间，如100ms（具体时间可以根据自己实际蓝牙外设自行尝试延长或缩短）。举例，连接成功之后，延迟100ms进行notify，成功之后延迟100ms进行write。
 
 - FastBle中开放的蓝牙操作的相关方法均要求在主线程中执行。
-
-- 一个简单的使用场景：打开蓝牙，在主线程扫描设备，连接，连接成功之后，在`onConnectSuccess`的回调方法中，延时100ms，再去调用notify、write等方法。这就是一个基本的操作。
 
 - 连接及连接后的过程中，时刻关注`onDisConnected`方法，然后做处理。
 
@@ -440,14 +473,20 @@ FastBle 所有代码均可以加入混淆。
 - 蓝牙应用开发中，存在两种角色，分别是central和peripheral ,中文就是中心和外设。比如手机去连接智能设备，那手机就是central，智能设备就是peripheral。
 
 - FastBle当前版本仅支持中心模式 （central model），即"以App作为中心，连接其他BLE外设"。把手机作为外设目前版本是行不通的。
-- 连接之后的操作有：write，read，notify，indicate，response or not等。indicate和notify的区别就在于，indicate是一定会收到数据，notify有可能会丢失数据（不会有central收到数据的回应），write也分为response和no response，如果是response，那么write成功回收到peripheral的确认消息，但是会降低写入的速率，换一个角度说就是 write no response写的速率更快。
 
-- 连接断开之后可以根据实际情况进行重连，但如果是连接失败的情况，建议不要立即重连，而是调用`void closeBluetoothGatt(BleDevice bleDevice)`清空一下状态，并延迟一段时间等待复位，否则会把gatt阻塞，导致手机不重启蓝牙就再也无法连接任何设备的严重情况。
+- 连接之后的操作有：write，read，notify，indicate，response or not等。indicate和notify的区别就在于，indicate是一定会收到数据，notify有可能会丢失数据（不会有central收到数据的回应），write也分为response和no response，如果是response，那么write成功回收到peripheral的确认消息，但是会降低写入的速率，换一个角度说就是 write no response写的速率更快。
 
 - 很多Android设备是可以强制打开用户手机蓝牙的，打开蓝牙需要一段时间（部分手机上需要向用户请求）。虽然时间比较短，但也不能调用完打开蓝牙方法后直接去调用扫描方法，此时蓝牙多半是还未开启完毕状态。建议的做法是维持一个蓝牙状态的广播，调用打开蓝牙方法后，在一段时间内阻塞线程，如果在这段时间内收到蓝牙打开广播后，再进行后续操作。而后续操作过程中，如果收到蓝牙正在关闭或关闭的广播，也可以及时对当前的情况做一个妥善处理。
 
+- core spec里面定义了ATT的默认MTU为23个bytes，除去ATT的opcode一个字节以及ATT的handle 2个字节之后，剩下的20个字节便是留给GATT的了。因此core spec规定每一个BLE设备都必须支持MTU为23。那么我们进行BLE数据相互发送的时候，一次最多能发送20个字节。如果需要发送的数据超过20个字节，有两种方法，一种是主动尝试拓宽MTU，另一种是采用分包传输的方式。
+
+- 拓宽MTU，只有在API-21以上的Android设备才起作用，因为API-21及以下的设备没有这个限制。另外，需要关注的是并不是拓宽MTU以后就行了，还需要看你所连接的设备是否支持拓宽。
+
 
 ## 版本更新日志
+- v2.1.2（2017-11-29）
+    - 增加setMtu方法
+    - 优化操作的超时回调
 - v2.1.1（2017-11-27）
     - 增加多设备连接操作
     - 优化扫描策略

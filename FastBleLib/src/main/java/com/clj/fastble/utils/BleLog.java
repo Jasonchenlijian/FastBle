@@ -14,6 +14,14 @@ public final class BleLog {
 		return isPrint && m != null ? android.util.Log.i(defaultTag, m) : -1;
 	}
 
+	public static int w(String m) {
+		return isPrint && m != null ? android.util.Log.w(defaultTag, m) : -1;
+	}
+
+	public static int e(String m) {
+		return isPrint && m != null ? android.util.Log.e(defaultTag, m) : -1;
+	}
+
 	/*********************** Log ***************************/
 	public static int v(String tag, String msg) {
 		return isPrint && msg != null ? android.util.Log.v(tag, msg) : -1;

@@ -28,7 +28,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     private List<BleDevice> mBleDeviceList = new ArrayList<>();
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
-    private long mScanTimeout = BleManager.getInstance().getScanTimeout();
+    private long mScanTimeout = BleManager.DEFAULT_SCAN_TIME;
 
     public BleScanPresenter(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeOut) {
         this.mDeviceNames = names;

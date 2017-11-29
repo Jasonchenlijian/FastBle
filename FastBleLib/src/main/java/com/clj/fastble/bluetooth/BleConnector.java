@@ -8,11 +8,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleIndicateCallback;
+import com.clj.fastble.callback.BleMtuChangedCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleRssiCallback;
@@ -36,6 +36,7 @@ public class BleConnector {
     private static final int MSG_WRITE_CHA = 0x13;
     private static final int MSG_READ_CHA = 0x14;
     private static final int MSG_READ_RSSI = 0x15;
+    private static final int MSG_SET_MTU = 0x16;
 
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattService service;
@@ -75,6 +76,20 @@ public class BleConnector {
                     msg.obj = null;
                     break;
 
+                case MSG_READ_RSSI:
+                    BleRssiCallback rssiCallback = (BleRssiCallback) msg.obj;
+                    if (rssiCallback != null)
+                        rssiCallback.onRssiFailure(new TimeoutException());
+                    msg.obj = null;
+                    break;
+
+                case MSG_SET_MTU:
+                    BleMtuChangedCallback mtuChangedCallback = (BleMtuChangedCallback) msg.obj;
+                    if (mtuChangedCallback != null)
+                        mtuChangedCallback.onsetMTUFailure(new TimeoutException());
+                    msg.obj = null;
+                    break;
+
                 default:
                     super.handleMessage(msg);
                     break;
@@ -85,7 +100,7 @@ public class BleConnector {
     public BleConnector(BleBluetooth bleBluetooth) {
         this.bleBluetooth = bleBluetooth;
         this.bluetoothGatt = bleBluetooth.getBluetoothGatt();
-        this.handler = new Handler(Looper.getMainLooper());
+//        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public BleConnector withUUID(UUID serviceUUID, UUID charactUUID) {
@@ -305,6 +320,23 @@ public class BleConnector {
         }
     }
 
+    /**
+     * set mtu
+     */
+    public void setMtu(int requiredMtu, BleMtuChangedCallback bleMtuChangedCallback) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (bluetoothGatt.requestMtu(requiredMtu)) {
+                handleSetMtuCallback(bleMtuChangedCallback);
+            } else {
+                if (bleMtuChangedCallback != null)
+                    bleMtuChangedCallback.onsetMTUFailure(new OtherException("gatt requestMtu fail"));
+            }
+        } else {
+            if (bleMtuChangedCallback != null)
+                bleMtuChangedCallback.onsetMTUFailure(new OtherException("API level lower than 21"));
+        }
+    }
+
 
     /**************************************** Handle call back ******************************************/
 
@@ -381,6 +413,19 @@ public class BleConnector {
         }
     }
 
+    /**
+     * set mtu
+     */
+    private void handleSetMtuCallback(final BleMtuChangedCallback bleMtuChangedCallback) {
+        if (bleMtuChangedCallback != null) {
+            handler.removeMessages(MSG_SET_MTU, this);
+            bleMtuChangedCallback.setBleConnector(this);
+            bleBluetooth.addMtuChangedCallback(bleMtuChangedCallback);
+            handler.sendMessageDelayed(handler.obtainMessage(MSG_SET_MTU, bleMtuChangedCallback),
+                    BleManager.getInstance().getOperateTimeout());
+        }
+    }
+
     public void notifySuccess() {
         handler.removeMessages(MSG_NOTIFY_CHA, this);
     }
@@ -399,6 +444,10 @@ public class BleConnector {
 
     public void rssiSuccess() {
         handler.removeMessages(MSG_READ_RSSI, this);
+    }
+
+    public void mtuChangedSuccess() {
+        handler.removeMessages(MSG_SET_MTU, this);
     }
 
 
