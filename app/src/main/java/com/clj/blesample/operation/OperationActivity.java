@@ -38,8 +38,8 @@ public class OperationActivity extends AppCompatActivity implements Observer {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_operation);
-        initView();
         initData();
+        initView();
         initPage();
 
         ObserverManager.getInstance().addObserver(this);
@@ -75,6 +75,7 @@ public class OperationActivity extends AppCompatActivity implements Observer {
 
     private void initView() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(titles[0]);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
