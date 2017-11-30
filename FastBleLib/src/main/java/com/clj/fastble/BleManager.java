@@ -70,6 +70,7 @@ public class BleManager {
                 bluetoothAdapter = bluetoothManager.getAdapter();
             bleExceptionHandler = new DefaultBleExceptionHandler();
             multipleBluetoothController = new MultipleBluetoothController();
+            bleScanRuleConfig = new BleScanRuleConfig();
             bleScanner = BleScanner.getInstance();
         }
     }
