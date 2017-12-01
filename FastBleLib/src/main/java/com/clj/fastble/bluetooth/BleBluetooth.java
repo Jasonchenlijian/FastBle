@@ -218,6 +218,7 @@ public class BleBluetooth {
         }
         removeConnectGattCallback();
         removeRssiCallback();
+        removeMtuChangedCallback();
         clearCharacterCallback();
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
@@ -345,7 +346,7 @@ public class BleBluetooth {
                 final Object call = entry.getValue();
                 if (call instanceof BleNotifyCallback) {
                     if (descriptor.getCharacteristic().getUuid().toString().equals(((BleNotifyCallback) call).getKey())) {
-                        ((BleNotifyCallback) call).getBleConnector().notifySuccess();
+                        ((BleNotifyCallback) call).getBleConnector().notifyMsgInit();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -366,7 +367,7 @@ public class BleBluetooth {
                 final Object call = entry.getValue();
                 if (call instanceof BleIndicateCallback) {
                     if (descriptor.getCharacteristic().getUuid().toString().equals(((BleIndicateCallback) call).getKey())) {
-                        ((BleIndicateCallback) call).getBleConnector().indicateSuccess();
+                        ((BleIndicateCallback) call).getBleConnector().indicateMsgInit();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -393,7 +394,7 @@ public class BleBluetooth {
                 final Object call = entry.getValue();
                 if (call instanceof BleWriteCallback) {
                     if (characteristic.getUuid().toString().equals(((BleWriteCallback) call).getKey())) {
-                        ((BleWriteCallback) call).getBleConnector().writeSuccess();
+                        ((BleWriteCallback) call).getBleConnector().writeMsgInit();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -420,7 +421,7 @@ public class BleBluetooth {
                 final Object call = entry.getValue();
                 if (call instanceof BleReadCallback) {
                     if (characteristic.getUuid().toString().equals(((BleReadCallback) call).getKey())) {
-                        ((BleReadCallback) call).getBleConnector().readSuccess();
+                        ((BleReadCallback) call).getBleConnector().readMsgInit();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -439,10 +440,10 @@ public class BleBluetooth {
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, final int status) {
             super.onReadRemoteRssi(gatt, rssi, status);
-            BleLog.i("BluetoothGattCallback：onReadRemoteRssi ");
+            BleLog.i("BluetoothGattCallback：onReadRemoteRssi " + status);
 
             if (bleRssiCallback != null) {
-                bleRssiCallback.getBleConnector().rssiSuccess();
+                bleRssiCallback.getBleConnector().rssiMsgInit();
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -463,7 +464,7 @@ public class BleBluetooth {
             BleLog.i("BluetoothGattCallback：onMtuChanged ");
 
             if (bleMtuChangedCallback != null) {
-                bleMtuChangedCallback.getBleConnector().mtuChangedSuccess();
+                bleMtuChangedCallback.getBleConnector().mtuChangedMsgInit();
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

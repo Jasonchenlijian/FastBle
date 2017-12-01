@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.1.3</version>
+       <version>2.1.4</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.1.3'
+	compile 'com.clj.fastble:FastBleLib:2.1.4'
 
 
 ## 其他说明
@@ -89,7 +89,7 @@ FastBle 所有代码均可以加入混淆。
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
                 .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)   	// 只扫描指定广播名的设备，可选
+                .setDeviceName(true, names)   // 只扫描指定广播名的设备，可选
                 .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
                 .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
                 .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒
@@ -215,7 +215,7 @@ FastBle 所有代码均可以加入混淆。
                     }
 
                     @Override
-                    public void onNotifyFailure() {
+                    public void onNotifyFailure(BleException exception) {
                         // 打开通知操作失败（UI线程）
                     }
 
@@ -251,7 +251,7 @@ FastBle 所有代码均可以加入混淆。
                     }
 
                     @Override
-                    public void onIndicateFailure() {
+                    public void onIndicateFailure(BleException exception) {
                         // 打开通知操作失败（UI线程）
                     }
 
@@ -349,12 +349,12 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
             @Override
             public void onsetMTUFailure(BleException exception) {
-                // 设置MTU失败
+                // 设置MTU失败（UI线程）
             }
 
             @Override
             public void onMtuChanged(int mtu) {
-                // 设置MTU成功，并获得当前设备传输支持的MTU值
+                // 设置MTU成功，并获得当前设备传输支持的MTU值（UI线程）
             }
         });
 
@@ -364,6 +364,22 @@ FastBle 所有代码均可以加入混淆。
 	- 在Android 低版本(API-17 到 API-20)上，没有这个限制。所以只有在API21以上的设备，才会有拓展MTU这个需求。
 	- 该方法的参数mtu，最小设置为23，最大设置为512。
 	- 并不是每台设备都支持拓展MTU，需要通讯双方都支持才行，也就是说，需要设备硬件也支持拓展MTU该方法才会起效果。调用该方法后，可以通过onMtuChanged(int mtu)查看最终设置完后，设备的最大传输单元被拓展到多少。如果设备不支持，可能无论设置多少，最终的mtu还是23。
+
+- #### （方法说明）移除对应设备及对应特征的监听
+
+	`void removeConnectGattCallback(BleDevice bleDevice)`移除对设备原先连接状态的监听
+
+	`void removeRssiCallback(BleDevice bleDevice)`移除对设备原先Rssi的监听
+
+	`void removeMtuChangedCallback(BleDevice bleDevice)`移除对设备原先Mtu变化的监听
+
+	`void removeNotifyCallback(BleDevice bleDevice, String uuid_notify)`移除对设备原先某个特征的notify的监听
+
+	`void removeIndicateCallback(BleDevice bleDevice, String uuid_indicate)`移除对设备原先某个特征的indicate的监听
+
+	`void removeWriteCallback(BleDevice bleDevice, String uuid_write)`移除对设备原先某个特征的write的监听
+
+	`void removeReadCallback(BleDevice bleDevice, String uuid_read)`移除对设备原先某个特征的read的监听
 
 
 - #### （方法说明）获取所有已连接设备
@@ -487,6 +503,9 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.1.4（2017-12-01）
+    - 增加移除指定特征Callback的方法
+    - 修正2.1.2版本上操作超时回调的bug
 - v2.1.2（2017-11-29）
     - 增加setMtu方法
     - 优化操作的超时回调

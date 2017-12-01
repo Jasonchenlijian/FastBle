@@ -539,10 +539,57 @@ public class BleManager {
 
     public BluetoothGatt getBluetoothGatt(BleDevice bleDevice) {
         BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
-        if (bleBluetooth != null) {
+        if (bleBluetooth != null)
             return bleBluetooth.getBluetoothGatt();
-        }
         return null;
+    }
+
+    public void removeConnectGattCallback(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.removeConnectGattCallback();
+    }
+
+    public void removeRssiCallback(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.removeRssiCallback();
+    }
+
+    public void removeMtuChangedCallback(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.removeMtuChangedCallback();
+    }
+
+    public void removeNotifyCallback(BleDevice bleDevice, String uuid_notify) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.removeNotifyCallback(uuid_notify);
+    }
+
+    public void removeIndicateCallback(BleDevice bleDevice, String uuid_indicate) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.removeIndicateCallback(uuid_indicate);
+    }
+
+    public void removeWriteCallback(BleDevice bleDevice, String uuid_write) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.removeWriteCallback(uuid_write);
+    }
+
+    public void removeReadCallback(BleDevice bleDevice, String uuid_read) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.removeReadCallback(uuid_read);
+    }
+
+    public void clearCharacterCallback(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            bleBluetooth.clearCharacterCallback();
     }
 
     public BleScanState getScanSate() {

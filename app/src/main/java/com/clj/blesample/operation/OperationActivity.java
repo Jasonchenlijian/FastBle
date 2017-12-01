@@ -14,6 +14,7 @@ import android.view.View;
 import com.clj.blesample.R;
 import com.clj.blesample.comm.Observer;
 import com.clj.blesample.comm.ObserverManager;
+import com.clj.fastble.BleManager;
 import com.clj.fastble.data.BleDevice;
 
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class OperationActivity extends AppCompatActivity implements Observer {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        BleManager.getInstance().clearCharacterCallback(bleDevice);
         ObserverManager.getInstance().deleteObserver(this);
     }
 

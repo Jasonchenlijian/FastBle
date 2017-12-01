@@ -136,9 +136,9 @@ public class BleConnector {
     public void enableCharacteristicNotify(BleNotifyCallback bleNotifyCallback, String uuid_notify) {
         if (characteristic != null
                 && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-            if (setCharacteristicNotification(bluetoothGatt, characteristic, true, bleNotifyCallback)) {
-                handleCharacteristicNotificationCallback(bleNotifyCallback, uuid_notify);
-            }
+
+            handleCharacteristicNotifyCallback(bleNotifyCallback, uuid_notify);
+            setCharacteristicNotification(bluetoothGatt, characteristic, true, bleNotifyCallback);
         } else {
             if (bleNotifyCallback != null)
                 bleNotifyCallback.onNotifyFailure(new OtherException("this characteristic not support notify!"));
@@ -165,6 +165,7 @@ public class BleConnector {
                                                   boolean enable,
                                                   BleNotifyCallback bleNotifyCallback) {
         if (gatt == null || characteristic == null) {
+            notifyMsgInit();
             if (bleNotifyCallback != null)
                 bleNotifyCallback.onNotifyFailure(new OtherException("gatt or characteristic equal null"));
             return false;
@@ -172,6 +173,7 @@ public class BleConnector {
 
         boolean success1 = gatt.setCharacteristicNotification(characteristic, enable);
         if (!success1) {
+            notifyMsgInit();
             if (bleNotifyCallback != null)
                 bleNotifyCallback.onNotifyFailure(new OtherException("gatt setCharacteristicNotification fail"));
             return false;
@@ -179,6 +181,7 @@ public class BleConnector {
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(formUUID(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
         if (descriptor == null) {
+            notifyMsgInit();
             if (bleNotifyCallback != null)
                 bleNotifyCallback.onNotifyFailure(new OtherException("descriptor equals null"));
             return false;
@@ -187,6 +190,7 @@ public class BleConnector {
                     BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
             boolean success2 = gatt.writeDescriptor(descriptor);
             if (!success2) {
+                notifyMsgInit();
                 if (bleNotifyCallback != null)
                     bleNotifyCallback.onNotifyFailure(new OtherException("gatt writeDescriptor fail"));
             }
@@ -200,9 +204,8 @@ public class BleConnector {
     public void enableCharacteristicIndicate(BleIndicateCallback bleIndicateCallback, String uuid_indicate) {
         if (characteristic != null
                 && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-            if (setCharacteristicIndication(bluetoothGatt, characteristic, true, bleIndicateCallback)) {
-                handleCharacteristicIndicationCallback(bleIndicateCallback, uuid_indicate);
-            }
+            handleCharacteristicIndicateCallback(bleIndicateCallback, uuid_indicate);
+            setCharacteristicIndication(bluetoothGatt, characteristic, true, bleIndicateCallback);
         } else {
             if (bleIndicateCallback != null)
                 bleIndicateCallback.onIndicateFailure(new OtherException("this characteristic not support indicate!"));
@@ -230,6 +233,7 @@ public class BleConnector {
                                                 boolean enable,
                                                 BleIndicateCallback bleIndicateCallback) {
         if (gatt == null || characteristic == null) {
+            indicateMsgInit();
             if (bleIndicateCallback != null)
                 bleIndicateCallback.onIndicateFailure(new OtherException("gatt or characteristic equal null"));
             return false;
@@ -237,6 +241,7 @@ public class BleConnector {
 
         boolean success1 = gatt.setCharacteristicNotification(characteristic, enable);
         if (!success1) {
+            indicateMsgInit();
             if (bleIndicateCallback != null)
                 bleIndicateCallback.onIndicateFailure(new OtherException("gatt setCharacteristicNotification fail"));
             return false;
@@ -244,6 +249,7 @@ public class BleConnector {
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(formUUID(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
         if (descriptor == null) {
+            indicateMsgInit();
             if (bleIndicateCallback != null)
                 bleIndicateCallback.onIndicateFailure(new OtherException("descriptor equals null"));
             return false;
@@ -252,6 +258,7 @@ public class BleConnector {
                     BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
             boolean success2 = gatt.writeDescriptor(descriptor);
             if (!success2) {
+                indicateMsgInit();
                 if (bleIndicateCallback != null)
                     bleIndicateCallback.onIndicateFailure(new OtherException("gatt writeDescriptor fail"));
             }
@@ -277,9 +284,9 @@ public class BleConnector {
         }
 
         if (characteristic.setValue(data)) {
-            if (bluetoothGatt.writeCharacteristic(characteristic)) {
-                handleCharacteristicWriteCallback(bleWriteCallback, uuid_write);
-            } else {
+            handleCharacteristicWriteCallback(bleWriteCallback, uuid_write);
+            if (!bluetoothGatt.writeCharacteristic(characteristic)) {
+                writeMsgInit();
                 if (bleWriteCallback != null)
                     bleWriteCallback.onWriteFailure(new OtherException("gatt writeCharacteristic fail"));
             }
@@ -296,9 +303,9 @@ public class BleConnector {
         if (characteristic != null
                 && (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
 
-            if (bluetoothGatt.readCharacteristic(characteristic)) {
-                handleCharacteristicReadCallback(bleReadCallback, uuid_read);
-            } else {
+            handleCharacteristicReadCallback(bleReadCallback, uuid_read);
+            if (!bluetoothGatt.readCharacteristic(characteristic)) {
+                readMsgInit();
                 if (bleReadCallback != null)
                     bleReadCallback.onReadFailure(new OtherException("gatt readCharacteristic fail"));
             }
@@ -312,9 +319,9 @@ public class BleConnector {
      * rssi
      */
     public void readRemoteRssi(BleRssiCallback bleRssiCallback) {
-        if (bluetoothGatt.readRemoteRssi()) {
-            handleRSSIReadCallback(bleRssiCallback);
-        } else {
+        handleRSSIReadCallback(bleRssiCallback);
+        if (!bluetoothGatt.readRemoteRssi()) {
+            rssiMsgInit();
             if (bleRssiCallback != null)
                 bleRssiCallback.onRssiFailure(new OtherException("gatt readRemoteRssi fail"));
         }
@@ -325,9 +332,9 @@ public class BleConnector {
      */
     public void setMtu(int requiredMtu, BleMtuChangedCallback bleMtuChangedCallback) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (bluetoothGatt.requestMtu(requiredMtu)) {
-                handleSetMtuCallback(bleMtuChangedCallback);
-            } else {
+            handleSetMtuCallback(bleMtuChangedCallback);
+            if (!bluetoothGatt.requestMtu(requiredMtu)) {
+                mtuChangedMsgInit();
                 if (bleMtuChangedCallback != null)
                     bleMtuChangedCallback.onsetMTUFailure(new OtherException("gatt requestMtu fail"));
             }
@@ -343,10 +350,10 @@ public class BleConnector {
     /**
      * notify
      */
-    private void handleCharacteristicNotificationCallback(BleNotifyCallback bleNotifyCallback,
-                                                          String uuid_notify) {
+    private void handleCharacteristicNotifyCallback(BleNotifyCallback bleNotifyCallback,
+                                                    String uuid_notify) {
         if (bleNotifyCallback != null) {
-            handler.removeMessages(MSG_NOTIFY_CHA, this);
+            notifyMsgInit();
             bleNotifyCallback.setBleConnector(this);
             bleNotifyCallback.setKey(uuid_notify);
             bleBluetooth.addNotifyCallback(uuid_notify, bleNotifyCallback);
@@ -358,10 +365,10 @@ public class BleConnector {
     /**
      * indicate
      */
-    private void handleCharacteristicIndicationCallback(BleIndicateCallback bleIndicateCallback,
-                                                        String uuid_indicate) {
+    private void handleCharacteristicIndicateCallback(BleIndicateCallback bleIndicateCallback,
+                                                      String uuid_indicate) {
         if (bleIndicateCallback != null) {
-            handler.removeMessages(MSG_INDICATE_DES, this);
+            indicateMsgInit();
             bleIndicateCallback.setBleConnector(this);
             bleIndicateCallback.setKey(uuid_indicate);
             bleBluetooth.addIndicateCallback(uuid_indicate, bleIndicateCallback);
@@ -376,7 +383,7 @@ public class BleConnector {
     private void handleCharacteristicWriteCallback(BleWriteCallback bleWriteCallback,
                                                    String uuid_write) {
         if (bleWriteCallback != null) {
-            handler.removeMessages(MSG_WRITE_CHA, this);
+            writeMsgInit();
             bleWriteCallback.setBleConnector(this);
             bleWriteCallback.setKey(uuid_write);
             bleBluetooth.addWriteCallback(uuid_write, bleWriteCallback);
@@ -391,7 +398,7 @@ public class BleConnector {
     private void handleCharacteristicReadCallback(BleReadCallback bleReadCallback,
                                                   String uuid_read) {
         if (bleReadCallback != null) {
-            handler.removeMessages(MSG_READ_CHA, this);
+            readMsgInit();
             bleReadCallback.setBleConnector(this);
             bleReadCallback.setKey(uuid_read);
             bleBluetooth.addReadCallback(uuid_read, bleReadCallback);
@@ -405,7 +412,7 @@ public class BleConnector {
      */
     private void handleRSSIReadCallback(final BleRssiCallback bleRssiCallback) {
         if (bleRssiCallback != null) {
-            handler.removeMessages(MSG_READ_RSSI, this);
+            rssiMsgInit();
             bleRssiCallback.setBleConnector(this);
             bleBluetooth.addRssiCallback(bleRssiCallback);
             handler.sendMessageDelayed(handler.obtainMessage(MSG_READ_RSSI, bleRssiCallback),
@@ -418,7 +425,7 @@ public class BleConnector {
      */
     private void handleSetMtuCallback(final BleMtuChangedCallback bleMtuChangedCallback) {
         if (bleMtuChangedCallback != null) {
-            handler.removeMessages(MSG_SET_MTU, this);
+            mtuChangedMsgInit();
             bleMtuChangedCallback.setBleConnector(this);
             bleBluetooth.addMtuChangedCallback(bleMtuChangedCallback);
             handler.sendMessageDelayed(handler.obtainMessage(MSG_SET_MTU, bleMtuChangedCallback),
@@ -426,28 +433,28 @@ public class BleConnector {
         }
     }
 
-    public void notifySuccess() {
-        handler.removeMessages(MSG_NOTIFY_CHA, this);
+    public void notifyMsgInit() {
+        handler.removeMessages(MSG_NOTIFY_CHA);
     }
 
-    public void indicateSuccess() {
-        handler.removeMessages(MSG_INDICATE_DES, this);
+    public void indicateMsgInit() {
+        handler.removeMessages(MSG_INDICATE_DES);
     }
 
-    public void writeSuccess() {
-        handler.removeMessages(MSG_WRITE_CHA, this);
+    public void writeMsgInit() {
+        handler.removeMessages(MSG_WRITE_CHA);
     }
 
-    public void readSuccess() {
-        handler.removeMessages(MSG_READ_CHA, this);
+    public void readMsgInit() {
+        handler.removeMessages(MSG_READ_CHA);
     }
 
-    public void rssiSuccess() {
-        handler.removeMessages(MSG_READ_RSSI, this);
+    public void rssiMsgInit() {
+        handler.removeMessages(MSG_READ_RSSI);
     }
 
-    public void mtuChangedSuccess() {
-        handler.removeMessages(MSG_SET_MTU, this);
+    public void mtuChangedMsgInit() {
+        handler.removeMessages(MSG_SET_MTU);
     }
 
 
