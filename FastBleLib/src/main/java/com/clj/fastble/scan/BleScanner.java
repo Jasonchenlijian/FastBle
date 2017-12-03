@@ -2,10 +2,6 @@ package com.clj.fastble.scan;
 
 
 import android.annotation.TargetApi;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanSettings;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,7 +12,6 @@ import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleScanState;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,13 +26,12 @@ public class BleScanner {
         private static final BleScanner sBleScanner = new BleScanner();
     }
 
-    private BleScanPresenterJellyBean bleScanPresenterJellyBean;
+    private BleScanPresenter bleScanPresenter;
     private BleScanState scanState = BleScanState.STATE_IDLE;
 
     public void scan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
                      long timeOut, final BleScanCallback callback) {
-
-        startLeScan(serviceUuids, new BleScanPresenterJellyBean(names, mac, fuzzy, false, timeOut) {
+        startLeScan(serviceUuids, new BleScanPresenter(names, mac, fuzzy, false, timeOut) {
             @Override
             public void onScanStarted(boolean success) {
                 if (callback != null) {
@@ -59,30 +53,29 @@ public class BleScanner {
                 }
             }
         });
-
     }
 
-    private synchronized void startLeScan(UUID[] serviceUuids, BleScanPresenterJellyBean callback) {
-        if (callback == null)
+    private synchronized void startLeScan(UUID[] serviceUuids, BleScanPresenter presenter) {
+        if (presenter == null)
             return;
-        this.bleScanPresenterJellyBean = callback;
-        boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, bleScanPresenterJellyBean);
+        this.bleScanPresenter = presenter;
+        boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, bleScanPresenter);
         if (success) {
             scanState = BleScanState.STATE_SCANNING;
-            bleScanPresenterJellyBean.notifyScanStarted(true);
+            bleScanPresenter.notifyScanStarted(true);
         } else {
-            bleScanPresenterJellyBean.notifyScanStarted(false);
-            callback.removeHandlerMsg();
+            bleScanPresenter.notifyScanStarted(false);
+            presenter.removeHandlerMsg();
         }
     }
 
     public synchronized void stopLeScan() {
-        if (bleScanPresenterJellyBean == null)
+        if (bleScanPresenter == null)
             return;
 
-        BleManager.getInstance().getBluetoothAdapter().stopLeScan(bleScanPresenterJellyBean);
-        bleScanPresenterJellyBean.notifyScanStopped();
-        bleScanPresenterJellyBean = null;
+        BleManager.getInstance().getBluetoothAdapter().stopLeScan(bleScanPresenter);
+        bleScanPresenter.notifyScanStopped();
+        bleScanPresenter = null;
 
         if (scanState == BleScanState.STATE_SCANNING) {
             scanState = BleScanState.STATE_IDLE;
@@ -92,7 +85,7 @@ public class BleScanner {
     public void scanAndConnect(UUID[] serviceUuids, String[] names, final String mac, boolean fuzzy,
                                long timeOut, final BleScanAndConnectCallback callback) {
 
-        startLeScan(serviceUuids, new BleScanPresenterJellyBean(names, mac, fuzzy, true, timeOut) {
+        startLeScan(serviceUuids, new BleScanPresenter(names, mac, fuzzy, true, timeOut) {
 
             @Override
             public void onScanStarted(boolean success) {
@@ -126,19 +119,4 @@ public class BleScanner {
             }
         });
     }
-
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void scanOnLollipop() {
-        BluetoothLeScanner bluetoothLeScanner = BleManager.getInstance().getBluetoothAdapter().getBluetoothLeScanner();
-        ScanFilter scanFilter = new ScanFilter.Builder().build();
-        List<ScanFilter> scanFilterList = new ArrayList<>();
-        scanFilterList.add(scanFilter);
-        ScanSettings scanSettings = new ScanSettings.Builder().build();
-        bluetoothLeScanner.startScan(scanFilterList, scanSettings, new ScanCallback() {});
-    }
-
-
-
-
 }

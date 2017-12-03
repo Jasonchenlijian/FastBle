@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public abstract class BleScanPresenterJellyBean implements BluetoothAdapter.LeScanCallback {
+public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallback {
 
     private String[] mDeviceNames = null;
     private String mDeviceMac = null;
@@ -28,7 +28,7 @@ public abstract class BleScanPresenterJellyBean implements BluetoothAdapter.LeSc
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private long mScanTimeout = BleManager.getInstance().getScanTimeout();
 
-    public BleScanPresenterJellyBean(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeOut) {
+    public BleScanPresenter(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeOut) {
         this.mDeviceNames = names;
         this.mDeviceMac = mac;
         this.mFuzzy = fuzzy;
