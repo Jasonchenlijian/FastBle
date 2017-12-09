@@ -3,8 +3,11 @@ package com.clj.fastble;
 import android.annotation.TargetApi;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.ScanRecord;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -520,8 +523,33 @@ public class BleManager {
         }
     }
 
+    /**
+     * judge Bluetooth is enable
+     *
+     * @return
+     */
     public boolean isBlueEnable() {
         return bluetoothAdapter != null && bluetoothAdapter.isEnabled();
+    }
+
+
+    public BleDevice convertBleDevice(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord, long timestampNanos) {
+        return new BleDevice(bluetoothDevice, rssi, scanRecord, timestampNanos);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public BleDevice convertBleDevice(ScanResult scanResult) {
+        if (scanResult == null) {
+            throw new IllegalArgumentException("scanResult can not be Null!");
+        }
+        BluetoothDevice bluetoothDevice = scanResult.getDevice();
+        int rssi = scanResult.getRssi();
+        ScanRecord scanRecord = scanResult.getScanRecord();
+        byte[] bytes = null;
+        if (scanRecord != null)
+            bytes = scanRecord.getBytes();
+        long timestampNanos = scanResult.getTimestampNanos();
+        return new BleDevice(bluetoothDevice, rssi, bytes, timestampNanos);
     }
 
     public BleBluetooth getBleBluetooth(BleDevice bleDevice) {

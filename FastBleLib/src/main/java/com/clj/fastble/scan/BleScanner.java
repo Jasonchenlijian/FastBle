@@ -31,7 +31,6 @@ public class BleScanner {
 
     public void scan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
                      long timeOut, final BleScanCallback callback) {
-
         startLeScan(serviceUuids, new BleScanPresenter(names, mac, fuzzy, false, timeOut) {
             @Override
             public void onScanStarted(boolean success) {
@@ -54,7 +53,6 @@ public class BleScanner {
                 }
             }
         });
-
     }
 
     public void scanAndConnect(UUID[] serviceUuids, String[] names, final String mac, boolean fuzzy,
@@ -117,5 +115,6 @@ public class BleScanner {
     public BleScanState getScanState() {
         return scanState;
     }
+
 
 }
