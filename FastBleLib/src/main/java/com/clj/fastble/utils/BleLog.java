@@ -6,18 +6,20 @@ public final class BleLog {
 	public static boolean isPrint = true;
 	private static String defaultTag = "FastBle";
 
-	private BleLog() {}
-
-	public static void setTag(String tag) {
-		defaultTag = tag;
-	}
-
 	public static int i(Object o) {
 		return isPrint && o != null ? android.util.Log.i(defaultTag, o.toString()) : -1;
 	}
 
 	public static int i(String m) {
 		return isPrint && m != null ? android.util.Log.i(defaultTag, m) : -1;
+	}
+
+	public static int w(String m) {
+		return isPrint && m != null ? android.util.Log.w(defaultTag, m) : -1;
+	}
+
+	public static int e(String m) {
+		return isPrint && m != null ? android.util.Log.e(defaultTag, m) : -1;
 	}
 
 	/*********************** Log ***************************/

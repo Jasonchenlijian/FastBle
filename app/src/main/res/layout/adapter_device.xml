@@ -65,7 +65,7 @@
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:text="连接"
+                android:text="@string/connect"
                 android:textSize="12sp" />
 
         </LinearLayout>
@@ -81,7 +81,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="已连接"
+                android:text="@string/connected"
                 android:textColor="@color/colorPrimary"
                 android:textSize="14sp" />
 
@@ -90,7 +90,7 @@
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:text="断开连接"
+                android:text="@string/disconnect"
                 android:textSize="12sp" />
 
             <Button
@@ -98,7 +98,7 @@
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:text="进入操作"
+                android:text="@string/enter"
                 android:textSize="12sp" />
 
         </LinearLayout>

@@ -55,33 +55,6 @@ public class BleScanner {
         });
     }
 
-    private synchronized void startLeScan(UUID[] serviceUuids, BleScanPresenter presenter) {
-        if (presenter == null)
-            return;
-        this.bleScanPresenter = presenter;
-        boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, bleScanPresenter);
-        if (success) {
-            scanState = BleScanState.STATE_SCANNING;
-            bleScanPresenter.notifyScanStarted(true);
-        } else {
-            bleScanPresenter.notifyScanStarted(false);
-            presenter.removeHandlerMsg();
-        }
-    }
-
-    public synchronized void stopLeScan() {
-        if (bleScanPresenter == null)
-            return;
-
-        BleManager.getInstance().getBluetoothAdapter().stopLeScan(bleScanPresenter);
-        bleScanPresenter.notifyScanStopped();
-        bleScanPresenter = null;
-
-        if (scanState == BleScanState.STATE_SCANNING) {
-            scanState = BleScanState.STATE_IDLE;
-        }
-    }
-
     public void scanAndConnect(UUID[] serviceUuids, String[] names, final String mac, boolean fuzzy,
                                long timeOut, final BleScanAndConnectCallback callback) {
 
@@ -119,4 +92,29 @@ public class BleScanner {
             }
         });
     }
+
+    private synchronized void startLeScan(UUID[] serviceUuids, BleScanPresenter presenter) {
+        if (presenter == null)
+            return;
+
+        this.bleScanPresenter = presenter;
+        boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, bleScanPresenter);
+        scanState = BleScanState.STATE_SCANNING;
+        bleScanPresenter.notifyScanStarted(success);
+    }
+
+    public synchronized void stopLeScan() {
+        if (bleScanPresenter == null)
+            return;
+
+        BleManager.getInstance().getBluetoothAdapter().stopLeScan(bleScanPresenter);
+        scanState = BleScanState.STATE_IDLE;
+        bleScanPresenter.notifyScanStopped();
+    }
+
+    public BleScanState getScanState() {
+        return scanState;
+    }
+
+
 }

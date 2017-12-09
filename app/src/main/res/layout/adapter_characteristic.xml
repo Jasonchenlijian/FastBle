@@ -15,7 +15,7 @@
             android:id="@+id/txt_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="特征"
+            android:text="@string/characteristic"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="特性"
+            android:text="@string/characteristic"
             android:textSize="12sp" />
 
     </LinearLayout>

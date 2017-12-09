@@ -29,7 +29,7 @@
     <string name="type">服务类型(主服务)</string>
     <string name="scan_setting">在下面你可以配置需要扫描的设备的条件，可以为空</string>
     <string name="setting_name">输入蓝牙设备广播名，多个之间以英文逗号隔开</string>
-    <string name="setting_mac">输入蓝牙设备mac地址</string>
+    <string name="setting_mac">输入蓝牙设备mac</string>
     <string name="setting_uuid">输入蓝牙设备UUID，多个之间以英文逗号隔开</string>
     <string name="input_hex">请输入HEX格式指令</string>
     <string name="connect">连接</string>

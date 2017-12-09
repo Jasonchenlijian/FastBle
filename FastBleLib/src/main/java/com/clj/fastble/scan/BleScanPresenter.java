@@ -11,6 +11,8 @@ import android.text.TextUtils;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.utils.BleLog;
+import com.clj.fastble.utils.HexUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     private List<BleDevice> mBleDeviceList = new ArrayList<>();
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
-    private long mScanTimeout = BleManager.getInstance().getScanTimeout();
+    private long mScanTimeout = BleManager.DEFAULT_SCAN_TIME;
 
     public BleScanPresenter(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeOut) {
         this.mDeviceNames = names;
@@ -75,8 +77,15 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
 
     private void next(BleDevice bleDevice) {
         if (mNeedConnect) {
+            BleLog.i("onScanning--------"
+                    + "  name:" + bleDevice.getName()
+                    + "  mac:" + bleDevice.getMac()
+                    + "  Rssi:" + bleDevice.getRssi()
+                    + "  scanRecord:" + HexUtil.formatHexString(bleDevice.getScanRecord()));
+
             mBleDeviceList.add(bleDevice);
             BleManager.getInstance().getBleScanner().stopLeScan();
+
         } else {
             AtomicBoolean hasFound = new AtomicBoolean(false);
             for (BleDevice result : mBleDeviceList) {
@@ -85,6 +94,12 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                 }
             }
             if (!hasFound.get()) {
+                BleLog.i("onScanning  ------"
+                        + "  name: " + bleDevice.getName()
+                        + "  mac: " + bleDevice.getMac()
+                        + "  Rssi: " + bleDevice.getRssi()
+                        + "  scanRecord: " + HexUtil.formatHexString(bleDevice.getScanRecord()));
+
                 mBleDeviceList.add(bleDevice);
                 onScanning(bleDevice);
             }
@@ -92,21 +107,20 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     }
 
     public final void notifyScanStarted(boolean success) {
-        if (success) {
-            mBleDeviceList.clear();
-            onScanStarted(true);
-            if (mScanTimeout > 0) {
-                removeHandlerMsg();
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        BleManager.getInstance().getBleScanner().stopLeScan();
-                    }
-                }, mScanTimeout);
-            }
-        } else {
-            onScanStarted(false);
+        mBleDeviceList.clear();
+
+        removeHandlerMsg();
+
+        if (success && mScanTimeout > 0) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    BleManager.getInstance().getBleScanner().stopLeScan();
+                }
+            }, mScanTimeout);
         }
+
+        onScanStarted(success);
     }
 
     public final void notifyScanStopped() {

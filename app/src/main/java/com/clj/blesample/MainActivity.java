@@ -19,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -37,6 +38,8 @@ import com.clj.blesample.comm.ObserverManager;
 import com.clj.blesample.operation.OperationActivity;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleMtuChangedCallback;
+import com.clj.fastble.callback.BleRssiCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
@@ -49,7 +52,7 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CODE_OPEN_GPS = 1;
     private static final int REQUEST_CODE_PERMISSION_LOCATION = 2;
 
@@ -72,6 +75,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initView();
 
         BleManager.getInstance().init(getApplication());
+
+        BleManager.getInstance()
+                .enableLog(true)
+                .setMaxConnectCount(7)
+                .setOperateTimeout(5000);
     }
 
     @Override
@@ -91,9 +99,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_scan:
-                if (btn_scan.getText().equals("开始扫描")) {
+                if (btn_scan.getText().equals(getString(R.string.start_scan))) {
                     checkPermissions();
-                } else if (btn_scan.getText().equals("停止扫描")) {
+                } else if (btn_scan.getText().equals(getString(R.string.stop_scan))) {
                     BleManager.getInstance().cancelScan();
                 }
                 break;
@@ -101,10 +109,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.txt_setting:
                 if (layout_setting.getVisibility() == View.VISIBLE) {
                     layout_setting.setVisibility(View.GONE);
-                    txt_setting.setText("展开搜索设置");
+                    txt_setting.setText(getString(R.string.expand_search_settings));
                 } else {
                     layout_setting.setVisibility(View.VISIBLE);
-                    txt_setting.setText("收起搜索设置");
+                    txt_setting.setText(getString(R.string.retrieve_search_settings));
                 }
                 break;
         }
@@ -115,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(toolbar);
 
         btn_scan = (Button) findViewById(R.id.btn_scan);
-        btn_scan.setText("开始扫描");
+        btn_scan.setText(getString(R.string.start_scan));
         btn_scan.setOnClickListener(this);
 
         et_name = (EditText) findViewById(R.id.et_name);
@@ -127,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txt_setting = (TextView) findViewById(R.id.txt_setting);
         txt_setting.setOnClickListener(this);
         layout_setting.setVisibility(View.GONE);
-        txt_setting.setText("展开搜索设置");
+        txt_setting.setText(getString(R.string.expand_search_settings));
 
         img_loading = (ImageView) findViewById(R.id.img_loading);
         operatingAnim = AnimationUtils.loadAnimation(this, R.anim.rotate);
@@ -202,11 +210,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean isAutoConnect = sw_auto.isChecked();
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                .setServiceUuids(serviceUuids)
-                .setDeviceName(true, names)
-                .setDeviceMac(mac)
-                .setAutoConnect(isAutoConnect)
-                .setScanTimeOut(8000)
+                .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
+                .setDeviceName(true, names)   // 只扫描指定广播名的设备，可选
+                .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
+                .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
+                .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
     }
@@ -219,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDeviceAdapter.notifyDataSetChanged();
                 img_loading.startAnimation(operatingAnim);
                 img_loading.setVisibility(View.VISIBLE);
-                btn_scan.setText("停止扫描");
+                btn_scan.setText(getString(R.string.stop_scan));
             }
 
             @Override
@@ -232,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onScanFinished(List<BleDevice> scanResultList) {
                 img_loading.clearAnimation();
                 img_loading.setVisibility(View.INVISIBLE);
-                btn_scan.setText("开始扫描");
+                btn_scan.setText(getString(R.string.start_scan));
             }
         });
     }
@@ -248,9 +256,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onConnectFail(BleException exception) {
                 img_loading.clearAnimation();
                 img_loading.setVisibility(View.INVISIBLE);
-                btn_scan.setText("开始扫描");
+                btn_scan.setText(getString(R.string.start_scan));
                 progressDialog.dismiss();
-                Toast.makeText(MainActivity.this, "连接失败", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, getString(R.string.connect_fail), Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -258,6 +266,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 progressDialog.dismiss();
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
+
+                readRssi(bleDevice);
+                setMtu(bleDevice, 23);
             }
 
             @Override
@@ -268,9 +279,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDeviceAdapter.notifyDataSetChanged();
 
                 if (!isActiveDisConnected) {
-                    Toast.makeText(MainActivity.this, "连接断开", Toast.LENGTH_LONG).show();
-                    ObserverManager.getInstance().notifyObserver();
+                    Toast.makeText(MainActivity.this, getString(R.string.disconnected), Toast.LENGTH_LONG).show();
+                    ObserverManager.getInstance().notifyObserver(bleDevice);
                 }
+            }
+        });
+    }
+
+    private void readRssi(BleDevice bleDevice) {
+        BleManager.getInstance().readRssi(bleDevice, new BleRssiCallback() {
+            @Override
+            public void onRssiFailure(BleException exception) {
+                Log.i(TAG, "onRssiFailure" + exception.toString());
+            }
+
+            @Override
+            public void onRssiSuccess(int rssi) {
+                Log.i(TAG, "onRssiSuccess: " + rssi);
+            }
+        });
+    }
+
+    private void setMtu(BleDevice bleDevice, int mtu) {
+        BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
+            @Override
+            public void onsetMTUFailure(BleException exception) {
+                Log.i(TAG, "onsetMTUFailure" + exception.toString());
+            }
+
+            @Override
+            public void onMtuChanged(int mtu) {
+                Log.i(TAG, "onMtuChanged: " + mtu);
             }
         });
     }
@@ -296,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void checkPermissions() {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!bluetoothAdapter.isEnabled()) {
-            Toast.makeText(this, "请先打开蓝牙", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.please_open_blue), Toast.LENGTH_LONG).show();
             return;
         }
 
