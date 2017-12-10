@@ -6,7 +6,7 @@ import com.clj.fastble.exception.BleException;
 
 public abstract class BleMtuChangedCallback {
 
-    public abstract void onsetMTUFailure(BleException exception);
+    public abstract void onSetMTUFailure(BleException exception);
 
     public abstract void onMtuChanged(int mtu);
 

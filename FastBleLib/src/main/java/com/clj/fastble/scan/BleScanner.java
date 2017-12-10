@@ -40,6 +40,13 @@ public class BleScanner {
             }
 
             @Override
+            public void onLeScan(BleDevice bleDevice) {
+                if (callback != null) {
+                    callback.onLeScan(bleDevice);
+                }
+            }
+
+            @Override
             public void onScanning(BleDevice result) {
                 if (callback != null) {
                     callback.onScanning(result);
@@ -68,8 +75,17 @@ public class BleScanner {
             }
 
             @Override
-            public void onScanning(BleDevice bleDevice) {
+            public void onLeScan(BleDevice bleDevice) {
+                if (callback != null) {
+                    callback.onLeScan(bleDevice);
+                }
+            }
 
+            @Override
+            public void onScanning(BleDevice result) {
+                if (callback != null) {
+                    callback.onScanning(result);
+                }
             }
 
             @Override

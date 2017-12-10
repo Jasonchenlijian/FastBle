@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.1.4</version>
+       <version>2.1.5</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.1.4'
+	compile 'com.clj.fastble:FastBleLib:2.1.5'
 
 
 ## 其他说明
@@ -89,10 +89,10 @@ FastBle 所有代码均可以加入混淆。
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
                 .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)   // 只扫描指定广播名的设备，可选
+                .setDeviceName(true, names)   		// 只扫描指定广播名的设备，可选
                 .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
                 .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
-                .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒
+                .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒；小于等于0表示不限制扫描时间
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
 
@@ -348,7 +348,7 @@ FastBle 所有代码均可以加入混淆。
 
         BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
             @Override
-            public void onsetMTUFailure(BleException exception) {
+            public void onSetMTUFailure(BleException exception) {
                 // 设置MTU失败（UI线程）
             }
 
@@ -380,6 +380,17 @@ FastBle 所有代码均可以加入混淆。
 	`void removeWriteCallback(BleDevice bleDevice, String uuid_write)`移除对设备原先某个特征的write的监听
 
 	`void removeReadCallback(BleDevice bleDevice, String uuid_read)`移除对设备原先某个特征的read的监听
+
+- #### （方法说明）自行构建BleDevice对象
+
+	`BleDevice convertBleDevice(BluetoothDevice bluetoothDevice)`通过BluetoothDevice对象构建
+
+	`BleDevice convertBleDevice(ScanResult scanResult)`通过ScanResult对象构建
+
+	对于BLE设备扫描，官方API上提供了很多种方法，功能丰富，包括过滤规则、后台扫描等情况。FastBle框架中默认使用的是API21以下的兼容性扫描方式，建议有其他特殊需求开发者可以根据官方提供的[其他方法](https://developer.android.com/reference/android/bluetooth/le/BluetoothLeScanner.html)自定义扫描流程。然后利用FastBle框架中的方法对扫描到的设备进行连接等后续操作。
+
+	需要注意的是：
+	- 构建完成的BleDevice对象依然是未连接状态，如需操作，先进行连接。
 
 
 - #### （方法说明）获取所有已连接设备
@@ -503,6 +514,9 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.1.5（2017-12-10）
+	- 增加对自定义扫描设备的支持
+	- 扫描过程增加onLeScan方法回调
 - v2.1.4（2017-12-01）
     - 增加移除指定特征Callback的方法
     - 修正2.1.2版本上操作超时回调的bug

@@ -86,7 +86,7 @@ public class BleConnector {
                 case MSG_SET_MTU:
                     BleMtuChangedCallback mtuChangedCallback = (BleMtuChangedCallback) msg.obj;
                     if (mtuChangedCallback != null)
-                        mtuChangedCallback.onsetMTUFailure(new TimeoutException());
+                        mtuChangedCallback.onSetMTUFailure(new TimeoutException());
                     msg.obj = null;
                     break;
 
@@ -336,11 +336,11 @@ public class BleConnector {
             if (!bluetoothGatt.requestMtu(requiredMtu)) {
                 mtuChangedMsgInit();
                 if (bleMtuChangedCallback != null)
-                    bleMtuChangedCallback.onsetMTUFailure(new OtherException("gatt requestMtu fail"));
+                    bleMtuChangedCallback.onSetMTUFailure(new OtherException("gatt requestMtu fail"));
             }
         } else {
             if (bleMtuChangedCallback != null)
-                bleMtuChangedCallback.onsetMTUFailure(new OtherException("API level lower than 21"));
+                bleMtuChangedCallback.onSetMTUFailure(new OtherException("API level lower than 21"));
         }
     }
 

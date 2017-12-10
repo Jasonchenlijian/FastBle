@@ -471,7 +471,7 @@ public class BleBluetooth {
                         if (status == BluetoothGatt.GATT_SUCCESS) {
                             bleMtuChangedCallback.onMtuChanged(mtu);
                         } else {
-                            bleMtuChangedCallback.onsetMTUFailure(new GattException(status));
+                            bleMtuChangedCallback.onSetMTUFailure(new GattException(status));
                         }
                     }
                 });

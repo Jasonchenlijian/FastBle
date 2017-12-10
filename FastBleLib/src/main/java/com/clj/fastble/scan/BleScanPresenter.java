@@ -43,11 +43,13 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
         if (device == null)
             return;
 
-        BleDevice scanResult = new BleDevice(device, rssi, scanRecord, System.currentTimeMillis());
+        BleDevice bleDevice = new BleDevice(device, rssi, scanRecord, System.currentTimeMillis());
+
+        onLeScan(bleDevice);
 
         synchronized (this) {
             if (TextUtils.isEmpty(mDeviceMac) && (mDeviceNames == null || mDeviceNames.length < 1)) {
-                next(scanResult);
+                next(bleDevice);
                 return;
             }
 
@@ -71,13 +73,13 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                 }
             }
 
-            next(scanResult);
+            next(bleDevice);
         }
     }
 
     private void next(BleDevice bleDevice) {
         if (mNeedConnect) {
-            BleLog.i("onScanning--------"
+            BleLog.i("devices detected  --------"
                     + "  name:" + bleDevice.getName()
                     + "  mac:" + bleDevice.getMac()
                     + "  Rssi:" + bleDevice.getRssi()
@@ -94,7 +96,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                 }
             }
             if (!hasFound.get()) {
-                BleLog.i("onScanning  ------"
+                BleLog.i("device detected  ------"
                         + "  name: " + bleDevice.getName()
                         + "  mac: " + bleDevice.getMac()
                         + "  Rssi: " + bleDevice.getRssi()
@@ -134,9 +136,9 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
 
     public abstract void onScanStarted(boolean success);
 
+    public abstract void onLeScan(BleDevice bleDevice);
+
     public abstract void onScanning(BleDevice bleDevice);
 
     public abstract void onScanFinished(List<BleDevice> bleDeviceList);
-
-
 }

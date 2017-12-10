@@ -9,4 +9,8 @@ public abstract class BleScanAndConnectCallback extends BleGattCallback {
 
     public abstract void onScanFinished(BleDevice scanResult);
 
+    public void onScanning(BleDevice bleDevice){}
+
+    public void onLeScan(BleDevice bleDevice){}
+
 }

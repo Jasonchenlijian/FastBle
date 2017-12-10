@@ -231,6 +231,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
+            public void onLeScan(BleDevice bleDevice) {
+                super.onLeScan(bleDevice);
+            }
+
+            @Override
             public void onScanning(BleDevice bleDevice) {
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
@@ -303,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setMtu(BleDevice bleDevice, int mtu) {
         BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
             @Override
-            public void onsetMTUFailure(BleException exception) {
+            public void onSetMTUFailure(BleException exception) {
                 Log.i(TAG, "onsetMTUFailure" + exception.toString());
             }
 

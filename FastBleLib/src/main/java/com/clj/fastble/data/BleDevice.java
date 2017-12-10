@@ -13,13 +13,16 @@ public class BleDevice implements Parcelable {
     private int mRssi;
     private long mTimestampNanos;
 
+    public BleDevice(BluetoothDevice device) {
+        mDevice = device;
+    }
+
     public BleDevice(BluetoothDevice device, int rssi, byte[] scanRecord, long timestampNanos) {
         mDevice = device;
         mScanRecord = scanRecord;
         mRssi = rssi;
         mTimestampNanos = timestampNanos;
     }
-
 
     protected BleDevice(Parcel in) {
         mDevice = in.readParcelable(BluetoothDevice.class.getClassLoader());

@@ -12,4 +12,6 @@ public abstract class BleScanCallback {
     public abstract void onScanning(BleDevice result);
 
     public abstract void onScanFinished(List<BleDevice> scanResultList);
+
+    public void onLeScan(BleDevice bleDevice){}
 }

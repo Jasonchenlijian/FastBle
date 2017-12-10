@@ -475,19 +475,19 @@ public class BleManager {
 
         if (mtu > DEFAULT_MAX_MTU) {
             BleLog.e("requiredMtu should lower than 512 !");
-            callback.onsetMTUFailure(new OtherException("requiredMtu should lower than 512 !"));
+            callback.onSetMTUFailure(new OtherException("requiredMtu should lower than 512 !"));
             return;
         }
 
         if (mtu < DEFAULT_MTU) {
             BleLog.e("requiredMtu should higher than 23 !");
-            callback.onsetMTUFailure(new OtherException("requiredMtu should higher than 23 !"));
+            callback.onSetMTUFailure(new OtherException("requiredMtu should higher than 23 !"));
             return;
         }
 
         BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
-            callback.onsetMTUFailure(new OtherException("This device not connect!"));
+            callback.onSetMTUFailure(new OtherException("This device not connect!"));
         } else {
             bleBluetooth.newBleConnector().setMtu(mtu, callback);
         }
@@ -533,8 +533,8 @@ public class BleManager {
     }
 
 
-    public BleDevice convertBleDevice(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord, long timestampNanos) {
-        return new BleDevice(bluetoothDevice, rssi, scanRecord, timestampNanos);
+    public BleDevice convertBleDevice(BluetoothDevice bluetoothDevice) {
+        return new BleDevice(bluetoothDevice);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
