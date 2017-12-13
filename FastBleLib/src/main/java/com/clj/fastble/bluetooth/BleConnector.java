@@ -100,7 +100,6 @@ public class BleConnector {
     public BleConnector(BleBluetooth bleBluetooth) {
         this.bleBluetooth = bleBluetooth;
         this.bluetoothGatt = bleBluetooth.getBluetoothGatt();
-//        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public BleConnector withUUID(UUID serviceUUID, UUID charactUUID) {
