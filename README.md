@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.1.5</version>
+       <version>2.1.6</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.1.5'
+	compile 'com.clj.fastble:FastBleLib:2.1.6'
 
 
 ## 其他说明
@@ -52,7 +52,6 @@ FastBle 所有代码均可以加入混淆。
 # 如何使用
 
 - #### （方法说明）初始化
-	所有蓝牙操作，均通过BleManager来完成
     
         BleManager.getInstance().init(getApplication());
 
@@ -89,7 +88,7 @@ FastBle 所有代码均可以加入混淆。
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
                 .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)   		// 只扫描指定广播名的设备，可选
+                .setDeviceName(true, names)   	// 只扫描指定广播名的设备，可选
                 .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
                 .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
                 .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒；小于等于0表示不限制扫描时间
@@ -514,6 +513,9 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.1.6（2017-12-20）
+	- 修正UUID必须小写的Bug
+	- 定义默认的扫描超时时间为10秒
 - v2.1.5（2017-12-10）
 	- 增加对自定义扫描设备的支持
 	- 扫描过程增加onLeScan方法回调

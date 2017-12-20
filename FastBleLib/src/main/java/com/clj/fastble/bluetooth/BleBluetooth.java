@@ -306,7 +306,7 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 final Object call = entry.getValue();
                 if (call instanceof BleNotifyCallback) {
-                    if (characteristic.getUuid().toString().equals(((BleNotifyCallback) call).getKey())) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleNotifyCallback) call).getKey())) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -322,7 +322,7 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 final Object call = entry.getValue();
                 if (call instanceof BleIndicateCallback) {
-                    if (characteristic.getUuid().toString().equals(((BleIndicateCallback) call).getKey())) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleIndicateCallback) call).getKey())) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -345,7 +345,7 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 final Object call = entry.getValue();
                 if (call instanceof BleNotifyCallback) {
-                    if (descriptor.getCharacteristic().getUuid().toString().equals(((BleNotifyCallback) call).getKey())) {
+                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(((BleNotifyCallback) call).getKey())) {
                         ((BleNotifyCallback) call).getBleConnector().notifyMsgInit();
                         handler.post(new Runnable() {
                             @Override
@@ -366,7 +366,7 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 final Object call = entry.getValue();
                 if (call instanceof BleIndicateCallback) {
-                    if (descriptor.getCharacteristic().getUuid().toString().equals(((BleIndicateCallback) call).getKey())) {
+                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(((BleIndicateCallback) call).getKey())) {
                         ((BleIndicateCallback) call).getBleConnector().indicateMsgInit();
                         handler.post(new Runnable() {
                             @Override
@@ -393,7 +393,7 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 final Object call = entry.getValue();
                 if (call instanceof BleWriteCallback) {
-                    if (characteristic.getUuid().toString().equals(((BleWriteCallback) call).getKey())) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleWriteCallback) call).getKey())) {
                         ((BleWriteCallback) call).getBleConnector().writeMsgInit();
                         handler.post(new Runnable() {
                             @Override
@@ -420,7 +420,7 @@ public class BleBluetooth {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 final Object call = entry.getValue();
                 if (call instanceof BleReadCallback) {
-                    if (characteristic.getUuid().toString().equals(((BleReadCallback) call).getKey())) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleReadCallback) call).getKey())) {
                         ((BleReadCallback) call).getBleConnector().readMsgInit();
                         handler.post(new Runnable() {
                             @Override

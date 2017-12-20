@@ -64,7 +64,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                     String remoteName = device.getName();
                     if (remoteName == null)
                         remoteName = "";
-                    if (mFuzzy ? remoteName.contains(name) : remoteName.equalsIgnoreCase(name)) {
+                    if (mFuzzy ? remoteName.contains(name) : remoteName.equals(name)) {
                         equal.set(true);
                     }
                 }
