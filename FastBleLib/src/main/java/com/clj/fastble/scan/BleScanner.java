@@ -115,7 +115,7 @@ public class BleScanner {
 
         this.bleScanPresenter = presenter;
         boolean success = BleManager.getInstance().getBluetoothAdapter().startLeScan(serviceUuids, bleScanPresenter);
-        scanState = BleScanState.STATE_SCANNING;
+        scanState = success ? BleScanState.STATE_SCANNING : BleScanState.STATE_IDLE;
         bleScanPresenter.notifyScanStarted(success);
     }
 
