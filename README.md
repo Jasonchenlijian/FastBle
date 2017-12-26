@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.1.6</version>
+       <version>2.1.7</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.1.6'
+	compile 'com.clj.fastble:FastBleLib:2.1.7'
 
 
 ## 其他说明
@@ -513,6 +513,8 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.1.7（2017-12-26）
+	- 优化高并发情况下的数据返回
 - v2.1.6（2017-12-20）
 	- 修正UUID必须小写的Bug
 	- 定义默认的扫描超时时间为10秒
