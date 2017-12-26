@@ -83,10 +83,10 @@ public class MultipleBluetoothController {
     }
 
     public synchronized List<BleBluetooth> getBleBluetoothList() {
-        final List<BleBluetooth> bleBluetoothList = new ArrayList<>(bleLruHashMap.values());
+        List<BleBluetooth> bleBluetoothList = new ArrayList<>(bleLruHashMap.values());
         Collections.sort(bleBluetoothList, new Comparator<BleBluetooth>() {
             @Override
-            public int compare(final BleBluetooth lhs, final BleBluetooth rhs) {
+            public int compare(BleBluetooth lhs, BleBluetooth rhs) {
                 return lhs.getDeviceKey().compareToIgnoreCase(rhs.getDeviceKey());
             }
         });
@@ -94,7 +94,7 @@ public class MultipleBluetoothController {
     }
 
     public synchronized List<BleDevice> getDeviceList() {
-        final List<BleDevice> deviceList = new ArrayList<>();
+        List<BleDevice> deviceList = new ArrayList<>();
         for (BleBluetooth BleBluetooth : getBleBluetoothList()) {
             if (BleBluetooth != null) {
                 deviceList.add(BleBluetooth.getDevice());

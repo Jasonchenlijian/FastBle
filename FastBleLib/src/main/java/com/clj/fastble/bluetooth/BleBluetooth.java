@@ -341,7 +341,6 @@ public class BleBluetooth {
                     }
                 }
             }
-
         }
 
         @Override

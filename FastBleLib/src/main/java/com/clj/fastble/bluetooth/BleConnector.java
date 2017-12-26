@@ -409,7 +409,7 @@ public class BleConnector {
     /**
      * rssi
      */
-    private void handleRSSIReadCallback(final BleRssiCallback bleRssiCallback) {
+    private void handleRSSIReadCallback(BleRssiCallback bleRssiCallback) {
         if (bleRssiCallback != null) {
             rssiMsgInit();
             bleRssiCallback.setBleConnector(this);
@@ -422,7 +422,7 @@ public class BleConnector {
     /**
      * set mtu
      */
-    private void handleSetMtuCallback(final BleMtuChangedCallback bleMtuChangedCallback) {
+    private void handleSetMtuCallback(BleMtuChangedCallback bleMtuChangedCallback) {
         if (bleMtuChangedCallback != null) {
             mtuChangedMsgInit();
             bleMtuChangedCallback.setBleConnector(this);
