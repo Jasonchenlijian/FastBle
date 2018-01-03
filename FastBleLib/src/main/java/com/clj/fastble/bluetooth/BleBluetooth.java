@@ -313,13 +313,13 @@ public class BleBluetooth {
             Iterator iterator = bleNotifyCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                final Object call = entry.getValue();
-                if (call instanceof BleNotifyCallback) {
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleNotifyCallback) call).getKey())) {
+                final Object callback = entry.getValue();
+                if (callback instanceof BleNotifyCallback) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleNotifyCallback) callback).getKey())) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                ((BleNotifyCallback) call).onCharacteristicChanged(data);
+                                ((BleNotifyCallback) callback).onCharacteristicChanged(data);
                             }
                         });
                     }
@@ -329,13 +329,13 @@ public class BleBluetooth {
             iterator = bleIndicateCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                final Object call = entry.getValue();
-                if (call instanceof BleIndicateCallback) {
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleIndicateCallback) call).getKey())) {
+                final Object callback = entry.getValue();
+                if (callback instanceof BleIndicateCallback) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleIndicateCallback) callback).getKey())) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                ((BleIndicateCallback) call).onCharacteristicChanged(data);
+                                ((BleIndicateCallback) callback).onCharacteristicChanged(data);
                             }
                         });
                     }
@@ -374,17 +374,17 @@ public class BleBluetooth {
             iterator = bleIndicateCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                final Object call = entry.getValue();
-                if (call instanceof BleIndicateCallback) {
-                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(((BleIndicateCallback) call).getKey())) {
-                        ((BleIndicateCallback) call).getBleConnector().indicateMsgInit();
+                final Object callback = entry.getValue();
+                if (callback instanceof BleIndicateCallback) {
+                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(((BleIndicateCallback) callback).getKey())) {
+                        ((BleIndicateCallback) callback).getBleConnector().indicateMsgInit();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
                                 if (finalStatus == BluetoothGatt.GATT_SUCCESS) {
-                                    ((BleIndicateCallback) call).onIndicateSuccess();
+                                    ((BleIndicateCallback) callback).onIndicateSuccess();
                                 } else {
-                                    ((BleIndicateCallback) call).onIndicateFailure(new GattException(finalStatus));
+                                    ((BleIndicateCallback) callback).onIndicateFailure(new GattException(finalStatus));
                                 }
                             }
                         });
@@ -403,17 +403,17 @@ public class BleBluetooth {
             Iterator iterator = bleWriteCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                final Object call = entry.getValue();
-                if (call instanceof BleWriteCallback) {
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleWriteCallback) call).getKey())) {
-                        ((BleWriteCallback) call).getBleConnector().writeMsgInit();
+                final Object callback = entry.getValue();
+                if (callback instanceof BleWriteCallback) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleWriteCallback) callback).getKey())) {
+                        ((BleWriteCallback) callback).getBleConnector().writeMsgInit();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
                                 if (finalStatus == BluetoothGatt.GATT_SUCCESS) {
-                                    ((BleWriteCallback) call).onWriteSuccess();
+                                    ((BleWriteCallback) callback).onWriteSuccess();
                                 } else {
-                                    ((BleWriteCallback) call).onWriteFailure(new GattException(finalStatus));
+                                    ((BleWriteCallback) callback).onWriteFailure(new GattException(finalStatus));
                                 }
                             }
                         });
@@ -433,17 +433,17 @@ public class BleBluetooth {
             Iterator iterator = bleReadCallbackHashMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                final Object call = entry.getValue();
-                if (call instanceof BleReadCallback) {
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleReadCallback) call).getKey())) {
-                        ((BleReadCallback) call).getBleConnector().readMsgInit();
+                final Object callback = entry.getValue();
+                if (callback instanceof BleReadCallback) {
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(((BleReadCallback) callback).getKey())) {
+                        ((BleReadCallback) callback).getBleConnector().readMsgInit();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
                                 if (finalStatus == BluetoothGatt.GATT_SUCCESS) {
-                                    ((BleReadCallback) call).onReadSuccess(data);
+                                    ((BleReadCallback) callback).onReadSuccess(data);
                                 } else {
-                                    ((BleReadCallback) call).onReadFailure(new GattException(finalStatus));
+                                    ((BleReadCallback) callback).onReadFailure(new GattException(finalStatus));
                                 }
                             }
                         });

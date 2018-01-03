@@ -102,21 +102,21 @@ public class BleConnector {
         this.bluetoothGatt = bleBluetooth.getBluetoothGatt();
     }
 
-    public BleConnector withUUID(UUID serviceUUID, UUID charactUUID) {
+    public BleConnector withUUID(UUID serviceUUID, UUID characteristicUUID) {
 
         if (serviceUUID != null && bluetoothGatt != null) {
             service = bluetoothGatt.getService(serviceUUID);
         }
 
-        if (service != null && charactUUID != null) {
-            characteristic = service.getCharacteristic(charactUUID);
+        if (service != null && characteristicUUID != null) {
+            characteristic = service.getCharacteristic(characteristicUUID);
         }
 
         return this;
     }
 
-    public BleConnector withUUIDString(String serviceUUID, String charactUUID) {
-        return withUUID(formUUID(serviceUUID), formUUID(charactUUID));
+    public BleConnector withUUIDString(String serviceUUID, String characteristicUUID) {
+        return withUUID(formUUID(serviceUUID), formUUID(characteristicUUID));
     }
 
     private UUID formUUID(String uuid) {
