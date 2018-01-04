@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
@@ -36,7 +37,7 @@ import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
 public class BleBluetooth {
 
     private BleConnectState connectState = BleConnectState.CONNECT_IDLE;
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean isActivityDisconnect = false;
 
     private BleGattCallback bleGattCallback;
@@ -196,8 +197,8 @@ public class BleBluetooth {
             isActivityDisconnect = true;
             bluetoothGatt.disconnect();
         }
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
+        if (mainHandler != null) {
+            mainHandler.removeCallbacksAndMessages(null);
         }
     }
 
@@ -222,8 +223,8 @@ public class BleBluetooth {
         removeRssiCallback();
         removeMtuChangedCallback();
         clearCharacterCallback();
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
+        if (mainHandler != null) {
+            mainHandler.removeCallbacksAndMessages(null);
         }
     }
 
@@ -249,7 +250,7 @@ public class BleBluetooth {
                 BleManager.getInstance().getMultipleBluetoothController().removeBleBluetooth(bleBluetooth);
                 if (connectState == BleConnectState.CONNECT_CONNECTING) {
                     connectState = BleConnectState.CONNECT_FAILURE;
-                    handler.post(new Runnable() {
+                    mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             if (bleGattCallback != null)
@@ -259,7 +260,7 @@ public class BleBluetooth {
 
                 } else if (connectState == BleConnectState.CONNECT_CONNECTED) {
                     connectState = BleConnectState.CONNECT_DISCONNECT;
-                    handler.post(new Runnable() {
+                    mainHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             if (bleGattCallback != null)
@@ -285,7 +286,7 @@ public class BleBluetooth {
                 connectState = BleConnectState.CONNECT_CONNECTED;
                 isActivityDisconnect = false;
                 BleManager.getInstance().getMultipleBluetoothController().addBleBluetooth(bleBluetooth);
-                handler.post(new Runnable() {
+                mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (bleGattCallback != null)
@@ -295,7 +296,7 @@ public class BleBluetooth {
             } else {
                 closeBluetoothGatt();
                 connectState = BleConnectState.CONNECT_FAILURE;
-                handler.post(new Runnable() {
+                mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (bleGattCallback != null)
@@ -421,7 +422,8 @@ public class BleBluetooth {
                             Bundle bundle = new Bundle();
                             bundle.putInt(BleMsg.KEY_WRITE_BUNDLE_STATUS, status);
                             message.setData(bundle);
-                            handler.sendMessage(message);
+                            boolean s = handler.sendMessage(message);
+                            Log.e("tag", "消息发送：" + s);
                         }
                     }
                 }
