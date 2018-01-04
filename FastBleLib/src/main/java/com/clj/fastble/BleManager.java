@@ -395,7 +395,7 @@ public class BleManager {
 
         if (data == null) {
             BleLog.e("data is Null!");
-            callback.onWriteFailure(new OtherException("data is Null !"));
+            callback.onWriteFailure(new OtherException("data is Null!"));
             return;
         }
 

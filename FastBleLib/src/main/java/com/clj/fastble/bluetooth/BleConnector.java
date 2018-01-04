@@ -7,8 +7,11 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleIndicateCallback;
@@ -17,78 +20,191 @@ import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleRssiCallback;
 import com.clj.fastble.callback.BleWriteCallback;
+import com.clj.fastble.data.BleMsg;
+import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.OtherException;
 import com.clj.fastble.exception.TimeoutException;
 
 import java.util.UUID;
 
-/**
- * Ble Device Connector.
- * be sure main thread
- */
+
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleConnector {
 
     private static final String UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
 
-    private static final int MSG_NOTIFY_CHA = 0x11;
-    private static final int MSG_INDICATE_DES = 0x12;
-    private static final int MSG_WRITE_CHA = 0x13;
-    private static final int MSG_READ_CHA = 0x14;
-    private static final int MSG_READ_RSSI = 0x15;
-    private static final int MSG_SET_MTU = 0x16;
-
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattService service;
     private BluetoothGattCharacteristic characteristic;
     private BleBluetooth bleBluetooth;
-    private Handler handler = new MyHandler();
+    private Handler handler = new ConnectorHandler();
 
-    private static final class MyHandler extends Handler {
+    private static final class ConnectorHandler extends Handler {
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MSG_NOTIFY_CHA:
+
+                case BleMsg.MSG_CHA_NOTIFY_START: {
                     BleNotifyCallback notifyCallback = (BleNotifyCallback) msg.obj;
                     if (notifyCallback != null)
                         notifyCallback.onNotifyFailure(new TimeoutException());
-                    msg.obj = null;
                     break;
+                }
 
-                case MSG_INDICATE_DES:
+                case BleMsg.MSG_CHA_NOTIFY_RESULT: {
+                    removeMessages(BleMsg.MSG_CHA_NOTIFY_START);
+
+                    BleNotifyCallback notifyCallback = (BleNotifyCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    int status = bundle.getInt(BleMsg.KEY_NOTIFY_BUNDLE_STATUS);
+                    if (notifyCallback != null) {
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                            notifyCallback.onNotifySuccess();
+                        } else {
+                            notifyCallback.onNotifyFailure(new GattException(status));
+                        }
+                    }
+                    break;
+                }
+
+                case BleMsg.MSG_CHA_NOTIFY_DATA_CHANGE: {
+                    BleNotifyCallback notifyCallback = (BleNotifyCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    byte[] value = bundle.getByteArray(BleMsg.KEY_NOTIFY_BUNDLE_VALUE);
+                    if (notifyCallback != null) {
+                        notifyCallback.onCharacteristicChanged(value);
+                    }
+                    break;
+                }
+
+                case BleMsg.MSG_CHA_INDICATE_START: {
                     BleIndicateCallback indicateCallback = (BleIndicateCallback) msg.obj;
                     if (indicateCallback != null)
                         indicateCallback.onIndicateFailure(new TimeoutException());
-                    msg.obj = null;
                     break;
+                }
 
-                case MSG_WRITE_CHA:
+                case BleMsg.MSG_CHA_INDICATE_RESULT: {
+                    removeMessages(BleMsg.MSG_CHA_INDICATE_START);
+
+                    BleIndicateCallback indicateCallback = (BleIndicateCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    int status = bundle.getInt(BleMsg.KEY_INDICATE_BUNDLE_STATUS);
+                    if (indicateCallback != null) {
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                            indicateCallback.onIndicateSuccess();
+                        } else {
+                            indicateCallback.onIndicateFailure(new GattException(status));
+                        }
+                    }
+                    break;
+                }
+
+                case BleMsg.MSG_CHA_INDICATE_DATA_CHANGE: {
+                    BleIndicateCallback indicateCallback = (BleIndicateCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    byte[] value = bundle.getByteArray(BleMsg.KEY_INDICATE_BUNDLE_VALUE);
+                    if (indicateCallback != null) {
+                        indicateCallback.onCharacteristicChanged(value);
+                    }
+                    break;
+                }
+
+                case BleMsg.MSG_CHA_WRITE_START: {
                     BleWriteCallback writeCallback = (BleWriteCallback) msg.obj;
-                    if (writeCallback != null)
+                    if (writeCallback != null) {
                         writeCallback.onWriteFailure(new TimeoutException());
-                    msg.obj = null;
+                    }
                     break;
+                }
 
-                case MSG_READ_CHA:
+                case BleMsg.MSG_CHA_WRITE_RESULT: {
+                    removeMessages(BleMsg.MSG_CHA_WRITE_START);
+                    BleWriteCallback writeCallback = (BleWriteCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    int status = bundle.getInt(BleMsg.KEY_WRITE_BUNDLE_STATUS);
+                    if (writeCallback != null) {
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                            writeCallback.onWriteSuccess();
+                        } else {
+                            writeCallback.onWriteFailure(new GattException(status));
+                        }
+                    }
+                    break;
+                }
+
+                case BleMsg.MSG_CHA_READ_START: {
                     BleReadCallback readCallback = (BleReadCallback) msg.obj;
                     if (readCallback != null)
                         readCallback.onReadFailure(new TimeoutException());
-                    msg.obj = null;
                     break;
+                }
 
-                case MSG_READ_RSSI:
+                case BleMsg.MSG_CHA_READ_RESULT: {
+                    removeMessages(BleMsg.MSG_CHA_READ_START);
+
+                    BleReadCallback readCallback = (BleReadCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    int status = bundle.getInt(BleMsg.KEY_READ_BUNDLE_STATUS);
+                    byte[] value = bundle.getByteArray(BleMsg.KEY_READ_BUNDLE_VALUE);
+                    if (readCallback != null) {
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                            readCallback.onReadSuccess(value);
+                        } else {
+                            readCallback.onReadFailure(new GattException(status));
+                        }
+                    }
+                    break;
+                }
+
+                case BleMsg.MSG_READ_RSSI_START: {
                     BleRssiCallback rssiCallback = (BleRssiCallback) msg.obj;
                     if (rssiCallback != null)
                         rssiCallback.onRssiFailure(new TimeoutException());
-                    msg.obj = null;
                     break;
+                }
 
-                case MSG_SET_MTU:
+                case BleMsg.MSG_READ_RSSI_RESULT: {
+                    removeMessages(BleMsg.MSG_READ_RSSI_START);
+
+                    BleRssiCallback rssiCallback = (BleRssiCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    int status = bundle.getInt(BleMsg.KEY_READ_RSSI_BUNDLE_STATUS);
+                    int value = bundle.getInt(BleMsg.KEY_READ_RSSI_BUNDLE_VALUE);
+                    if (rssiCallback != null) {
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                            rssiCallback.onRssiSuccess(value);
+                        } else {
+                            rssiCallback.onRssiFailure(new GattException(status));
+                        }
+                    }
+                    break;
+                }
+
+                case BleMsg.MSG_SET_MTU_START: {
                     BleMtuChangedCallback mtuChangedCallback = (BleMtuChangedCallback) msg.obj;
                     if (mtuChangedCallback != null)
                         mtuChangedCallback.onSetMTUFailure(new TimeoutException());
-                    msg.obj = null;
                     break;
+                }
+
+                case BleMsg.MSG_SET_MTU_RESULT: {
+                    removeMessages(BleMsg.MSG_SET_MTU_START);
+
+                    BleMtuChangedCallback mtuChangedCallback = (BleMtuChangedCallback) msg.obj;
+                    Bundle bundle = msg.getData();
+                    int status = bundle.getInt(BleMsg.KEY_SET_MTU_BUNDLE_STATUS);
+                    int value = bundle.getInt(BleMsg.KEY_SET_MTU_BUNDLE_VALUE);
+                    if (mtuChangedCallback != null) {
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                            mtuChangedCallback.onMtuChanged(value);
+                        } else {
+                            mtuChangedCallback.onSetMTUFailure(new GattException(status));
+                        }
+                    }
+                    break;
+                }
 
                 default:
                     super.handleMessage(msg);
@@ -98,20 +214,21 @@ public class BleConnector {
     }
 
     public BleConnector(BleBluetooth bleBluetooth) {
+        Log.e("tag", "BleConnector当前线程：" + Thread.currentThread().getId());
+        Looper looper = Looper.myLooper();
+        if(looper == null)
+            Looper.prepare();
         this.bleBluetooth = bleBluetooth;
         this.bluetoothGatt = bleBluetooth.getBluetoothGatt();
     }
 
     public BleConnector withUUID(UUID serviceUUID, UUID characteristicUUID) {
-
         if (serviceUUID != null && bluetoothGatt != null) {
             service = bluetoothGatt.getService(serviceUUID);
         }
-
         if (service != null && characteristicUUID != null) {
             characteristic = service.getCharacteristic(characteristicUUID);
         }
-
         return this;
     }
 
@@ -353,10 +470,11 @@ public class BleConnector {
                                                     String uuid_notify) {
         if (bleNotifyCallback != null) {
             notifyMsgInit();
-            bleNotifyCallback.setBleConnector(this);
             bleNotifyCallback.setKey(uuid_notify);
+            bleNotifyCallback.setHandler(handler);
             bleBluetooth.addNotifyCallback(uuid_notify, bleNotifyCallback);
-            handler.sendMessageDelayed(handler.obtainMessage(MSG_NOTIFY_CHA, bleNotifyCallback),
+            handler.sendMessageDelayed(
+                    handler.obtainMessage(BleMsg.MSG_CHA_NOTIFY_START, bleNotifyCallback),
                     BleManager.getInstance().getOperateTimeout());
         }
     }
@@ -368,10 +486,11 @@ public class BleConnector {
                                                       String uuid_indicate) {
         if (bleIndicateCallback != null) {
             indicateMsgInit();
-            bleIndicateCallback.setBleConnector(this);
             bleIndicateCallback.setKey(uuid_indicate);
+            bleIndicateCallback.setHandler(handler);
             bleBluetooth.addIndicateCallback(uuid_indicate, bleIndicateCallback);
-            handler.sendMessageDelayed(handler.obtainMessage(MSG_INDICATE_DES, bleIndicateCallback),
+            handler.sendMessageDelayed(
+                    handler.obtainMessage(BleMsg.MSG_CHA_INDICATE_START, bleIndicateCallback),
                     BleManager.getInstance().getOperateTimeout());
         }
     }
@@ -383,10 +502,11 @@ public class BleConnector {
                                                    String uuid_write) {
         if (bleWriteCallback != null) {
             writeMsgInit();
-            bleWriteCallback.setBleConnector(this);
             bleWriteCallback.setKey(uuid_write);
+            bleWriteCallback.setHandler(handler);
             bleBluetooth.addWriteCallback(uuid_write, bleWriteCallback);
-            handler.sendMessageDelayed(handler.obtainMessage(MSG_WRITE_CHA, bleWriteCallback),
+            handler.sendMessageDelayed(
+                    handler.obtainMessage(BleMsg.MSG_CHA_WRITE_START, bleWriteCallback),
                     BleManager.getInstance().getOperateTimeout());
         }
     }
@@ -398,10 +518,11 @@ public class BleConnector {
                                                   String uuid_read) {
         if (bleReadCallback != null) {
             readMsgInit();
-            bleReadCallback.setBleConnector(this);
             bleReadCallback.setKey(uuid_read);
+            bleReadCallback.setHandler(handler);
             bleBluetooth.addReadCallback(uuid_read, bleReadCallback);
-            handler.sendMessageDelayed(handler.obtainMessage(MSG_READ_CHA, bleReadCallback),
+            handler.sendMessageDelayed(
+                    handler.obtainMessage(BleMsg.MSG_CHA_READ_START, bleReadCallback),
                     BleManager.getInstance().getOperateTimeout());
         }
     }
@@ -412,9 +533,10 @@ public class BleConnector {
     private void handleRSSIReadCallback(BleRssiCallback bleRssiCallback) {
         if (bleRssiCallback != null) {
             rssiMsgInit();
-            bleRssiCallback.setBleConnector(this);
+            bleRssiCallback.setHandler(handler);
             bleBluetooth.addRssiCallback(bleRssiCallback);
-            handler.sendMessageDelayed(handler.obtainMessage(MSG_READ_RSSI, bleRssiCallback),
+            handler.sendMessageDelayed(
+                    handler.obtainMessage(BleMsg.MSG_READ_RSSI_START, bleRssiCallback),
                     BleManager.getInstance().getOperateTimeout());
         }
     }
@@ -425,35 +547,36 @@ public class BleConnector {
     private void handleSetMtuCallback(BleMtuChangedCallback bleMtuChangedCallback) {
         if (bleMtuChangedCallback != null) {
             mtuChangedMsgInit();
-            bleMtuChangedCallback.setBleConnector(this);
+            bleMtuChangedCallback.setHandler(handler);
             bleBluetooth.addMtuChangedCallback(bleMtuChangedCallback);
-            handler.sendMessageDelayed(handler.obtainMessage(MSG_SET_MTU, bleMtuChangedCallback),
+            handler.sendMessageDelayed(
+                    handler.obtainMessage(BleMsg.MSG_SET_MTU_START, bleMtuChangedCallback),
                     BleManager.getInstance().getOperateTimeout());
         }
     }
 
     public void notifyMsgInit() {
-        handler.removeMessages(MSG_NOTIFY_CHA);
+        handler.removeMessages(BleMsg.MSG_CHA_NOTIFY_START);
     }
 
     public void indicateMsgInit() {
-        handler.removeMessages(MSG_INDICATE_DES);
+        handler.removeMessages(BleMsg.MSG_CHA_INDICATE_START);
     }
 
     public void writeMsgInit() {
-        handler.removeMessages(MSG_WRITE_CHA);
+        handler.removeMessages(BleMsg.MSG_CHA_WRITE_START);
     }
 
     public void readMsgInit() {
-        handler.removeMessages(MSG_READ_CHA);
+        handler.removeMessages(BleMsg.MSG_CHA_READ_START);
     }
 
     public void rssiMsgInit() {
-        handler.removeMessages(MSG_READ_RSSI);
+        handler.removeMessages(BleMsg.MSG_READ_RSSI_START);
     }
 
     public void mtuChangedMsgInit() {
-        handler.removeMessages(MSG_SET_MTU);
+        handler.removeMessages(BleMsg.MSG_SET_MTU_START);
     }
 
 

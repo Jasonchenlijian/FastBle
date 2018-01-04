@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -135,49 +136,60 @@ public class CharacteristicOperationFragment extends Fragment {
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            String hex = et.getText().toString();
+                            final String hex = et.getText().toString();
                             if (TextUtils.isEmpty(hex)) {
                                 return;
                             }
-                            BleManager.getInstance().write(
-                                    bleDevice,
-                                    characteristic.getService().getUuid().toString(),
-                                    characteristic.getUuid().toString(),
-                                    HexUtil.hexStringToBytes(hex),
-                                    new BleWriteCallback() {
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.e("tag", "当前线程：" + Thread.currentThread().getId());
+                                    BleManager.getInstance().write(
+                                            bleDevice,
+                                            characteristic.getService().getUuid().toString(),
+                                            characteristic.getUuid().toString(),
+                                            HexUtil.hexStringToBytes(hex),
+                                            new BleWriteCallback() {
 
-                                        @Override
-                                        public void onWriteSuccess() {
-                                            if (isAdded() && getActivity() != null)
-                                                getActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        txt.append("write success");
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
-                                                    }
-                                                });
-                                        }
+                                                @Override
+                                                public void onWriteSuccess() {
+                                                    Log.e("tag", "onWriteSuccess线程：" + Thread.currentThread().getId());
+                                                    if (isAdded() && getActivity() != null)
+                                                        getActivity().runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                txt.append("write success");
+                                                                txt.append("\n");
+                                                                int offset = txt.getLineCount() * txt.getLineHeight();
+                                                                if (offset > txt.getHeight()) {
+                                                                    txt.scrollTo(0, offset - txt.getHeight());
+                                                                }
+                                                            }
+                                                        });
+                                                }
 
-                                        @Override
-                                        public void onWriteFailure(final BleException exception) {
-                                            if (isAdded() && getActivity() != null)
-                                                getActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        txt.append(exception.toString());
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
-                                                    }
-                                                });
-                                        }
-                                    });
+                                                @Override
+                                                public void onWriteFailure(final BleException exception) {
+                                                    Log.e("tag", "onWriteSuccess线程：" + Thread.currentThread().getId());
+                                                    if (isAdded() && getActivity() != null)
+                                                        getActivity().runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                txt.append(exception.toString());
+                                                                txt.append("\n");
+                                                                int offset = txt.getLineCount() * txt.getLineHeight();
+                                                                if (offset > txt.getHeight()) {
+                                                                    txt.scrollTo(0, offset - txt.getHeight());
+                                                                }
+                                                            }
+                                                        });
+                                                }
+                                            });
+                                }
+                            }).start();
+
+
+
                         }
                     });
                     layout_add.addView(view_add);
