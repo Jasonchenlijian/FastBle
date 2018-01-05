@@ -11,6 +11,7 @@
     <string name="expand_search_settings">Expand search settings</string>
     <string name="retrieve_search_settings">Retrieve search settings</string>
     <string name="connect_fail">connection failed</string>
+    <string name="active_disconnected">disconnect</string>
     <string name="disconnected">Connection disconnect</string>
     <string name="please_open_blue">Please turn on Bluetooth first</string>
     <string name="select_operation_type">Select operation type</string>

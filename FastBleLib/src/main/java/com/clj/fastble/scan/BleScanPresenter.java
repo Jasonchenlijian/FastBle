@@ -79,7 +79,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
 
     private void next(BleDevice bleDevice) {
         if (mNeedConnect) {
-            BleLog.i("devices detected  --------"
+            BleLog.i("devices detected  ------"
                     + "  name:" + bleDevice.getName()
                     + "  mac:" + bleDevice.getMac()
                     + "  Rssi:" + bleDevice.getRssi()
@@ -100,7 +100,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                         + "  name: " + bleDevice.getName()
                         + "  mac: " + bleDevice.getMac()
                         + "  Rssi: " + bleDevice.getRssi()
-                        + "  scanRecord: " + HexUtil.formatHexString(bleDevice.getScanRecord()));
+                        + "  scanRecord: " + HexUtil.formatHexString(bleDevice.getScanRecord(), true));
 
                 mBleDeviceList.add(bleDevice);
                 onScanning(bleDevice);

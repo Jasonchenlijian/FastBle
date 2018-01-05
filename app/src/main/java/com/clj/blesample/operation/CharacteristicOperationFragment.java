@@ -92,12 +92,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    txt.append(HexUtil.formatHexString(data, true));
-                                                    txt.append("\n");
-                                                    int offset = txt.getLineCount() * txt.getLineHeight();
-                                                    if (offset > txt.getHeight()) {
-                                                        txt.scrollTo(0, offset - txt.getHeight());
-                                                    }
+                                                    addText(txt, HexUtil.formatHexString(data, true));
                                                 }
                                             });
                                         }
@@ -107,12 +102,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    txt.append(exception.toString());
-                                                    txt.append("\n");
-                                                    int offset = txt.getLineCount() * txt.getLineHeight();
-                                                    if (offset > txt.getHeight()) {
-                                                        txt.scrollTo(0, offset - txt.getHeight());
-                                                    }
+                                                    addText(txt, exception.toString());
                                                 }
                                             });
                                         }
@@ -131,52 +121,37 @@ public class CharacteristicOperationFragment extends Fragment {
                     btn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            final String hex = et.getText().toString();
+                            String hex = et.getText().toString();
                             if (TextUtils.isEmpty(hex)) {
                                 return;
                             }
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    BleManager.getInstance().write(
-                                            bleDevice,
-                                            characteristic.getService().getUuid().toString(),
-                                            characteristic.getUuid().toString(),
-                                            HexUtil.hexStringToBytes(hex),
-                                            new BleWriteCallback() {
+                            BleManager.getInstance().write(
+                                    bleDevice,
+                                    characteristic.getService().getUuid().toString(),
+                                    characteristic.getUuid().toString(),
+                                    HexUtil.hexStringToBytes(hex),
+                                    new BleWriteCallback() {
 
+                                        @Override
+                                        public void onWriteSuccess() {
+                                            runOnUiThread(new Runnable() {
                                                 @Override
-                                                public void onWriteSuccess() {
-                                                    runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            txt.append("write success");
-                                                            txt.append("\n");
-                                                            int offset = txt.getLineCount() * txt.getLineHeight();
-                                                            if (offset > txt.getHeight()) {
-                                                                txt.scrollTo(0, offset - txt.getHeight());
-                                                            }
-                                                        }
-                                                    });
-                                                }
-
-                                                @Override
-                                                public void onWriteFailure(final BleException exception) {
-                                                    runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            txt.append(exception.toString());
-                                                            txt.append("\n");
-                                                            int offset = txt.getLineCount() * txt.getLineHeight();
-                                                            if (offset > txt.getHeight()) {
-                                                                txt.scrollTo(0, offset - txt.getHeight());
-                                                            }
-                                                        }
-                                                    });
+                                                public void run() {
+                                                    addText(txt, "write success");
                                                 }
                                             });
-                                }
-                            }).start();
+                                        }
+
+                                        @Override
+                                        public void onWriteFailure(final BleException exception) {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    addText(txt, exception.toString());
+                                                }
+                                            });
+                                        }
+                                    });
                         }
                     });
                     layout_add.addView(view_add);
@@ -207,12 +182,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    txt.append("write success");
-                                                    txt.append("\n");
-                                                    int offset = txt.getLineCount() * txt.getLineHeight();
-                                                    if (offset > txt.getHeight()) {
-                                                        txt.scrollTo(0, offset - txt.getHeight());
-                                                    }
+                                                    addText(txt, "write success");
                                                 }
                                             });
                                         }
@@ -222,12 +192,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    txt.append(exception.toString());
-                                                    txt.append("\n");
-                                                    int offset = txt.getLineCount() * txt.getLineHeight();
-                                                    if (offset > txt.getHeight()) {
-                                                        txt.scrollTo(0, offset - txt.getHeight());
-                                                    }
+                                                    addText(txt, exception.toString());
                                                 }
                                             });
                                         }
@@ -258,12 +223,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append("notify success");
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
+                                                        addText(txt, "notify success");
                                                     }
                                                 });
                                             }
@@ -273,12 +233,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append(exception.toString());
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
+                                                        addText(txt, exception.toString());
                                                     }
                                                 });
                                             }
@@ -288,12 +243,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append(HexUtil.formatHexString(characteristic.getValue(), true));
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
+                                                        addText(txt, HexUtil.formatHexString(characteristic.getValue(), true));
                                                     }
                                                 });
                                             }
@@ -331,12 +281,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append("indicate success");
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
+                                                        addText(txt, "indicate success");
                                                     }
                                                 });
                                             }
@@ -346,12 +291,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append(exception.toString());
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
+                                                        addText(txt, exception.toString());
                                                     }
                                                 });
                                             }
@@ -361,12 +301,7 @@ public class CharacteristicOperationFragment extends Fragment {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        txt.append(HexUtil.formatHexString(characteristic.getValue(), true));
-                                                        txt.append("\n");
-                                                        int offset = txt.getLineCount() * txt.getLineHeight();
-                                                        if (offset > txt.getHeight()) {
-                                                            txt.scrollTo(0, offset - txt.getHeight());
-                                                        }
+                                                        addText(txt, HexUtil.formatHexString(characteristic.getValue(), true));
                                                     }
                                                 });
                                             }
@@ -392,6 +327,15 @@ public class CharacteristicOperationFragment extends Fragment {
     private void runOnUiThread(Runnable runnable) {
         if (isAdded() && getActivity() != null)
             getActivity().runOnUiThread(runnable);
+    }
+
+    private void addText(TextView textView, String content) {
+        textView.append(content);
+        textView.append("\n");
+        int offset = textView.getLineCount() * textView.getLineHeight();
+        if (offset > textView.getHeight()) {
+            textView.scrollTo(0, offset - textView.getHeight());
+        }
     }
 
 

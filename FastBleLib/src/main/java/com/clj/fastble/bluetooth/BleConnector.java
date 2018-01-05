@@ -23,7 +23,6 @@ import com.clj.fastble.data.BleMsg;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.OtherException;
 import com.clj.fastble.exception.TimeoutException;
-import com.clj.fastble.utils.BleLog;
 
 import java.util.UUID;
 
@@ -216,7 +215,6 @@ public class BleConnector {
     }
 
     BleConnector(BleBluetooth bleBluetooth) {
-        BleLog.w("currentThread: " + Thread.currentThread().getId());
         Looper looper = Looper.myLooper();
         if (looper == null) {
             Looper.prepare();
@@ -227,7 +225,12 @@ public class BleConnector {
     }
 
     private void run() {
-        Looper.loop();
+        if (Looper.myLooper() != Looper.getMainLooper())
+            Looper.loop();
+    }
+
+    public void destroy() {
+        handler.removeCallbacksAndMessages(null);
     }
 
     private BleConnector withUUID(UUID serviceUUID, UUID characteristicUUID) {

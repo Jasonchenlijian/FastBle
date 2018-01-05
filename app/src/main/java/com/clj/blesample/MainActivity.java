@@ -70,12 +70,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
         initView();
 
         BleManager.getInstance().init(getApplication());
-
         BleManager.getInstance()
                 .enableLog(true)
                 .setMaxConnectCount(7)
@@ -250,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void connect(BleDevice bleDevice) {
+    private void connect(final BleDevice bleDevice) {
         BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
             @Override
             public void onStartConnect() {
@@ -283,7 +281,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDeviceAdapter.removeDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
 
-                if (!isActiveDisConnected) {
+                if (isActiveDisConnected) {
+                    Toast.makeText(MainActivity.this, getString(R.string.active_disconnected), Toast.LENGTH_LONG).show();
+                }else {
                     Toast.makeText(MainActivity.this, getString(R.string.disconnected), Toast.LENGTH_LONG).show();
                     ObserverManager.getInstance().notifyObserver(bleDevice);
                 }

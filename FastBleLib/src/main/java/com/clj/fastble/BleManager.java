@@ -11,6 +11,7 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Looper;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
 import com.clj.fastble.bluetooth.MultipleBluetoothController;
@@ -253,8 +254,12 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new OtherException("BlueTooth not enable!"));
+            handleException(new OtherException("BlueTooth is not enabled!"));
             return null;
+        }
+
+        if (Looper.myLooper() == null || Looper.myLooper() != Looper.getMainLooper()) {
+            BleLog.w("Be careful: currentThread is not MainThread!");
         }
 
         if (bleDevice == null || bleDevice.getDevice() == null) {
@@ -400,7 +405,7 @@ public class BleManager {
         }
 
         if (data.length > 20) {
-            BleLog.w("data's length beyond 20!");
+            BleLog.w("Be careful: data's length beyond 20! Ensure MTU higher than 23.");
         }
 
         BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);

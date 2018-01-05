@@ -4,6 +4,11 @@ package com.clj.fastble.data;
 
 public class BleMsg {
 
+    // Connect
+    public static final int MSG_CONNECT_FAIL = 0x01;
+    public static final int MSG_DISCONNECTED = 0x02;
+    public static final int MSG_CONNECT_SUCCESS = 0x03;
+
     // Notify
     public static final int MSG_CHA_NOTIFY_START = 0x11;
     public static final int MSG_CHA_NOTIFY_RESULT = 0x12;
@@ -29,7 +34,7 @@ public class BleMsg {
     public static final String KEY_READ_BUNDLE_STATUS = "read_status";
     public static final String KEY_READ_BUNDLE_VALUE = "read_value";
 
-    // Read Rssi
+    // Rssi
     public static final int MSG_READ_RSSI_START = 0x51;
     public static final int MSG_READ_RSSI_RESULT = 0x52;
     public static final String KEY_READ_RSSI_BUNDLE_STATUS = "rssi_status";
