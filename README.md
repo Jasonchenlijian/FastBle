@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.1.7</version>
+       <version>2.2.0</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.1.7'
+	compile 'com.clj.fastble:FastBleLib:2.2.0'
 
 
 ## 其他说明
@@ -39,10 +39,6 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 FastBle requires at minimum Java 7 or Android 4.0.
 
 FastBle 所有代码均可以加入混淆。
-
-
-### [查看1.1.x旧版API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.1.x.md)
-### [查看1.2.x旧版API说明请点击此处](https://github.com/Jasonchenlijian/FastBle/blob/master/README_1.2.x.md)
 
 
 
@@ -88,14 +84,13 @@ FastBle 所有代码均可以加入混淆。
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
                 .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)   	// 只扫描指定广播名的设备，可选
+                .setDeviceName(true, names)         // 只扫描指定广播名的设备，可选
                 .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
                 .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
                 .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒；小于等于0表示不限制扫描时间
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
-
-	需要注意的是：
+	Tips：
 	- 在扫描设备之前，可以配置扫描规则，筛选出与程序匹配的设备
 	- 不配置的话均为默认参数
 	- 在2.1.2版本及之前，必须先配置过滤规则再扫描；在2.1.3版本之后可以无需配置，开启默认过滤规则的扫描。
@@ -108,19 +103,21 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().scan(new BleScanCallback() {
             @Override
             public void onScanStarted(boolean success) {
-				// 开始扫描（UI线程）
+				// 开始扫描（主线程）
             }
 
             @Override
             public void onScanning(BleDevice bleDevice) {
-				// 扫描到一个符合扫描规则的BLE设备（UI线程）
+				// 扫描到一个符合扫描规则的BLE设备（主线程）
             }
 
             @Override
             public void onScanFinished(List<BleDevice> scanResultList) {
-				// 扫描结束，列出所有扫描到的符合扫描规则的BLE设备，可能为空（UI线程）
+				// 扫描结束，列出所有扫描到的符合扫描规则的BLE设备（主线程）
             }
         });
+	Tips：
+	- 蓝牙的扫描过程会切换到主线程，所以不论在哪个线程中开启扫描，最后的结果回调都会回到主线程。
 
 - #### （方法说明）连接设备
 
@@ -129,24 +126,27 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
             @Override
             public void onStartConnect() {
-				// 开始连接（UI线程）
+				// 开始连接
             }
 
             @Override
             public void onConnectFail(BleException exception) {
-				// 连接失败（UI线程）
+				// 连接失败
             }
 
             @Override
             public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-				// 连接成功，BleDevice即为所连接的BLE设备（UI线程）
+				// 连接成功，BleDevice即为所连接的BLE设备
             }
 
             @Override
             public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
-				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法（UI线程）
+				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法
             }
         });
+	Tips:
+	- 如果在主线程中进行连接，所有结果回调会回到主线程。
+	- 连接过程也可以切换到子线程中进行。但是在某些型号手机上，connectGatt必须在主线程才能有效。
 
 - #### （方法说明）扫描并连接
 
@@ -157,32 +157,32 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().scanAndConnect(new BleScanAndConnectCallback() {
             @Override
             public void onScanStarted(boolean success) {
-				// 开始扫描（UI线程）
+				// 开始扫描（主线程）
             }
 
             @Override
             public void onScanFinished(BleDevice scanResult) {
-				// 扫描结束，结果即为扫描到的第一个符合扫描规则的BLE设备，如果为空表示未搜索到（UI线程）
+				// 扫描结束，结果即为扫描到的第一个符合扫描规则的BLE设备，如果为空表示未搜索到（主线程）
             }
 
             @Override
             public void onStartConnect() {
-				// 开始连接（UI线程）
+				// 开始连接（主线程）
             }
 
             @Override
             public void onConnectFail(BleException exception) {
-				// 连接失败（UI线程）
+				// 连接失败（主线程）
             }
 
             @Override
             public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-				// 连接成功，BleDevice即为所连接的BLE设备（UI线程）
+				// 连接成功，BleDevice即为所连接的BLE设备（主线程）
             }
 
             @Override
             public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
-				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法（UI线程）
+				// 连接断开，isActiveDisConnected是主动断开还是被动断开（主线程）
             }
         });    
 
@@ -194,7 +194,7 @@ FastBle 所有代码均可以加入混淆。
 
 		BleManager.getInstance().cancelScan();
 
-	调用该方法后，如果当前还处在扫描状态，会立即结束当前的扫描，并回调onScanFinished方法。
+	调用该方法后，如果当前还处在扫描状态，会立即结束，并回调`onScanFinished`方法。
 
 
 - #### （方法说明）订阅通知notify
@@ -210,19 +210,21 @@ FastBle 所有代码均可以加入混淆。
                 new BleNotifyCallback() {
                     @Override
                     public void onNotifySuccess() {
-                        // 打开通知操作成功（UI线程）
+                        // 打开通知操作成功
                     }
 
                     @Override
                     public void onNotifyFailure(BleException exception) {
-                        // 打开通知操作失败（UI线程）
+                        // 打开通知操作失败
                     }
 
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
-                        // 打开通知后，设备发过来的数据将在这里出现（UI线程）
+                        // 打开通知后，设备发过来的数据将在这里出现
                     }
                 });
+	Tips:
+	- 在哪个线程中notify，结果就回到那个线程中回调
 
 - #### （方法说明）取消订阅通知notify，并移除数据接收的回调监听
 
@@ -246,19 +248,21 @@ FastBle 所有代码均可以加入混淆。
                 new BleIndicateCallback() {
                     @Override
                     public void onIndicateSuccess() {
-                        // 打开通知操作成功（UI线程）
+                        // 打开通知操作成功
                     }
 
                     @Override
                     public void onIndicateFailure(BleException exception) {
-                        // 打开通知操作失败（UI线程）
+                        // 打开通知操作失败
                     }
 
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
-                        // 打开通知后，设备发过来的数据将在这里出现（UI线程）
+                        // 打开通知后，设备发过来的数据将在这里出现
                     }
                 });
+	Tips:
+	- 在哪个线程中indicate，结果就回到那个线程中回调
 
 - #### （方法说明）取消订阅通知indicate，并移除数据接收的回调监听
 
@@ -284,14 +288,16 @@ FastBle 所有代码均可以加入混淆。
                 new BleWriteCallback() {
                     @Override
                     public void onWriteSuccess() {
-                        // 发送数据到设备成功（UI线程）
+                        // 发送数据到设备成功
                     }
 
                     @Override
                     public void onWriteFailure(BleException exception) {
-                        // 发送数据到设备失败（UI线程）
+                        // 发送数据到设备失败
                     }
                 });
+	Tips:
+	- 在哪个线程中write，结果就回到那个线程中回调
 
 - #### （方法说明）读
 
@@ -307,14 +313,16 @@ FastBle 所有代码均可以加入混淆。
                 new BleReadCallback() {
                     @Override
                     public void onReadSuccess(byte[] data) {
-                        // 读特征值数据成功（UI线程）
+                        // 读特征值数据成功
                     }
 
                     @Override
                     public void onReadFailure(BleException exception) {
-                        // 读特征值数据失败（UI线程）
+                        // 读特征值数据失败
                     }
                 });
+	Tips:
+	- 在哪个线程中read，结果就回到那个线程中回调
 
 - #### （方法说明）获取设备的信号强度Rssi
 
@@ -326,18 +334,19 @@ FastBle 所有代码均可以加入混淆。
 
                     @Override
                     public void onRssiFailure(BleException exception) {
-                        // 读取设备的信号强度失败（UI线程）
+                        // 读取设备的信号强度失败
                     }
 
                     @Override
                     public void onRssiSuccess(int rssi) {
-                        // 读取设备的信号强度成功（UI线程）
+                        // 读取设备的信号强度成功
                     }
                 });
 
 	需要注意的是：
 	- 获取设备的信号强度，需要在设备连接之后进行。
 	- 某些设备可能无法读取Rssi，不会回调onRssiSuccess(),而会因为超时而回调onRssiFailure()。
+	- 在哪个线程中readRssi，结果就回到那个线程中回调
 
 - #### （方法说明）设置最大传输单元MTU
 
@@ -348,21 +357,23 @@ FastBle 所有代码均可以加入混淆。
         BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
             @Override
             public void onSetMTUFailure(BleException exception) {
-                // 设置MTU失败（UI线程）
+                // 设置MTU失败
             }
 
             @Override
             public void onMtuChanged(int mtu) {
-                // 设置MTU成功，并获得当前设备传输支持的MTU值（UI线程）
+                // 设置MTU成功，并获得当前设备传输支持的MTU值
             }
         });
 
 	需要注意的是：
 	- 设置MTU，需要在设备连接之后进行操作。
 	- 默认每一个BLE设备都必须支持的MTU为23。
+	- MTU为23，表示最多可以发送20个字节的数据。
 	- 在Android 低版本(API-17 到 API-20)上，没有这个限制。所以只有在API21以上的设备，才会有拓展MTU这个需求。
 	- 该方法的参数mtu，最小设置为23，最大设置为512。
 	- 并不是每台设备都支持拓展MTU，需要通讯双方都支持才行，也就是说，需要设备硬件也支持拓展MTU该方法才会起效果。调用该方法后，可以通过onMtuChanged(int mtu)查看最终设置完后，设备的最大传输单元被拓展到多少。如果设备不支持，可能无论设置多少，最终的mtu还是23。
+	- 在哪个线程中setMtu，结果就回到那个线程中回调
 
 - #### （方法说明）移除对应设备及对应特征的监听
 
@@ -493,8 +504,6 @@ FastBle 所有代码均可以加入混淆。
 
 - 两次操作之间最好间隔一小段时间，如100ms（具体时间可以根据自己实际蓝牙外设自行尝试延长或缩短）。举例，连接成功之后，延迟100ms进行notify，成功之后延迟100ms进行write。
 
-- FastBle中开放的蓝牙操作的相关方法均要求在主线程中执行。
-
 - 连接及连接后的过程中，时刻关注`onDisConnected`方法，然后做处理。
 
 - 连接过程中，假如外设突然中断（或关闭）了蓝牙，由于某些蓝牙外设的不完善，导致Android设备维持的BLE连接并不会马上回调`onDisConnected`方法，而是会延迟一段时间才会通知连接断开，开发时需注意，假如对实时性要求较高的程序，可能需要借助其他辅助方法来判断设备是否中断，比如心跳包等。
@@ -513,6 +522,8 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.2.0（2018-01-05）
+	- 可以在子线程中进行操作了
 - v2.1.7（2017-12-26）
 	- 优化高并发情况下的数据返回
 - v2.1.6（2017-12-20）

@@ -318,7 +318,6 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
         bleManager.closeBluetoothGatt();
 
 
-
 ## License
 
 		Copyright 2016 chenlijian
