@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.2.0</version>
+       <version>2.2.1</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.2.0'
+	compile 'com.clj.fastble:FastBleLib:2.2.1'
 
 
 ## 其他说明
@@ -96,7 +96,7 @@ FastBle 所有代码均可以加入混淆。
 	- 在2.1.2版本及之前，必须先配置过滤规则再扫描；在2.1.3版本之后可以无需配置，开启默认过滤规则的扫描。
 
 
-- #### （方法说明）扫描设备
+- #### （方法说明）扫描
 
 	`void scan(BleScanCallback callback)`
 
@@ -119,7 +119,7 @@ FastBle 所有代码均可以加入混淆。
 	Tips：
 	- 蓝牙的扫描过程会切换到主线程，所以不论在哪个线程中开启扫描，最后的结果回调都会回到主线程。
 
-- #### （方法说明）连接设备
+- #### （方法说明）连接
 
 	`BluetoothGatt connect(BleDevice bleDevice, BleGattCallback bleGattCallback)`
 
@@ -147,6 +147,7 @@ FastBle 所有代码均可以加入混淆。
 	Tips:
 	- 如果在主线程中进行连接，所有结果回调会回到主线程。
 	- 连接过程也可以切换到子线程中进行。但是在某些型号手机上，connectGatt必须在主线程才能有效。
+	- 非常建议把连接过程放在主线程。
 
 - #### （方法说明）扫描并连接
 
@@ -194,7 +195,8 @@ FastBle 所有代码均可以加入混淆。
 
 		BleManager.getInstance().cancelScan();
 
-	调用该方法后，如果当前还处在扫描状态，会立即结束，并回调`onScanFinished`方法。
+	Tips:
+	- 调用该方法后，如果当前还处在扫描状态，会立即结束，并回调`onScanFinished`方法。
 
 
 - #### （方法说明）订阅通知notify
@@ -279,6 +281,12 @@ FastBle 所有代码均可以加入混淆。
                       String uuid_write,
                       byte[] data,
                       BleWriteCallback callback)`
+	`void write(BleDevice bleDevice,
+                      String uuid_service,
+                      String uuid_write,
+                      byte[] data,
+                      boolean split,
+                      BleWriteCallback callback)`
 
         BleManager.getInstance().write(
                 bleDevice,
@@ -298,6 +306,7 @@ FastBle 所有代码均可以加入混淆。
                 });
 	Tips:
 	- 在哪个线程中write，结果就回到那个线程中回调
+	- 在没有扩大MTU及扩大MTU无效的情况下，当遇到超过20字节的长数据需要发送的时候，需要进行分包。参数`boolean split`表示是否使用分包发送；无`boolean split`参数的`write`方法默认对超过20字节的数据进行分包发送。
 
 - #### （方法说明）读
 
@@ -524,8 +533,9 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
-- v2.2.0（2018-01-05）
-	- 可以在子线程中进行操作了
+- v2.2.1（2018-01-08）
+	- 可以在子线程中进行蓝牙数据操作
+	- 添加长数据分包发送的方法
 - v2.1.7（2017-12-26）
 	- 优化高并发情况下的数据返回
 - v2.1.6（2017-12-20）

@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 22
-        versionCode 220
-        versionName "2.2.0"
+        versionCode 221
+        versionName "2.2.1"
     }
     buildTypes {
         release {
