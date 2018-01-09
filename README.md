@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.2.1</version>
+       <version>2.2.2</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.2.1'
+	compile 'com.clj.fastble:FastBleLib:2.2.2'
 
 
 ## 其他说明
@@ -533,7 +533,7 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
-- v2.2.1（2018-01-08）
+- v2.2.2（2018-01-09）
 	- 可以在子线程中进行蓝牙数据操作
 	- 添加长数据分包发送的方法
 - v2.1.7（2017-12-26）
@@ -545,39 +545,34 @@ FastBle 所有代码均可以加入混淆。
 	- 增加对自定义扫描设备的支持
 	- 扫描过程增加onLeScan方法回调
 - v2.1.4（2017-12-01）
-    - 增加移除指定特征Callback的方法
-    - 修正2.1.2版本上操作超时回调的bug
-- v2.1.2（2017-11-29）
-    - 增加setMtu方法
-    - 优化操作的超时回调
-- v2.1.1（2017-11-27）
     - 增加多设备连接操作
     - 优化扫描策略
     - 优化扫描、连接的结果回调，对扫描、连接、读写通知等操作的结果回调默认切换到主线程
-    - 修正对同一特征值只会存在一种操作的bug
+    - 修正对同一特征值只会存在一种操作的bug    
+    - 增加setMtu方法
+    - 优化操作的超时回调
+    - 增加移除指定特征Callback的方法
 - v2.0.1（2017-11-20）
     - 优化扫描策略。
-- v1.2.1（2017-06-29）
-    - 小幅优化：仅仅对onDisConnected()回调方法中增加gatt和status参数，便于进行重连操作。
-- v1.2.0（2017-06-28）
-    - 对扫描及连接的回调处理的API做优化处理，对所有蓝牙操作的结果做明确的回调，完善文档说明。
+- v1.2.1（2017-06-28）
+    - 对扫描及连接的回调处理的API做优化处理，对所有蓝牙操作的结果做明确的回调，完善文档说明
 - v1.1.1（2017-05-04）
-    - 优化连接异常中断后的扫描及重连机制；优化测试工具。
+    - 优化连接异常中断后的扫描及重连机制；优化测试工具
 - v1.1.0（2017-04-30）
-    - 扫描设备相关部分api稍作优化及改动，完善Demo测试工具。
+    - 扫描设备相关部分api稍作优化及改动，完善Demo测试工具
 - v1.0.6（2017-03-21）
-	- 加入对设备名模糊搜索的功能。
+	- 加入对设备名模糊搜索的功能
 - v1.0.5（2017-03-02）
-	- 优化notify、indicate监听机制。
+	- 优化notify、indicate监听机制
 - v1.0.4（2016-12-08）
-	- 增加直连指定mac地址设备的方法。
+	- 增加直连指定mac设备的方法
 - v1.0.3（2016-11-16）
-	- 优化关闭机制，在关闭连接前先移除回调。
+	- 优化关闭机制，在关闭连接前先移除回调
 - v1.0.2（2016-09-23）
-	- 添加stopNotify和stopIndicate的方法，与stopListenCharacterCallback方法作区分。
+	- 添加stopNotify和stopIndicate的方法，与stopListenCharacterCallback方法作区分
 - v1.0.1（2016-09-20）
-    - 优化callback机制，一个character有且只会存在一个callback，并可以手动移除。
-    - 示例代码中添加DemoActivity和OperateActivity。前者示范如何使用本框架，后者可以作为蓝牙调试工具，测试蓝牙设备。
+    - 优化callback机制，一个character有且只会存在一个callback，并可以手动移除
+    - 添加示例代码和测试工具
 - v1.0.0（2016-09-08) 
 	- 初版
 
