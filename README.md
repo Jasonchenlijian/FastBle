@@ -421,6 +421,19 @@ FastBle 所有代码均可以加入混淆。
 	`BluetoothGatt getBluetoothGatt(BleDevice bleDevice)`
 
         BleManager.getInstance().getBluetoothGatt(bleDevice);
+	通过BluetoothGatt可以获取很多与该设备相关的一些信息，如：
+	
+		List<BluetoothGattService> serviceList = bluetoothGatt.getServices();
+		for (BluetoothGattService service : serviceList) {
+            UUID uuid_service = service.getUuid();
+
+			List<BluetoothGattCharacteristic> characteristicList= service.getCharacteristics();
+			for(BluetoothGattCharacteristic characteristic : characteristicList) {
+				UUID uuid_chara = characteristic.getUuid();
+			}
+
+        }
+		
 
 - #### （方法说明）判断某个设备是否已连接
 
