@@ -484,6 +484,7 @@ public class BleBluetooth {
                             message.obj = bleWriteCallback;
                             Bundle bundle = new Bundle();
                             bundle.putInt(BleMsg.KEY_WRITE_BUNDLE_STATUS, status);
+                            bundle.putByteArray(BleMsg.KEY_WRITE_BUNDLE_VALUE, characteristic.getValue());
                             message.setData(bundle);
                             handler.sendMessage(message);
                         }

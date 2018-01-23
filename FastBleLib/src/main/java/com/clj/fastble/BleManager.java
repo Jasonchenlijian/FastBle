@@ -205,7 +205,7 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new OtherException("BlueTooth not enable!"));
+            handleException(new OtherException("Bluetooth not enable!"));
             return;
         }
 
@@ -229,7 +229,7 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new OtherException("BlueTooth not enable!"));
+            handleException(new OtherException("Bluetooth not enable!"));
             return;
         }
 
@@ -255,7 +255,7 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new OtherException("BlueTooth is not enabled!"));
+            handleException(new OtherException("Bluetooth is not enabled!"));
             return null;
         }
 

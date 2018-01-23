@@ -191,7 +191,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (uuids != null && uuids.length > 0) {
             serviceUuids = new UUID[uuids.length];
             for (int i = 0; i < uuids.length; i++) {
-                serviceUuids[i] = UUID.fromString(uuids[i]);
+                String name = uuids[i];
+                String[] components = name.split("-");
+                if (components.length != 5){
+                    serviceUuids[i] = null;
+                }else {
+                    serviceUuids[i] = UUID.fromString(uuids[i]);
+                }
             }
         }
 
@@ -283,10 +289,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 if (isActiveDisConnected) {
                     Toast.makeText(MainActivity.this, getString(R.string.active_disconnected), Toast.LENGTH_LONG).show();
-                }else {
+                } else {
                     Toast.makeText(MainActivity.this, getString(R.string.disconnected), Toast.LENGTH_LONG).show();
                     ObserverManager.getInstance().notifyObserver(bleDevice);
                 }
+
             }
         });
     }

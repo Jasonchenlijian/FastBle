@@ -27,6 +27,7 @@ public class BleMsg {
     public static final int MSG_CHA_WRITE_START = 0x31;
     public static final int MSG_CHA_WRITE_RESULT = 0x32;
     public static final String KEY_WRITE_BUNDLE_STATUS = "write_status";
+    public static final String KEY_WRITE_BUNDLE_VALUE = "write_value";
 
     // Read
     public static final int MSG_CHA_READ_START = 0x41;

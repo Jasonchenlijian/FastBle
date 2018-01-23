@@ -33,28 +33,31 @@ public class SplitTransferUtil {
         if (count < 1) {
             throw new IllegalArgumentException("split count should higher than 0!");
         }
-        write(bleBluetooth, uuid_service, uuid_write, callback, splitByte(data, count));
+        Queue<byte[]> dataInfoQueue = splitByte(data, count);
+        int total = dataInfoQueue.size();
+        write(bleBluetooth, uuid_service, uuid_write, callback, dataInfoQueue, total);
     }
 
     private static void write(final BleBluetooth bleBluetooth,
                               final String uuid_service,
                               final String uuid_write,
                               final BleWriteCallback callback,
-                              final Queue<byte[]> dataInfoQueue) {
-        if (dataInfoQueue.peek() == null) {
-            if (callback != null) {
-                callback.onWriteSuccess();
-            }
-        } else {
+                              final Queue<byte[]> dataInfoQueue,
+                              final int totalNum) {
+        if (dataInfoQueue.peek() != null) {
             final byte[] data = dataInfoQueue.poll();
             bleBluetooth.newBleConnector()
                     .withUUIDString(uuid_service, uuid_write)
                     .writeCharacteristic(data,
                             new BleWriteCallback() {
                                 @Override
-                                public void onWriteSuccess() {
+                                public void onWriteSuccess(int current, int total, byte[] justWrite) {
                                     BleLog.d(HexUtil.formatHexString(data, true) + " been written!");
-                                    write(bleBluetooth, uuid_service, uuid_write, callback, dataInfoQueue);
+                                    int position = totalNum - dataInfoQueue.size();
+                                    if (callback != null) {
+                                        callback.onWriteSuccess(position, totalNum, justWrite);
+                                    }
+                                    write(bleBluetooth, uuid_service, uuid_write, callback, dataInfoQueue, totalNum);
                                 }
 
                                 @Override

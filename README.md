@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.2.2</version>
+       <version>2.2.3</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.2.2'
+	compile 'com.clj.fastble:FastBleLib:2.2.3'
 
 
 ## 其他说明
@@ -146,6 +146,7 @@ FastBle 所有代码均可以加入混淆。
 	- 在哪个线程中进行连接，结果就回到那个线程中回调
 	- 但是在某些型号手机上，connectGatt必须在主线程才能有效。
 	- 非常建议把连接过程放在主线程。
+	- 关于重连：连接断开之后如果需要重连。可以在onDisConnected回调方法中再次调用connect方法。为保证重连成功率，建议间隔一段时间之后进行重连。
 
 - #### （方法说明）扫描并连接
 
@@ -293,7 +294,7 @@ FastBle 所有代码均可以加入混淆。
                 data,
                 new BleWriteCallback() {
                     @Override
-                    public void onWriteSuccess() {
+                    public void onWriteSuccess(int current, int total, byte[] justWrite) {
                         // 发送数据到设备成功
                     }
 
@@ -305,6 +306,7 @@ FastBle 所有代码均可以加入混淆。
 	Tips:
 	- 在哪个线程中write，结果就回到那个线程中回调
 	- 在没有扩大MTU及扩大MTU无效的情况下，当遇到超过20字节的长数据需要发送的时候，需要进行分包。参数`boolean split`表示是否使用分包发送；无`boolean split`参数的`write`方法默认对超过20字节的数据进行分包发送。
+	- 关于`onWriteSuccess`回调方法: `current`表示当前发送第几包数据，`total`表示本次总共多少包数据，`justWrite`表示刚刚发送成功的数据包。
 
 - #### （方法说明）读
 
@@ -544,6 +546,8 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.2.3（2018-01-23）
+	- 新增分包发发送的进度回调
 - v2.2.2（2018-01-09）
 	- 可以在子线程中进行蓝牙数据操作
 	- 添加长数据分包发送的方法

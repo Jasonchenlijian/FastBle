@@ -133,11 +133,13 @@ public class CharacteristicOperationFragment extends Fragment {
                                     new BleWriteCallback() {
 
                                         @Override
-                                        public void onWriteSuccess() {
+                                        public void onWriteSuccess(final int current, final int total, final byte[] justWrite) {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    addText(txt, "write success");
+                                                    addText(txt, "write success, current: " + current
+                                                            + " total: " + total
+                                                            + " justWrite: " + HexUtil.formatHexString(justWrite, true));
                                                 }
                                             });
                                         }
@@ -178,11 +180,13 @@ public class CharacteristicOperationFragment extends Fragment {
                                     new BleWriteCallback() {
 
                                         @Override
-                                        public void onWriteSuccess() {
+                                        public void onWriteSuccess(final int current, final int total, final byte[] justWrite) {
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    addText(txt, "write success");
+                                                    addText(txt, "write success, current: " + current
+                                                            + " total: " + total
+                                                            + " justWrite: " + HexUtil.formatHexString(justWrite, true));
                                                 }
                                             });
                                         }

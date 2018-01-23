@@ -20,6 +20,7 @@ import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleRssiCallback;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleMsg;
+import com.clj.fastble.data.BleWriteState;
 import com.clj.fastble.exception.GattException;
 import com.clj.fastble.exception.OtherException;
 import com.clj.fastble.exception.TimeoutException;
@@ -125,9 +126,10 @@ public class BleConnector {
                     BleWriteCallback writeCallback = (BleWriteCallback) msg.obj;
                     Bundle bundle = msg.getData();
                     int status = bundle.getInt(BleMsg.KEY_WRITE_BUNDLE_STATUS);
+                    byte[] value = bundle.getByteArray(BleMsg.KEY_WRITE_BUNDLE_VALUE);
                     if (writeCallback != null) {
                         if (status == BluetoothGatt.GATT_SUCCESS) {
-                            writeCallback.onWriteSuccess();
+                            writeCallback.onWriteSuccess(BleWriteState.DATA_WRITE_SINGLE, BleWriteState.DATA_WRITE_SINGLE, value);
                         } else {
                             writeCallback.onWriteFailure(new GattException(status));
                         }
