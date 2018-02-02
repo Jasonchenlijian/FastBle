@@ -15,6 +15,7 @@ import android.os.Looper;
 
 import com.clj.fastble.bluetooth.BleBluetooth;
 import com.clj.fastble.bluetooth.MultipleBluetoothController;
+import com.clj.fastble.bluetooth.SplitWriter;
 import com.clj.fastble.callback.BleGattCallback;
 import com.clj.fastble.callback.BleIndicateCallback;
 import com.clj.fastble.callback.BleMtuChangedCallback;
@@ -27,14 +28,10 @@ import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleConnectState;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleScanState;
-import com.clj.fastble.exception.BleException;
-import com.clj.fastble.exception.NotFoundDeviceException;
 import com.clj.fastble.exception.OtherException;
-import com.clj.fastble.exception.hanlder.DefaultBleExceptionHandler;
 import com.clj.fastble.scan.BleScanRuleConfig;
 import com.clj.fastble.scan.BleScanner;
 import com.clj.fastble.utils.BleLog;
-import com.clj.fastble.utils.SplitTransferUtil;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,16 +44,17 @@ public class BleManager {
     private BleScanner bleScanner;
     private BluetoothAdapter bluetoothAdapter;
     private MultipleBluetoothController multipleBluetoothController;
-    private DefaultBleExceptionHandler bleExceptionHandler;
 
     public static final int DEFAULT_SCAN_TIME = 10000;
     private static final int DEFAULT_MAX_MULTIPLE_DEVICE = 7;
     private static final int DEFAULT_OPERATE_TIME = 5000;
     private static final int DEFAULT_MTU = 23;
     private static final int DEFAULT_MAX_MTU = 512;
+    private static final int DEFAULT_WRITE_DATA_SPLIT_COUNT = 20;
 
     private int maxConnectCount = DEFAULT_MAX_MULTIPLE_DEVICE;
     private int operateTimeout = DEFAULT_OPERATE_TIME;
+    private int splitWriteNum = DEFAULT_WRITE_DATA_SPLIT_COUNT;
 
     public static BleManager getInstance() {
         return BleManagerHolder.sBleManager;
@@ -73,7 +71,6 @@ public class BleManager {
                     .getSystemService(Context.BLUETOOTH_SERVICE);
             if (bluetoothManager != null)
                 bluetoothAdapter = bluetoothManager.getAdapter();
-            bleExceptionHandler = new DefaultBleExceptionHandler();
             multipleBluetoothController = new MultipleBluetoothController();
             bleScanRuleConfig = new BleScanRuleConfig();
             bleScanner = BleScanner.getInstance();
@@ -114,13 +111,6 @@ public class BleManager {
      */
     public BleScanRuleConfig getScanRuleConfig() {
         return bleScanRuleConfig;
-    }
-
-    /**
-     * Handle Exception Information
-     */
-    public void handleException(BleException exception) {
-        bleExceptionHandler.handleException(exception);
     }
 
     /**
@@ -184,6 +174,27 @@ public class BleManager {
     }
 
     /**
+     * Get operate splitWriteNum
+     *
+     * @return
+     */
+    public int getSplitWriteNum() {
+        return splitWriteNum;
+    }
+
+    /**
+     * Set splitWriteNum
+     *
+     * @param num
+     * @return BleManager
+     */
+    public BleManager setSplitWriteNum(int num) {
+        this.splitWriteNum = num;
+        return this;
+    }
+
+
+    /**
      * print log?
      *
      * @param enable
@@ -205,7 +216,8 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new OtherException("Bluetooth not enable!"));
+            BleLog.e("Bluetooth not enable!");
+            callback.onScanStarted(false);
             return;
         }
 
@@ -229,7 +241,8 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new OtherException("Bluetooth not enable!"));
+            BleLog.e("Bluetooth not enable!");
+            callback.onScanStarted(false);
             return;
         }
 
@@ -255,7 +268,8 @@ public class BleManager {
         }
 
         if (!isBlueEnable()) {
-            handleException(new OtherException("Bluetooth is not enabled!"));
+            BleLog.e("Bluetooth not enable!");
+            bleGattCallback.onConnectFail(new OtherException("Bluetooth not enable!"));
             return null;
         }
 
@@ -264,7 +278,7 @@ public class BleManager {
         }
 
         if (bleDevice == null || bleDevice.getDevice() == null) {
-            bleGattCallback.onConnectFail(new NotFoundDeviceException());
+            bleGattCallback.onConnectFail(new OtherException("Not Found Device Exception Occurred!"));
         } else {
             BleBluetooth bleBluetooth = new BleBluetooth(bleDevice);
             boolean autoConnect = bleScanRuleConfig.isAutoConnect();
@@ -434,7 +448,7 @@ public class BleManager {
             callback.onWriteFailure(new OtherException("This device not connect!"));
         } else {
             if (split && data.length > 20) {
-                SplitTransferUtil.splitWrite(bleBluetooth, uuid_service, uuid_write, data, callback);
+                new SplitWriter().splitWrite(bleBluetooth, uuid_service, uuid_write, data, callback);
             } else {
                 bleBluetooth.newBleConnector()
                         .withUUIDString(uuid_service, uuid_write)

@@ -25,13 +25,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.2.3</version>
+       <version>2.2.4</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.2.3'
+	compile 'com.clj.fastble:FastBleLib:2.2.4'
 
 
 ## 其他说明
@@ -60,10 +60,6 @@ FastBle 所有代码均可以加入混淆。
 		void enableBluetooth()
 		void disableBluetooth()
 
-- #### （方法说明）打印异常信息
-	
-		void handleException(BleException exception);
-
 - #### （方法说明）是否打印日志，默认开启
 
 	`BleManager enableLog(boolean enable)`
@@ -77,6 +73,12 @@ FastBle 所有代码均可以加入混淆。
 		BleManager.getInstance().setOperateTimeout(5000);
 
 	此处的超时时间指的是：连接上一台设备之后，对这台设备进行 readRssi、setMtu、write、read、notify、indicate 这6种操作的超时时间。
+
+- #### （方法说明）设置分包发送的时候，每一包的数据长度，默认20
+
+	`BleManager setSplitWriteNum(int num)`
+
+		BleManager.getInstance().setSplitWriteNum(20);
 
 - #### （方法说明）配置扫描规则
 
@@ -108,7 +110,7 @@ FastBle 所有代码均可以加入混淆。
 
             @Override
             public void onScanning(BleDevice bleDevice) {
-				// 扫描到一个符合扫描规则的BLE设备
+				// 扫描到一个符合扫描规则的BLE设备（主线程）
             }
 
             @Override
@@ -116,6 +118,8 @@ FastBle 所有代码均可以加入混淆。
 				// 扫描结束，列出所有扫描到的符合扫描规则的BLE设备（主线程）
             }
         });
+	Tips:
+	- 扫描及过滤过程是在工作线程中进行，所以不会影响主线程的UI操作，最终每一个回调结果都会回到主线程。
 
 - #### （方法说明）连接
 
@@ -184,7 +188,9 @@ FastBle 所有代码均可以加入混淆。
             public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
 				// 连接断开，isActiveDisConnected是主动断开还是被动断开（主线程）
             }
-        });    
+        });
+	Tips:
+	- 扫描及过滤过程是在工作线程中进行，所以不会影响主线程的UI操作，但每一个回调结果都会回到主线程。 连接操作会在主线中进行。  
 
 
 - #### （方法说明）中止扫描
@@ -224,8 +230,7 @@ FastBle 所有代码均可以加入混淆。
                         // 打开通知后，设备发过来的数据将在这里出现
                     }
                 });
-	Tips:
-	- 在哪个线程中notify，结果就回到那个线程中回调
+	
 
 - #### （方法说明）取消订阅通知notify，并移除数据接收的回调监听
 
@@ -262,8 +267,7 @@ FastBle 所有代码均可以加入混淆。
                         // 打开通知后，设备发过来的数据将在这里出现
                     }
                 });
-	Tips:
-	- 在哪个线程中indicate，结果就回到那个线程中回调
+
 
 - #### （方法说明）取消订阅通知indicate，并移除数据接收的回调监听
 
@@ -304,7 +308,6 @@ FastBle 所有代码均可以加入混淆。
                     }
                 });
 	Tips:
-	- 在哪个线程中write，结果就回到那个线程中回调
 	- 在没有扩大MTU及扩大MTU无效的情况下，当遇到超过20字节的长数据需要发送的时候，需要进行分包。参数`boolean split`表示是否使用分包发送；无`boolean split`参数的`write`方法默认对超过20字节的数据进行分包发送。
 	- 关于`onWriteSuccess`回调方法: `current`表示当前发送第几包数据，`total`表示本次总共多少包数据，`justWrite`表示刚刚发送成功的数据包。
 
@@ -330,8 +333,7 @@ FastBle 所有代码均可以加入混淆。
                         // 读特征值数据失败
                     }
                 });
-	Tips:
-	- 在哪个线程中read，结果就回到那个线程中回调
+
 
 - #### （方法说明）获取设备的信号强度Rssi
 
@@ -355,7 +357,6 @@ FastBle 所有代码均可以加入混淆。
 	Tips：
 	- 获取设备的信号强度，需要在设备连接之后进行。
 	- 某些设备可能无法读取Rssi，不会回调onRssiSuccess(),而会因为超时而回调onRssiFailure()。
-	- 在哪个线程中readRssi，结果就回到那个线程中回调
 
 - #### （方法说明）设置最大传输单元MTU
 
@@ -382,7 +383,6 @@ FastBle 所有代码均可以加入混淆。
 	- 在Android 低版本(API-17 到 API-20)上，没有这个限制。所以只有在API21以上的设备，才会有拓展MTU这个需求。
 	- 该方法的参数mtu，最小设置为23，最大设置为512。
 	- 并不是每台设备都支持拓展MTU，需要通讯双方都支持才行，也就是说，需要设备硬件也支持拓展MTU该方法才会起效果。调用该方法后，可以通过onMtuChanged(int mtu)查看最终设置完后，设备的最大传输单元被拓展到多少。如果设备不支持，可能无论设置多少，最终的mtu还是23。
-	- 在哪个线程中setMtu，结果就回到那个线程中回调
 
 - #### （方法说明）移除对应设备及对应特征的监听
 
@@ -487,22 +487,6 @@ FastBle 所有代码均可以加入混淆。
     `byte[] getScanRecord()` 广播数据
 
     `int getRssi()` 初始信号强度
-		
-
-- #### （类说明）BleException
-
-	`int getCode()` 获取异常码
-
-	`String getDescription()` 获取异常描述
-		
-	异常码：
-
-		100： 超时
-		101： 连接异常
-		102： 其他（异常信息可以通过异常描述获取，一般是开发过程中的操作中间步骤的异常）
-		103： 设备未找到
-		104： 蓝牙未启用
-		105： 开启扫描过程失败
 
 
 
@@ -546,10 +530,14 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.2.3（2018-02-02）
+	- 优化扫描大量蓝牙设备时的效率
+	- 优化在工作线程中进行数据交互的逻辑
+	- 优化大数据发送时的内存管理
 - v2.2.3（2018-01-23）
 	- 新增分包发发送的进度回调
 - v2.2.2（2018-01-09）
-	- 可以在子线程中进行蓝牙数据操作
+	- 可以在工作线程中进行蓝牙数据操作
 	- 添加长数据分包发送的方法
 - v2.1.7（2017-12-26）
 	- 优化高并发情况下的数据返回

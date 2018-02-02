@@ -1,119 +1,31 @@
 package com.clj.fastble.utils;
 
 
+import android.util.Log;
+
 public final class BleLog {
 
-	public static boolean isPrint = true;
-	private static String defaultTag = "FastBle";
+    public static boolean isPrint = true;
+    private static String defaultTag = "FastBle";
 
-	public static int i(Object o) {
-		return isPrint && o != null ? android.util.Log.i(defaultTag, o.toString()) : -1;
-	}
+    public static void d(String msg) {
+        if (isPrint && msg != null)
+            Log.d(defaultTag, msg);
+    }
 
-	public static int i(String m) {
-		return isPrint && m != null ? android.util.Log.i(defaultTag, m) : -1;
-	}
+    public static void i(String msg) {
+        if (isPrint && msg != null)
+            Log.i(defaultTag, msg);
+    }
 
-	public static int w(String m) {
-		return isPrint && m != null ? android.util.Log.w(defaultTag, m) : -1;
-	}
+    public static void w(String msg) {
+        if (isPrint && msg != null)
+            Log.w(defaultTag, msg);
+    }
 
-	public static int e(String m) {
-		return isPrint && m != null ? android.util.Log.e(defaultTag, m) : -1;
-	}
+    public static void e(String msg) {
+        if (isPrint && msg != null)
+            Log.e(defaultTag, msg);
+    }
 
-	/*********************** Log ***************************/
-	public static int v(String tag, String msg) {
-		return isPrint && msg != null ? android.util.Log.v(tag, msg) : -1;
-	}
-
-	public static int d(String tag, String msg) {
-		return isPrint && msg != null ? android.util.Log.d(tag, msg) : -1;
-	}
-
-	public static int i(String tag, String msg) {
-		return isPrint && msg != null ? android.util.Log.i(tag, msg) : -1;
-	}
-
-	public static int w(String tag, String msg) {
-		return isPrint && msg != null ? android.util.Log.w(tag, msg) : -1;
-	}
-
-	public static int e(String tag, String msg) {
-		return isPrint && msg != null ? android.util.Log.e(tag, msg) : -1;
-	}
-
-	/*********************** Log with object list ***************************/
-	public static int v(String tag, Object... msg) {
-		return isPrint ? android.util.Log.v(tag, getLogMessage(msg)) : -1;
-	}
-
-	public static int d(String tag, Object... msg) {
-		return isPrint ? android.util.Log.d(tag, getLogMessage(msg)) : -1;
-	}
-
-	public static int i(String tag, Object... msg) {
-		return isPrint ? android.util.Log.i(tag, getLogMessage(msg)) : -1;
-	}
-
-	public static int w(String tag, Object... msg) {
-		return isPrint ? android.util.Log.w(tag, getLogMessage(msg)) : -1;
-	}
-
-	public static int e(String tag, Object... msg) {
-		return isPrint ? android.util.Log.e(tag, getLogMessage(msg)) : -1;
-	}
-
-	private static String getLogMessage(Object... msg) {
-		if (msg != null && msg.length > 0) {
-			StringBuilder sb = new StringBuilder();
-			for (Object s : msg) {
-				sb.append(s.toString());
-			}
-			return sb.toString();
-		}
-		return "";
-	}
-
-	/*********************** Log with Throwable ***************************/
-	public static int v(String tag, String msg, Throwable tr) {
-		return isPrint && msg != null ? android.util.Log.v(tag, msg, tr) : -1;
-	}
-
-	public static int d(String tag, String msg, Throwable tr) {
-		return isPrint && msg != null ? android.util.Log.d(tag, msg, tr) : -1;
-	}
-
-	public static int i(String tag, String msg, Throwable tr) {
-		return isPrint && msg != null ? android.util.Log.i(tag, msg, tr) : -1;
-	}
-
-	public static int w(String tag, String msg, Throwable tr) {
-		return isPrint && msg != null ? android.util.Log.w(tag, msg, tr) : -1;
-	}
-
-	public static int e(String tag, String msg, Throwable tr) {
-		return isPrint && msg != null ? android.util.Log.e(tag, msg, tr) : -1;
-	}
-
-	/*********************** TAG use Object Tag ***************************/
-	public static int v(Object tag, String msg) {
-		return isPrint ? android.util.Log.v(tag.getClass().getSimpleName(), msg) : -1;
-	}
-
-	public static int d(Object tag, String msg) {
-		return isPrint ? android.util.Log.d(tag.getClass().getSimpleName(), msg) : -1;
-	}
-
-	public static int i(Object tag, String msg) {
-		return isPrint ? android.util.Log.i(tag.getClass().getSimpleName(), msg) : -1;
-	}
-
-	public static int w(Object tag, String msg) {
-		return isPrint ? android.util.Log.w(tag.getClass().getSimpleName(), msg) : -1;
-	}
-
-	public static int e(Object tag, String msg) {
-		return isPrint ? android.util.Log.e(tag.getClass().getSimpleName(), msg) : -1;
-	}
 }

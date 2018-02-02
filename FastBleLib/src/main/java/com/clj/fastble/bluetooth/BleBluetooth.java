@@ -27,10 +27,8 @@ import com.clj.fastble.exception.ConnectException;
 import com.clj.fastble.utils.BleLog;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import static android.bluetooth.BluetoothDevice.TRANSPORT_LE;
@@ -45,23 +43,20 @@ public class BleBluetooth {
     private HashMap<String, BleIndicateCallback> bleIndicateCallbackHashMap = new HashMap<>();
     private HashMap<String, BleWriteCallback> bleWriteCallbackHashMap = new HashMap<>();
     private HashMap<String, BleReadCallback> bleReadCallbackHashMap = new HashMap<>();
-    private List<BleConnector> bleConnectorList = new ArrayList<>();
 
     private BleConnectState connectState = BleConnectState.CONNECT_IDLE;
     private boolean isActiveDisconnect = false;
     private BleDevice bleDevice;
     private BluetoothGatt bluetoothGatt;
     private boolean isMainThread = false;
-    private MainHandler handler = new MainHandler();
+    private MainHandler handler = new MainHandler(Looper.getMainLooper());
 
     public BleBluetooth(BleDevice bleDevice) {
         this.bleDevice = bleDevice;
     }
 
     public BleConnector newBleConnector() {
-        BleConnector connector = new BleConnector(this);
-        bleConnectorList.add(connector);
-        return connector;
+        return new BleConnector(this);
     }
 
     public synchronized void addConnectGattCallback(BleGattCallback callback) {
@@ -207,14 +202,6 @@ public class BleBluetooth {
         }
     }
 
-    private void clearConnector() {
-        for (int i = 0; i < bleConnectorList.size(); i++) {
-            BleConnector connector = bleConnectorList.get(i);
-            connector.destroy();
-        }
-        bleConnectorList.clear();
-    }
-
     public void destroy() {
         connectState = BleConnectState.CONNECT_IDLE;
         if (bluetoothGatt != null) {
@@ -234,6 +221,10 @@ public class BleBluetooth {
     }
 
     private static final class MainHandler extends Handler {
+
+        MainHandler(Looper looper) {
+            super(looper);
+        }
 
         @Override
         public void handleMessage(Message msg) {
@@ -296,7 +287,6 @@ public class BleBluetooth {
 
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 closeBluetoothGatt();
-                clearConnector();
                 BleManager.getInstance().getMultipleBluetoothController().removeBleBluetooth(BleBluetooth.this);
 
                 if (connectState == BleConnectState.CONNECT_CONNECTING) {
@@ -357,7 +347,6 @@ public class BleBluetooth {
                 }
             } else {
                 closeBluetoothGatt();
-                clearConnector();
                 connectState = BleConnectState.CONNECT_FAILURE;
 
                 if (isMainThread) {

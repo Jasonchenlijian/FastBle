@@ -4,6 +4,10 @@ package com.clj.fastble.data;
 
 public class BleMsg {
 
+
+    // Scan
+    public static final int MSG_SCAN_DEVICE = 0X00;
+
     // Connect
     public static final int MSG_CONNECT_FAIL = 0x01;
     public static final int MSG_DISCONNECTED = 0x02;
@@ -26,6 +30,7 @@ public class BleMsg {
     // Write
     public static final int MSG_CHA_WRITE_START = 0x31;
     public static final int MSG_CHA_WRITE_RESULT = 0x32;
+    public static final int MSG_SPLIT_WRITE = 0x33;
     public static final String KEY_WRITE_BUNDLE_STATUS = "write_status";
     public static final String KEY_WRITE_BUNDLE_VALUE = "write_value";
 
