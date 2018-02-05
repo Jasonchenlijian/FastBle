@@ -584,6 +584,14 @@ FastBle 所有代码均可以加入混淆。
 
 ![二维码](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/donations.png)
 
+
+## Contact
+如果你有技术方面问题与想法想与我沟通，可以通过下面的方式联系我。
+
+QQ： 1033526540
+
+Email： jasonchenlijian@gmail.com
+
 ## License
 
 	   Copyright 2016 chenlijian
