@@ -579,6 +579,10 @@ FastBle 所有代码均可以加入混淆。
 - v1.0.0（2016-09-08) 
 	- 初版
 
+## Donations
+如果此框架对你帮助很大，并且你很想支持库的后续开发和维护，那么你可以扫描下方捐赠二维码支持我一下，我将不胜感激。
+
+![二维码](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/donations.png)
 
 ## License
 
