@@ -42,7 +42,7 @@ FastBle 所有代码均可以加入混淆。
 
 ## 经验分享
 
-[Android BLE开发详解和FastBle源码解析](https://www.jianshu.com/u/03be02d3e424)
+[Android BLE开发详解和FastBle源码解析](https://www.jianshu.com/p/795bb0a08beb)
 
 
 
