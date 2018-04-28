@@ -15,7 +15,7 @@ public class BleLruHashMap<K, V> extends LinkedHashMap<K, V> {
     }
 
     @Override
-    protected boolean removeEldestEntry(Entry eldest) {
+    protected boolean removeEldestEntry(java.util.Map.Entry eldest) {
         if (size() > MAX_SIZE && eldest.getValue() instanceof BleBluetooth) {
             ((BleBluetooth) eldest.getValue()).disconnect();
         }

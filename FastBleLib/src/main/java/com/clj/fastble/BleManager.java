@@ -5,7 +5,10 @@ import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
@@ -25,7 +28,6 @@ import com.clj.fastble.callback.BleRssiCallback;
 import com.clj.fastble.callback.BleScanAndConnectCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleWriteCallback;
-import com.clj.fastble.data.BleConnectState;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleScanState;
 import com.clj.fastble.exception.OtherException;
@@ -44,16 +46,21 @@ public class BleManager {
     private BleScanner bleScanner;
     private BluetoothAdapter bluetoothAdapter;
     private MultipleBluetoothController multipleBluetoothController;
+    private BluetoothManager bluetoothManager;
 
     public static final int DEFAULT_SCAN_TIME = 10000;
     private static final int DEFAULT_MAX_MULTIPLE_DEVICE = 7;
     private static final int DEFAULT_OPERATE_TIME = 5000;
+    private static final int DEFAULT_CONNECT_RETRY_COUNT = 0;
+    private static final int DEFAULT_CONNECT_RETRY_INTERVAL = 5000;
     private static final int DEFAULT_MTU = 23;
     private static final int DEFAULT_MAX_MTU = 512;
     private static final int DEFAULT_WRITE_DATA_SPLIT_COUNT = 20;
 
     private int maxConnectCount = DEFAULT_MAX_MULTIPLE_DEVICE;
     private int operateTimeout = DEFAULT_OPERATE_TIME;
+    private int reConnectCount = DEFAULT_CONNECT_RETRY_COUNT;
+    private long reConnectInterval = DEFAULT_CONNECT_RETRY_INTERVAL;
     private int splitWriteNum = DEFAULT_WRITE_DATA_SPLIT_COUNT;
 
     public static BleManager getInstance() {
@@ -67,8 +74,7 @@ public class BleManager {
     public void init(Application app) {
         if (context == null && app != null) {
             context = app;
-            BluetoothManager bluetoothManager = (BluetoothManager) context
-                    .getSystemService(Context.BLUETOOTH_SERVICE);
+            bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             if (bluetoothManager != null)
                 bluetoothAdapter = bluetoothManager.getAdapter();
             multipleBluetoothController = new MultipleBluetoothController();
@@ -84,6 +90,15 @@ public class BleManager {
      */
     public Context getContext() {
         return context;
+    }
+
+    /**
+     * Get the BluetoothManager
+     *
+     * @return
+     */
+    public BluetoothManager getBluetoothManager() {
+        return bluetoothManager;
     }
 
     /**
@@ -125,10 +140,10 @@ public class BleManager {
     /**
      * Configure scan and connection properties
      *
-     * @param scanRuleConfig
+     * @param config
      */
-    public void initScanRule(BleScanRuleConfig scanRuleConfig) {
-        this.bleScanRuleConfig = scanRuleConfig;
+    public void initScanRule(BleScanRuleConfig config) {
+        this.bleScanRuleConfig = config;
     }
 
     /**
@@ -143,13 +158,13 @@ public class BleManager {
     /**
      * Set the maximum number of connections
      *
-     * @param maxCount
+     * @param count
      * @return BleManager
      */
-    public BleManager setMaxConnectCount(int maxCount) {
-        if (maxCount > DEFAULT_MAX_MULTIPLE_DEVICE)
-            maxCount = DEFAULT_MAX_MULTIPLE_DEVICE;
-        this.maxConnectCount = maxCount;
+    public BleManager setMaxConnectCount(int count) {
+        if (count > DEFAULT_MAX_MULTIPLE_DEVICE)
+            count = DEFAULT_MAX_MULTIPLE_DEVICE;
+        this.maxConnectCount = count;
         return this;
     }
 
@@ -165,13 +180,56 @@ public class BleManager {
     /**
      * Set operate timeout
      *
-     * @param operateTimeout
+     * @param count
      * @return BleManager
      */
-    public BleManager setOperateTimeout(int operateTimeout) {
-        this.operateTimeout = operateTimeout;
+    public BleManager setOperateTimeout(int count) {
+        this.operateTimeout = count;
         return this;
     }
+
+    /**
+     * Get connect retry count
+     *
+     * @return
+     */
+    public int getReConnectCount() {
+        return reConnectCount;
+    }
+
+    /**
+     * Get connect retry interval
+     *
+     * @return
+     */
+    public long getReConnectInterval() {
+        return reConnectInterval;
+    }
+
+    /**
+     * Set connect retry count and interval
+     *
+     * @param count
+     * @return BleManager
+     */
+    public BleManager setReConnectCount(int count) {
+        return setReConnectCount(count, DEFAULT_CONNECT_RETRY_INTERVAL);
+    }
+
+    /**
+     * Set connect retry count and interval
+     *
+     * @param count
+     * @return BleManager
+     */
+    public BleManager setReConnectCount(int count, long interval) {
+        if (count > 10)
+            count = 10;
+        this.reConnectCount = count;
+        this.reConnectInterval = interval;
+        return this;
+    }
+
 
     /**
      * Get operate splitWriteNum
@@ -269,7 +327,7 @@ public class BleManager {
 
         if (!isBlueEnable()) {
             BleLog.e("Bluetooth not enable!");
-            bleGattCallback.onConnectFail(new OtherException("Bluetooth not enable!"));
+            bleGattCallback.onConnectFail(bleDevice, new OtherException("Bluetooth not enable!"));
             return null;
         }
 
@@ -278,7 +336,7 @@ public class BleManager {
         }
 
         if (bleDevice == null || bleDevice.getDevice() == null) {
-            bleGattCallback.onConnectFail(new OtherException("Not Found Device Exception Occurred!"));
+            bleGattCallback.onConnectFail(bleDevice, new OtherException("Not Found Device Exception Occurred!"));
         } else {
             BleBluetooth bleBluetooth = new BleBluetooth(bleDevice);
             boolean autoConnect = bleScanRuleConfig.isAutoConnect();
@@ -287,6 +345,20 @@ public class BleManager {
 
         return null;
     }
+
+    /**
+     * connect a device through its mac without scan,whether or not it has been connected
+     *
+     * @param mac
+     * @param bleGattCallback
+     * @return
+     */
+    public BluetoothGatt connect(String mac, BleGattCallback bleGattCallback) {
+        BluetoothDevice bluetoothDevice = getBluetoothAdapter().getRemoteDevice(mac);
+        BleDevice bleDevice = new BleDevice(bluetoothDevice, 0, null, 0);
+        return connect(bleDevice, bleGattCallback);
+    }
+
 
     /**
      * Cancel scan
@@ -609,11 +681,27 @@ public class BleManager {
         return multipleBluetoothController.getDeviceList();
     }
 
+    public List<BluetoothDevice> getAlreadyConnectedBluetoothDevices() {
+        return bluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
+    }
+
     public BluetoothGatt getBluetoothGatt(BleDevice bleDevice) {
         BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
         if (bleBluetooth != null)
             return bleBluetooth.getBluetoothGatt();
         return null;
+    }
+
+    public List<BluetoothGattService> getBluetoothGattServices(BleDevice bleDevice) {
+        BluetoothGatt gatt = getBluetoothGatt(bleDevice);
+        if (gatt != null) {
+            return gatt.getServices();
+        }
+        return null;
+    }
+
+    public List<BluetoothGattCharacteristic> getBluetoothGattCharacteristics(BluetoothGattService service) {
+        return service.getCharacteristics();
     }
 
     public void removeConnectGattCallback(BleDevice bleDevice) {
@@ -668,16 +756,31 @@ public class BleManager {
         return bleScanner.getScanState();
     }
 
-    public BleConnectState getConnectState(BleDevice bleDevice) {
+    /**
+     * @param bleDevice
+     * @return State of the profile connection. One of
+     * {@link BluetoothProfile#STATE_CONNECTED},
+     * {@link BluetoothProfile#STATE_CONNECTING},
+     * {@link BluetoothProfile#STATE_DISCONNECTED},
+     * {@link BluetoothProfile#STATE_DISCONNECTING}
+     */
+    public int getConnectState(BleDevice bleDevice) {
         if (multipleBluetoothController != null) {
             return multipleBluetoothController.getConnectState(bleDevice);
         }
-        return BleConnectState.CONNECT_IDLE;
+        return BluetoothProfile.STATE_DISCONNECTED;
     }
 
     public boolean isConnected(BleDevice bleDevice) {
-        if (multipleBluetoothController != null) {
-            return multipleBluetoothController.isContainDevice(bleDevice);
+        return getConnectState(bleDevice) == BluetoothProfile.STATE_CONNECTED;
+    }
+
+    public boolean isConnected(String mac) {
+        List<BluetoothDevice> list = getAlreadyConnectedBluetoothDevices();
+        for (BluetoothDevice bluetoothDevice : list) {
+            if (bluetoothDevice.getAddress().equals(mac)) {
+                return true;
+            }
         }
         return false;
     }

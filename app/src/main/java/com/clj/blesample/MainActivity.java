@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BleManager.getInstance().init(getApplication());
         BleManager.getInstance()
                 .enableLog(true)
-                .setMaxConnectCount(7)
+                .setReConnectCount(1, 5000)
                 .setOperateTimeout(5000);
     }
 
@@ -193,9 +193,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             for (int i = 0; i < uuids.length; i++) {
                 String name = uuids[i];
                 String[] components = name.split("-");
-                if (components.length != 5){
+                if (components.length != 5) {
                     serviceUuids[i] = null;
-                }else {
+                } else {
                     serviceUuids[i] = UUID.fromString(uuids[i]);
                 }
             }
@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void onConnectFail(BleException exception) {
+            public void onConnectFail(BleDevice bleDevice, BleException exception) {
                 img_loading.clearAnimation();
                 img_loading.setVisibility(View.INVISIBLE);
                 btn_scan.setText(getString(R.string.start_scan));

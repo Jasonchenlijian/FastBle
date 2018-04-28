@@ -1,8 +1,10 @@
 package com.clj.fastble.bluetooth;
 
 
+import android.bluetooth.BluetoothProfile;
+import android.os.Build;
+
 import com.clj.fastble.BleManager;
-import com.clj.fastble.data.BleConnectState;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.utils.BleLruHashMap;
 
@@ -45,12 +47,12 @@ public class MultipleBluetoothController {
         return true;
     }
 
-    public synchronized BleConnectState getConnectState(BleDevice bleDevice) {
+    public synchronized int getConnectState(BleDevice bleDevice) {
         BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
         if (bleBluetooth != null) {
             return bleBluetooth.getConnectState();
         }
-        return BleConnectState.CONNECT_IDLE;
+        return BluetoothProfile.STATE_DISCONNECTED;
     }
 
     public synchronized BleBluetooth getBleBluetooth(BleDevice bleDevice) {
@@ -94,6 +96,7 @@ public class MultipleBluetoothController {
     }
 
     public synchronized List<BleDevice> getDeviceList() {
+        refreshConnectedDevice();
         List<BleDevice> deviceList = new ArrayList<>();
         for (BleBluetooth BleBluetooth : getBleBluetoothList()) {
             if (BleBluetooth != null) {
@@ -102,5 +105,18 @@ public class MultipleBluetoothController {
         }
         return deviceList;
     }
+
+    public void refreshConnectedDevice() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            List<BleBluetooth> bluetoothList = getBleBluetoothList();
+            for (int i = 0; bluetoothList != null && i < bluetoothList.size(); i++) {
+                BleBluetooth bleBluetooth = bluetoothList.get(i);
+                if (!BleManager.getInstance().isConnected(bleBluetooth.getDevice())) {
+                    removeBleBluetooth(bleBluetooth);
+                }
+            }
+        }
+    }
+
 
 }

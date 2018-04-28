@@ -36,6 +36,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     private Handler mMainHandler;
     private HandlerThread mHandlerThread;
     private Handler mHandler;
+    private boolean mHandling = true;
 
     private static final class ScanHandler extends Handler {
 
@@ -81,8 +82,9 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
 
         mHandlerThread = new HandlerThread(TAG);
         mHandlerThread.start();
-
         mHandler = new ScanHandler(mHandlerThread.getLooper(), this);
+
+        mHandling = true;
     }
 
     @Override
@@ -90,11 +92,12 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
         if (device == null)
             return;
 
-        BleDevice bleDevice = new BleDevice(device, rssi, scanRecord, System.currentTimeMillis());
+        if (!mHandling)
+            return;
 
         Message message = mHandler.obtainMessage();
         message.what = BleMsg.MSG_SCAN_DEVICE;
-        message.obj = bleDevice;
+        message.obj = new BleDevice(device, rssi, scanRecord, System.currentTimeMillis());
         mHandler.sendMessage(message);
     }
 
@@ -192,8 +195,9 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     }
 
     public final void notifyScanStopped() {
-        removeHandlerMsg();
+        mHandling = false;
         mHandlerThread.quit();
+        removeHandlerMsg();
         mMainHandler.post(new Runnable() {
             @Override
             public void run() {
