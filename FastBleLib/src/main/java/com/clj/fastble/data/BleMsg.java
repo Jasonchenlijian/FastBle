@@ -12,6 +12,8 @@ public class BleMsg {
     public static final int MSG_CONNECT_FAIL = 0x01;
     public static final int MSG_DISCONNECTED = 0x02;
     public static final int MSG_CONNECT_SUCCESS = 0x03;
+    public static final int MSG_RECONNECT = 0x04;
+    public static final int MSG_DISCOVER_SERVICES = 0x05;
 
     // Notify
     public static final int MSG_CHA_NOTIFY_START = 0x11;

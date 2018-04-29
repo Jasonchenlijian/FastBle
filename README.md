@@ -1,3 +1,7 @@
+![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/fastble_poster.png)
+Thanks to the logo designed by [anharismail](https://github.com/anharismail)
+
+
 # FastBle
 Android Bluetooth Low Energy 蓝牙快速开发框架。
 
@@ -25,13 +29,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.2.4</version>
+       <version>2.3.0</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.2.4'
+	compile 'com.clj.fastble:FastBleLib:2.3.0'
 
 
 ## 其他说明
@@ -64,25 +68,13 @@ FastBle 所有代码均可以加入混淆。
 		void enableBluetooth()
 		void disableBluetooth()
 
-- #### （方法说明）是否打印日志，默认开启
+- #### （方法说明）初始化配置
 
-	`BleManager enableLog(boolean enable)`
-
-		BleManager.getInstance().enableLog(false);
-
-- #### （方法说明）设置操作超时时间，默认5秒
-
-	`BleManager setOperateTimeout(int operateTimeout)`
-
-		BleManager.getInstance().setOperateTimeout(5000);
-
-	此处的超时时间指的是：连接上一台设备之后，对这台设备进行 readRssi、setMtu、write、read、notify、indicate 这6种操作的超时时间。
-
-- #### （方法说明）设置分包发送的时候，每一包的数据长度，默认20
-
-	`BleManager setSplitWriteNum(int num)`
-
-		BleManager.getInstance().setSplitWriteNum(20);
+		BleManager.getInstance()
+                .enableLog(true)					// 设置是否打印日志，默认开启
+                .setReConnectCount(1, 5000)			// 设置连接时重连次数和重连间隔（毫秒），默认为0次不重连
+				.setSplitWriteNum(20)				// 设置分包发送的时候，每一包的数据长度，默认20
+                .setOperateTimeout(5000);			// 设置操作readRssi、setMtu、write、read、notify、indicate的超时时间
 
 - #### （方法说明）配置扫描规则
 
@@ -126,6 +118,7 @@ FastBle 所有代码均可以加入混淆。
 	- 扫描及过滤过程是在工作线程中进行，所以不会影响主线程的UI操作，最终每一个回调结果都会回到主线程。
 
 - #### （方法说明）连接
+通过扫描到的BleDevice对象进行连接。
 
 	`BluetoothGatt connect(BleDevice bleDevice, BleGattCallback bleGattCallback)`
 
@@ -136,7 +129,7 @@ FastBle 所有代码均可以加入混淆。
             }
 
             @Override
-            public void onConnectFail(BleException exception) {
+            public void onConnectFail(BleDevice bleDevice, BleException exception) {
 				// 连接失败
             }
 
@@ -151,10 +144,41 @@ FastBle 所有代码均可以加入混淆。
             }
         });
 	Tips:
-	- 在哪个线程中进行连接，结果就回到那个线程中回调
-	- 但是在某些型号手机上，connectGatt必须在主线程才能有效。
-	- 非常建议把连接过程放在主线程。
-	- 关于重连：连接断开之后如果需要重连。可以在onDisConnected回调方法中再次调用connect方法。为保证重连成功率，建议间隔一段时间之后进行重连。
+	- 在某些型号手机上，connectGatt必须在主线程才能有效。非常建议把连接过程放在主线程。
+	- 连接失败后重连：框架中包含连接失败后的重连机制，可以配置重连次数和时间间隔。当然也可以自行在`onConnectFail`回调方法中延时调用`connect`方法。
+	- 连接断开后重连：可以在`onDisConnected`回调方法中再次调用`connect`方法。
+	- 为保证重连成功率，建议间隔一段时间之后进行重连。
+	- 某些机型上连接失败后会短暂地无法扫描到设备，可以通过设备对象或设备mac直连，而不经过扫描。
+
+- #### （方法说明）连接
+通过已知设备Mac直接
+
+	`BluetoothGatt connect(String mac, BleGattCallback bleGattCallback)`
+
+        BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
+            @Override
+            public void onStartConnect() {
+				// 开始连接
+            }
+
+            @Override
+            public void onConnectFail(BleDevice bleDevice, BleException exception) {
+				// 连接失败
+            }
+
+            @Override
+            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+				// 连接成功，BleDevice即为所连接的BLE设备
+            }
+
+            @Override
+            public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
+				// 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法
+            }
+        });
+	Tips:
+	- 此方法可以不经过扫描，尝试直接连接周围复合该Mac的BLE设备。
+	- 在很多使用场景，我建议APP保存用户惯用设备的Mac，然后使用该方法进行连接可以大大提高连接效率。
 
 - #### （方法说明）扫描并连接
 
@@ -179,7 +203,7 @@ FastBle 所有代码均可以加入混淆。
             }
 
             @Override
-            public void onConnectFail(BleException exception) {
+            public void onConnectFail(BleDevice bleDevice,BleException exception) {
 				// 连接失败（主线程）
             }
 
@@ -388,22 +412,6 @@ FastBle 所有代码均可以加入混淆。
 	- 该方法的参数mtu，最小设置为23，最大设置为512。
 	- 并不是每台设备都支持拓展MTU，需要通讯双方都支持才行，也就是说，需要设备硬件也支持拓展MTU该方法才会起效果。调用该方法后，可以通过onMtuChanged(int mtu)查看最终设置完后，设备的最大传输单元被拓展到多少。如果设备不支持，可能无论设置多少，最终的mtu还是23。
 
-- #### （方法说明）移除对应设备及对应特征的监听
-
-	`void removeConnectGattCallback(BleDevice bleDevice)`移除对设备原先连接状态的监听
-
-	`void removeRssiCallback(BleDevice bleDevice)`移除对设备原先Rssi的监听
-
-	`void removeMtuChangedCallback(BleDevice bleDevice)`移除对设备原先Mtu变化的监听
-
-	`void removeNotifyCallback(BleDevice bleDevice, String uuid_notify)`移除对设备原先某个特征的notify的监听
-
-	`void removeIndicateCallback(BleDevice bleDevice, String uuid_indicate)`移除对设备原先某个特征的indicate的监听
-
-	`void removeWriteCallback(BleDevice bleDevice, String uuid_write)`移除对设备原先某个特征的write的监听
-
-	`void removeReadCallback(BleDevice bleDevice, String uuid_read)`移除对设备原先某个特征的read的监听
-
 - #### （方法说明）自行构建BleDevice对象
 
 	`BleDevice convertBleDevice(BluetoothDevice bluetoothDevice)`通过BluetoothDevice对象构建
@@ -426,26 +434,29 @@ FastBle 所有代码均可以加入混淆。
 
 	`BluetoothGatt getBluetoothGatt(BleDevice bleDevice)`
 
-        BleManager.getInstance().getBluetoothGatt(bleDevice);
-	通过BluetoothGatt可以获取很多与该设备相关的一些信息，如：
-	
-		List<BluetoothGattService> serviceList = bluetoothGatt.getServices();
-		for (BluetoothGattService service : serviceList) {
-            UUID uuid_service = service.getUuid();
+- #### （方法说明）获取某个已连接设备的所有Service
 
-			List<BluetoothGattCharacteristic> characteristicList= service.getCharacteristics();
-			for(BluetoothGattCharacteristic characteristic : characteristicList) {
-				UUID uuid_chara = characteristic.getUuid();
-			}
+	`List<BluetoothGattService> getBluetoothGattServices(BleDevice bleDevice)`
 
-        }
+- #### （方法说明）获取某个Service的所有Characteristic
+
+	`List<BluetoothGattCharacteristic> getBluetoothGattCharacteristics(BluetoothGattService service)`
 		
-
 - #### （方法说明）判断某个设备是否已连接
 
 	`boolean isConnected(BleDevice bleDevice)`
 
         BleManager.getInstance().isConnected(bleDevice);
+
+	`boolean isConnected(String mac)`
+
+		BleManager.getInstance().isConnected(mac);
+
+- #### （方法说明）判断某个设备的当前连接状态
+
+	`int getConnectState(BleDevice bleDevice)`
+
+		BleManager.getInstance().getConnectState(bleDevice);
 
 - #### （方法说明）断开某个设备
 
@@ -493,8 +504,11 @@ FastBle 所有代码均可以加入混淆。
     `int getRssi()` 初始信号强度
 
 
-
 ## 版本更新日志
+- v2.3.0（2018-04-29）
+	- 增加通过mac直连的方法
+	- 增加连接失败后重连api
+	- 修改若干bug
 - v2.2.4（2018-02-02）
 	- 优化扫描大量蓝牙设备时的效率
 	- 优化在工作线程中进行数据交互的逻辑

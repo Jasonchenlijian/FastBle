@@ -11,15 +11,33 @@ import com.clj.fastble.utils.BleLruHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MultipleBluetoothController {
 
     private final BleLruHashMap<String, BleBluetooth> bleLruHashMap;
+    private final HashMap<String, BleBluetooth> bleTempHashMap;
 
     public MultipleBluetoothController() {
         bleLruHashMap = new BleLruHashMap<>(BleManager.getInstance().getMaxConnectCount());
+        bleTempHashMap = new HashMap<>();
+    }
+
+    public synchronized BleBluetooth buildConnectingBle(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = new BleBluetooth(bleDevice);
+        bleTempHashMap.put(bleBluetooth.getDeviceKey(), bleBluetooth);
+        return bleBluetooth;
+    }
+
+    public synchronized void removeConnectingBle(BleBluetooth bleBluetooth) {
+        if (bleBluetooth == null) {
+            return;
+        }
+        if (bleLruHashMap.containsKey(bleBluetooth.getDeviceKey())) {
+            bleLruHashMap.remove(bleBluetooth.getDeviceKey());
+        }
     }
 
     public synchronized void addBleBluetooth(BleBluetooth bleBluetooth) {
@@ -41,10 +59,7 @@ public class MultipleBluetoothController {
     }
 
     public synchronized boolean isContainDevice(BleDevice bleDevice) {
-        if (bleDevice == null || !bleLruHashMap.containsKey(bleDevice.getKey())) {
-            return false;
-        }
-        return true;
+        return bleDevice != null && bleLruHashMap.containsKey(bleDevice.getKey());
     }
 
     public synchronized int getConnectState(BleDevice bleDevice) {
@@ -82,6 +97,10 @@ public class MultipleBluetoothController {
             stringBleBluetoothEntry.getValue().destroy();
         }
         bleLruHashMap.clear();
+        for (Map.Entry<String, BleBluetooth> stringBleBluetoothEntry : bleTempHashMap.entrySet()) {
+            stringBleBluetoothEntry.getValue().destroy();
+        }
+        bleTempHashMap.clear();
     }
 
     public synchronized List<BleBluetooth> getBleBluetoothList() {

@@ -225,6 +225,8 @@ public class BleManager {
     public BleManager setReConnectCount(int count, long interval) {
         if (count > 10)
             count = 10;
+        if (interval < 0)
+            interval = 0;
         this.reConnectCount = count;
         this.reConnectInterval = interval;
         return this;
@@ -338,7 +340,7 @@ public class BleManager {
         if (bleDevice == null || bleDevice.getDevice() == null) {
             bleGattCallback.onConnectFail(bleDevice, new OtherException("Not Found Device Exception Occurred!"));
         } else {
-            BleBluetooth bleBluetooth = new BleBluetooth(bleDevice);
+            BleBluetooth bleBluetooth = multipleBluetoothController.buildConnectingBle(bleDevice);
             boolean autoConnect = bleScanRuleConfig.isAutoConnect();
             return bleBluetooth.connect(bleDevice, autoConnect, bleGattCallback);
         }
