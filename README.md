@@ -6,7 +6,12 @@ Thanks to the logo designed by [anharismail](https://github.com/anharismail)
 # FastBle
 Android Bluetooth Low Energy 蓝牙快速开发框架。
 
->使用简单的方式进行 过滤、扫描、连接、读、写、通知订阅与取消、获取信号强度、设置最大传输单元、多设备连接等蓝牙通信功能。
+> 使用简单的方式进行 过滤、扫描、连接、读、写、通知订阅与取消   
+支持获取信号强度、设置最大传输单元  
+支持自定义扫描规则  
+支持多设备连接  
+支持重连机制  
+支持配置超时机制  
 
 
 
@@ -51,7 +56,6 @@ FastBle 所有代码均可以加入混淆。
 
 
 
-***
 
 
 # 如何使用
