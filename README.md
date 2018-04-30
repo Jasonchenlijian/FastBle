@@ -125,7 +125,8 @@ FastBle 所有代码均可以加入混淆。
 	- 扫描及过滤过程是在工作线程中进行，所以不会影响主线程的UI操作，最终每一个回调结果都会回到主线程。
 
 - #### （方法说明）连接
-通过扫描到的BleDevice对象进行连接。
+
+	通过扫描到的BleDevice对象进行连接。
 
 	`BluetoothGatt connect(BleDevice bleDevice, BleGattCallback bleGattCallback)`
 
@@ -159,7 +160,8 @@ FastBle 所有代码均可以加入混淆。
 	- 某些机型上连接失败后会短暂地无法扫描到设备，可以通过设备对象或设备mac直连，而不经过扫描。
 
 - #### （方法说明）连接
-通过已知设备Mac直接
+
+	通过已知设备Mac直接
 
 	`BluetoothGatt connect(String mac, BleGattCallback bleGattCallback)`
 
