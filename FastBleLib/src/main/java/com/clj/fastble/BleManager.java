@@ -513,7 +513,7 @@ public class BleManager {
             return;
         }
 
-        if (data.length > 20) {
+        if (data.length > 20 && !split) {
             BleLog.w("Be careful: data's length beyond 20! Ensure MTU higher than 23, or use spilt write!");
         }
 
