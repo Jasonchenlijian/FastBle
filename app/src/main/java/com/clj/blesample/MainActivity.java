@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BleManager.getInstance()
                 .enableLog(true)
                 .setReConnectCount(1, 5000)
+                .setConnectOverTime(10000)
                 .setOperateTimeout(5000);
     }
 
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void onDisConnect(BleDevice bleDevice) {
+            public void onDisConnect(final BleDevice bleDevice) {
                 if (BleManager.getInstance().isConnected(bleDevice)) {
                     BleManager.getInstance().disconnect(bleDevice);
                 }
@@ -275,9 +276,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 progressDialog.dismiss();
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
-
-                readRssi(bleDevice);
-                setMtu(bleDevice, 23);
             }
 
             @Override

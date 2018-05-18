@@ -43,7 +43,6 @@ public class BleManager {
 
     private Application context;
     private BleScanRuleConfig bleScanRuleConfig;
-    private BleScanner bleScanner;
     private BluetoothAdapter bluetoothAdapter;
     private MultipleBluetoothController multipleBluetoothController;
     private BluetoothManager bluetoothManager;
@@ -56,12 +55,14 @@ public class BleManager {
     private static final int DEFAULT_MTU = 23;
     private static final int DEFAULT_MAX_MTU = 512;
     private static final int DEFAULT_WRITE_DATA_SPLIT_COUNT = 20;
+    private static final int DEFAULT_CONNECT_OVER_TIME = 10000;
 
     private int maxConnectCount = DEFAULT_MAX_MULTIPLE_DEVICE;
     private int operateTimeout = DEFAULT_OPERATE_TIME;
     private int reConnectCount = DEFAULT_CONNECT_RETRY_COUNT;
     private long reConnectInterval = DEFAULT_CONNECT_RETRY_INTERVAL;
     private int splitWriteNum = DEFAULT_WRITE_DATA_SPLIT_COUNT;
+    private long connectOverTime = DEFAULT_CONNECT_OVER_TIME;
 
     public static BleManager getInstance() {
         return BleManagerHolder.sBleManager;
@@ -74,12 +75,12 @@ public class BleManager {
     public void init(Application app) {
         if (context == null && app != null) {
             context = app;
-            bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-            if (bluetoothManager != null)
-                bluetoothAdapter = bluetoothManager.getAdapter();
+            if (isSupportBle()) {
+                bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+            }
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             multipleBluetoothController = new MultipleBluetoothController();
             bleScanRuleConfig = new BleScanRuleConfig();
-            bleScanner = BleScanner.getInstance();
         }
     }
 
@@ -108,15 +109,6 @@ public class BleManager {
      */
     public BluetoothAdapter getBluetoothAdapter() {
         return bluetoothAdapter;
-    }
-
-    /**
-     * Get the BleScanner
-     *
-     * @return
-     */
-    public BleScanner getBleScanner() {
-        return bleScanner;
     }
 
     /**
@@ -234,7 +226,7 @@ public class BleManager {
 
 
     /**
-     * Get operate splitWriteNum
+     * Get operate split Write Num
      *
      * @return
      */
@@ -243,7 +235,7 @@ public class BleManager {
     }
 
     /**
-     * Set splitWriteNum
+     * Set split Writ eNum
      *
      * @param num
      * @return BleManager
@@ -253,6 +245,28 @@ public class BleManager {
         return this;
     }
 
+    /**
+     * Get operate connect Over Time
+     *
+     * @return
+     */
+    public long getConnectOverTime() {
+        return connectOverTime;
+    }
+
+    /**
+     * Set connect Over Time
+     *
+     * @param time
+     * @return BleManager
+     */
+    public BleManager setConnectOverTime(long time) {
+        if (time <= 0) {
+            time = 100;
+        }
+        this.connectOverTime = time;
+        return this;
+    }
 
     /**
      * print log?
@@ -287,7 +301,7 @@ public class BleManager {
         boolean fuzzy = bleScanRuleConfig.isFuzzy();
         long timeOut = bleScanRuleConfig.getScanTimeOut();
 
-        bleScanner.scan(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
+        BleScanner.getInstance().scan(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
     }
 
     /**
@@ -312,7 +326,7 @@ public class BleManager {
         boolean fuzzy = bleScanRuleConfig.isFuzzy();
         long timeOut = bleScanRuleConfig.getScanTimeOut();
 
-        bleScanner.scanAndConnect(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
+        BleScanner.getInstance().scanAndConnect(serviceUuids, deviceNames, deviceMac, fuzzy, timeOut, callback);
     }
 
     /**
@@ -366,7 +380,7 @@ public class BleManager {
      * Cancel scan
      */
     public void cancelScan() {
-        bleScanner.stopLeScan();
+        BleScanner.getInstance().stopLeScan();
     }
 
     /**
@@ -677,16 +691,6 @@ public class BleManager {
         return null;
     }
 
-    public List<BleDevice> getAllConnectedDevice() {
-        if (multipleBluetoothController == null)
-            return null;
-        return multipleBluetoothController.getDeviceList();
-    }
-
-    public List<BluetoothDevice> getAlreadyConnectedBluetoothDevices() {
-        return bluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
-    }
-
     public BluetoothGatt getBluetoothGatt(BleDevice bleDevice) {
         BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
         if (bleBluetooth != null)
@@ -755,7 +759,13 @@ public class BleManager {
     }
 
     public BleScanState getScanSate() {
-        return bleScanner.getScanState();
+        return BleScanner.getInstance().getScanState();
+    }
+
+    public List<BleDevice> getAllConnectedDevice() {
+        if (multipleBluetoothController == null)
+            return null;
+        return multipleBluetoothController.getDeviceList();
     }
 
     /**
@@ -767,10 +777,11 @@ public class BleManager {
      * {@link BluetoothProfile#STATE_DISCONNECTING}
      */
     public int getConnectState(BleDevice bleDevice) {
-        if (multipleBluetoothController != null) {
-            return multipleBluetoothController.getConnectState(bleDevice);
+        if (bleDevice != null) {
+            return bluetoothManager.getConnectionState(bleDevice.getDevice(), BluetoothProfile.GATT);
+        } else {
+            return BluetoothProfile.STATE_DISCONNECTED;
         }
-        return BluetoothProfile.STATE_DISCONNECTED;
     }
 
     public boolean isConnected(BleDevice bleDevice) {
@@ -778,10 +789,12 @@ public class BleManager {
     }
 
     public boolean isConnected(String mac) {
-        List<BluetoothDevice> list = getAlreadyConnectedBluetoothDevices();
-        for (BluetoothDevice bluetoothDevice : list) {
-            if (bluetoothDevice.getAddress().equals(mac)) {
-                return true;
+        List<BleDevice> list = getAllConnectedDevice();
+        for (BleDevice bleDevice : list) {
+            if (bleDevice != null) {
+                if (bleDevice.getMac().equals(mac)) {
+                    return true;
+                }
             }
         }
         return false;

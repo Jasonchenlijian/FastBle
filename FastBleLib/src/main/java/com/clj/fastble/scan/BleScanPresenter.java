@@ -143,7 +143,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
             mMainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    BleManager.getInstance().getBleScanner().stopLeScan();
+                    BleScanner.getInstance().stopLeScan();
                 }
             });
 
@@ -181,7 +181,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
             mMainHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    BleManager.getInstance().getBleScanner().stopLeScan();
+                    BleScanner.getInstance().stopLeScan();
                 }
             }, mScanTimeout);
         }
