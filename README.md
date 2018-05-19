@@ -41,7 +41,7 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 ### Jar
 
-[FastBLE-1.3.1.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-1.3.1.jar) 
+[FastBLE-2.3.1.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-2.3.1.jar) 
 
 ## 经验分享
 
