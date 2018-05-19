@@ -39,17 +39,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 
 	compile 'com.clj.fastble:FastBleLib:2.3.1'
 
+### Jar
 
-## 其他说明
-
-FastBle requires at minimum Java 7 or Android 4.0.
-
-FastBle 所有代码均可以加入混淆。
+[FastBLE-1.3.1.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-1.3.1.jar) 
 
 ## 经验分享
 
 [Android BLE开发详解和FastBle源码解析](https://www.jianshu.com/p/795bb0a08beb)
-
 
 ## Wiki
 
