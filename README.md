@@ -14,15 +14,11 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 支持配置超时机制  
 
 
-
-
 # Preview
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_1.png) 
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_2.png) 
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_3.png)
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_4.png)
-
-	
 
 
 ### APK
@@ -55,6 +51,9 @@ FastBle 所有代码均可以加入混淆。
 [Android BLE开发详解和FastBle源码解析](https://www.jianshu.com/p/795bb0a08beb)
 
 
+## Wiki
+
+[中文文档](https://github.com/Jasonchenlijian/FastBle/wiki)
 
 
 
@@ -517,62 +516,6 @@ FastBle 所有代码均可以加入混淆。
 
     `int getRssi()` 初始信号强度
 
-
-## 版本更新日志
-- v2.3.1（2018-05-10）
-	- 增加连接超时的设置
-- v2.3.0（2018-04-29）
-	- 增加通过mac直连的方法
-	- 增加连接失败后重连api
-	- 修改若干bug
-- v2.2.4（2018-02-02）
-	- 优化扫描大量蓝牙设备时的效率
-	- 优化在工作线程中进行数据交互的逻辑
-	- 优化大数据发送时的内存管理
-- v2.2.3（2018-01-23）
-	- 新增分包发发送的进度回调
-- v2.2.2（2018-01-09）
-	- 可以在工作线程中进行蓝牙数据操作
-	- 添加长数据分包发送的方法
-- v2.1.7（2017-12-26）
-	- 优化高并发情况下的数据返回
-- v2.1.6（2017-12-20）
-	- 修正UUID必须小写的Bug
-	- 定义默认的扫描超时时间为10秒
-- v2.1.5（2017-12-10）
-	- 增加对自定义扫描设备的支持
-	- 扫描过程增加onLeScan方法回调
-- v2.1.4（2017-12-01）
-    - 增加多设备连接操作
-    - 优化扫描策略
-    - 优化扫描、连接的结果回调，对扫描、连接、读写通知等操作的结果回调默认切换到主线程
-    - 修正对同一特征值只会存在一种操作的bug    
-    - 增加setMtu方法
-    - 优化操作的超时回调
-    - 增加移除指定特征Callback的方法
-- v2.0.1（2017-11-20）
-    - 优化扫描策略。
-- v1.2.1（2017-06-28）
-    - 对扫描及连接的回调处理的API做优化处理，对所有蓝牙操作的结果做明确的回调，完善文档说明
-- v1.1.1（2017-05-04）
-    - 优化连接异常中断后的扫描及重连机制；优化测试工具
-- v1.1.0（2017-04-30）
-    - 扫描设备相关部分api稍作优化及改动，完善Demo测试工具
-- v1.0.6（2017-03-21）
-	- 加入对设备名模糊搜索的功能
-- v1.0.5（2017-03-02）
-	- 优化notify、indicate监听机制
-- v1.0.4（2016-12-08）
-	- 增加直连指定mac设备的方法
-- v1.0.3（2016-11-16）
-	- 优化关闭机制，在关闭连接前先移除回调
-- v1.0.2（2016-09-23）
-	- 添加stopNotify和stopIndicate的方法，与stopListenCharacterCallback方法作区分
-- v1.0.1（2016-09-20）
-    - 优化callback机制，一个character有且只会存在一个callback，并可以手动移除
-    - 添加示例代码和测试工具
-- v1.0.0（2016-09-08) 
-	- 初版
 
 ## Donations
 如果此框架对你帮助很大，并且你很想支持库的后续开发和维护，那么你可以扫描下方捐赠二维码支持我一下，我将不胜感激。
