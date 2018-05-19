@@ -35,13 +35,13 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.3.0</version>
+       <version>2.3.1</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.3.0'
+	compile 'com.clj.fastble:FastBleLib:2.3.1'
 
 
 ## 其他说明
@@ -76,10 +76,11 @@ FastBle 所有代码均可以加入混淆。
 - #### （方法说明）初始化配置
 
 		BleManager.getInstance()
-                .enableLog(true)					// 设置是否打印日志，默认开启
-                .setReConnectCount(1, 5000)			// 设置连接时重连次数和重连间隔（毫秒），默认为0次不重连
-				.setSplitWriteNum(20)				// 设置分包发送的时候，每一包的数据长度，默认20
-                .setOperateTimeout(5000);			// 设置操作readRssi、setMtu、write、read、notify、indicate的超时时间（毫秒）
+                .enableLog(true)				// 设置是否打印日志，默认开启
+                .setReConnectCount(1, 5000)		// 设置连接时重连次数和重连间隔（毫秒），默认为0次不重连
+				.setSplitWriteNum(20)			// 设置分包发送的时候，每一包的数据长度，默认20
+				.setConnectOverTime(10000)		// 设置连接超时时间
+                .setOperateTimeout(5000);		// 设置readRssi、setMtu、write、read、notify、indicate的超时（毫秒）
 
 - #### （方法说明）配置扫描规则
 
@@ -518,6 +519,8 @@ FastBle 所有代码均可以加入混淆。
 
 
 ## 版本更新日志
+- v2.3.1（2018-05-10）
+	- 增加连接超时的设置
 - v2.3.0（2018-04-29）
 	- 增加通过mac直连的方法
 	- 增加连接失败后重连api

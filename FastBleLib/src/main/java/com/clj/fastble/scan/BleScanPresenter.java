@@ -11,7 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
-import com.clj.fastble.BleManager;
+import com.clj.fastble.callback.BleScanPresenterImp;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleMsg;
 import com.clj.fastble.utils.BleLog;
@@ -25,18 +25,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallback {
 
-    private static final String TAG = "BleScanPresenter";
-    private long mScanTimeout = BleManager.DEFAULT_SCAN_TIME;
-    private String[] mDeviceNames = null;
-    private String mDeviceMac = null;
-    private boolean mFuzzy = false;
-    private boolean mNeedConnect = false;
+    private String[] mDeviceNames;
+    private String mDeviceMac;
+    private boolean mFuzzy;
+    private boolean mNeedConnect;
+    private long mScanTimeout;
+    private BleScanPresenterImp mBleScanPresenterImp;
+
     private List<BleDevice> mBleDeviceList = new ArrayList<>();
 
-    private Handler mMainHandler;
+    private Handler mMainHandler = new Handler(Looper.getMainLooper());
     private HandlerThread mHandlerThread;
     private Handler mHandler;
-    private boolean mHandling = true;
+    private boolean mHandling;
 
     private static final class ScanHandler extends Handler {
 
@@ -71,20 +72,27 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
         checkDevice(bleDevice);
     }
 
-    public BleScanPresenter(String[] names, String mac, boolean fuzzy, boolean needConnect, long timeOut) {
+    public void prepare(String[] names, String mac, boolean fuzzy, boolean needConnect,
+                        long timeOut, BleScanPresenterImp bleScanPresenterImp) {
         mDeviceNames = names;
         mDeviceMac = mac;
         mFuzzy = fuzzy;
         mNeedConnect = needConnect;
         mScanTimeout = timeOut;
+        mBleScanPresenterImp = bleScanPresenterImp;
 
-        mMainHandler = new Handler(Looper.getMainLooper());
-
-        mHandlerThread = new HandlerThread(TAG);
+        mHandlerThread = new HandlerThread(BleScanPresenter.class.getSimpleName());
         mHandlerThread.start();
         mHandler = new ScanHandler(mHandlerThread.getLooper(), this);
-
         mHandling = true;
+    }
+
+    public boolean ismNeedConnect() {
+        return mNeedConnect;
+    }
+
+    public BleScanPresenterImp getBleScanPresenterImp() {
+        return mBleScanPresenterImp;
     }
 
     @Override
