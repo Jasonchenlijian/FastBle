@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BleManager.getInstance()
                 .enableLog(true)
                 .setReConnectCount(1, 5000)
-                .setConnectOverTime(10000)
+                .setConnectOverTime(20000)
                 .setOperateTimeout(5000);
     }
 
