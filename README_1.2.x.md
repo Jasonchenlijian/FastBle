@@ -4,9 +4,6 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 使用简单的方式进行搜索、连接、读写、通知的订阅与取消等一系列蓝牙操作，并实时地得到操作反馈。
 
 
-
-
-
 # Preview
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble0.gif) 
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble1.png) 
@@ -14,7 +11,6 @@ Android Bluetooth Low Energy 蓝牙快速开发框架。
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble3.png)
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble4.png)
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/ble5.png)
-
 	
 
 # Download

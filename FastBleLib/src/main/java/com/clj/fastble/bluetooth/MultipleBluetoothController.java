@@ -1,23 +1,45 @@
 package com.clj.fastble.bluetooth;
 
 
+import android.bluetooth.BluetoothDevice;
+import android.os.Build;
+
 import com.clj.fastble.BleManager;
-import com.clj.fastble.data.BleConnectState;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.utils.BleLruHashMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MultipleBluetoothController {
 
     private final BleLruHashMap<String, BleBluetooth> bleLruHashMap;
+    private final HashMap<String, BleBluetooth> bleTempHashMap;
 
     public MultipleBluetoothController() {
         bleLruHashMap = new BleLruHashMap<>(BleManager.getInstance().getMaxConnectCount());
+        bleTempHashMap = new HashMap<>();
+    }
+
+    public synchronized BleBluetooth buildConnectingBle(BleDevice bleDevice) {
+        BleBluetooth bleBluetooth = new BleBluetooth(bleDevice);
+        if (!bleTempHashMap.containsKey(bleBluetooth.getDeviceKey())) {
+            bleTempHashMap.put(bleBluetooth.getDeviceKey(), bleBluetooth);
+        }
+        return bleBluetooth;
+    }
+
+    public synchronized void removeConnectingBle(BleBluetooth bleBluetooth) {
+        if (bleBluetooth == null) {
+            return;
+        }
+        if (bleTempHashMap.containsKey(bleBluetooth.getDeviceKey())) {
+            bleTempHashMap.remove(bleBluetooth.getDeviceKey());
+        }
     }
 
     public synchronized void addBleBluetooth(BleBluetooth bleBluetooth) {
@@ -39,18 +61,11 @@ public class MultipleBluetoothController {
     }
 
     public synchronized boolean isContainDevice(BleDevice bleDevice) {
-        if (bleDevice == null || !bleLruHashMap.containsKey(bleDevice.getKey())) {
-            return false;
-        }
-        return true;
+        return bleDevice != null && bleLruHashMap.containsKey(bleDevice.getKey());
     }
 
-    public synchronized BleConnectState getConnectState(BleDevice bleDevice) {
-        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
-        if (bleBluetooth != null) {
-            return bleBluetooth.getConnectState();
-        }
-        return BleConnectState.CONNECT_IDLE;
+    public synchronized boolean isContainDevice(BluetoothDevice bluetoothDevice) {
+        return bluetoothDevice != null && bleLruHashMap.containsKey(bluetoothDevice.getName() + bluetoothDevice.getAddress());
     }
 
     public synchronized BleBluetooth getBleBluetooth(BleDevice bleDevice) {
@@ -80,13 +95,17 @@ public class MultipleBluetoothController {
             stringBleBluetoothEntry.getValue().destroy();
         }
         bleLruHashMap.clear();
+        for (Map.Entry<String, BleBluetooth> stringBleBluetoothEntry : bleTempHashMap.entrySet()) {
+            stringBleBluetoothEntry.getValue().destroy();
+        }
+        bleTempHashMap.clear();
     }
 
     public synchronized List<BleBluetooth> getBleBluetoothList() {
-        final List<BleBluetooth> bleBluetoothList = new ArrayList<>(bleLruHashMap.values());
+        List<BleBluetooth> bleBluetoothList = new ArrayList<>(bleLruHashMap.values());
         Collections.sort(bleBluetoothList, new Comparator<BleBluetooth>() {
             @Override
-            public int compare(final BleBluetooth lhs, final BleBluetooth rhs) {
+            public int compare(BleBluetooth lhs, BleBluetooth rhs) {
                 return lhs.getDeviceKey().compareToIgnoreCase(rhs.getDeviceKey());
             }
         });
@@ -94,7 +113,8 @@ public class MultipleBluetoothController {
     }
 
     public synchronized List<BleDevice> getDeviceList() {
-        final List<BleDevice> deviceList = new ArrayList<>();
+        refreshConnectedDevice();
+        List<BleDevice> deviceList = new ArrayList<>();
         for (BleBluetooth BleBluetooth : getBleBluetoothList()) {
             if (BleBluetooth != null) {
                 deviceList.add(BleBluetooth.getDevice());
@@ -102,5 +122,18 @@ public class MultipleBluetoothController {
         }
         return deviceList;
     }
+
+    public void refreshConnectedDevice() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            List<BleBluetooth> bluetoothList = getBleBluetoothList();
+            for (int i = 0; bluetoothList != null && i < bluetoothList.size(); i++) {
+                BleBluetooth bleBluetooth = bluetoothList.get(i);
+                if (!BleManager.getInstance().isConnected(bleBluetooth.getDevice())) {
+                    removeBleBluetooth(bleBluetooth);
+                }
+            }
+        }
+    }
+
 
 }

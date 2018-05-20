@@ -11,6 +11,7 @@
     <string name="expand_search_settings">展开搜索设置</string>
     <string name="retrieve_search_settings">收起搜索设置</string>
     <string name="connect_fail">连接失败</string>
+    <string name="active_disconnected">断开了</string>
     <string name="disconnected">连接断开</string>
     <string name="please_open_blue">请先打开蓝牙</string>
     <string name="select_operation_type">选择操作类型</string>

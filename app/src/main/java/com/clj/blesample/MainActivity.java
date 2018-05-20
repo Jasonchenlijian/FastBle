@@ -70,15 +70,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
         initView();
 
         BleManager.getInstance().init(getApplication());
-
         BleManager.getInstance()
                 .enableLog(true)
-                .setMaxConnectCount(7)
+                .setReConnectCount(1, 5000)
+                .setConnectOverTime(20000)
                 .setOperateTimeout(5000);
     }
 
@@ -153,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void onDisConnect(BleDevice bleDevice) {
+            public void onDisConnect(final BleDevice bleDevice) {
                 if (BleManager.getInstance().isConnected(bleDevice)) {
                     BleManager.getInstance().disconnect(bleDevice);
                 }
@@ -193,7 +192,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (uuids != null && uuids.length > 0) {
             serviceUuids = new UUID[uuids.length];
             for (int i = 0; i < uuids.length; i++) {
-                serviceUuids[i] = UUID.fromString(uuids[i]);
+                String name = uuids[i];
+                String[] components = name.split("-");
+                if (components.length != 5) {
+                    serviceUuids[i] = null;
+                } else {
+                    serviceUuids[i] = UUID.fromString(uuids[i]);
+                }
             }
         }
 
@@ -231,6 +236,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
+            public void onLeScan(BleDevice bleDevice) {
+                super.onLeScan(bleDevice);
+            }
+
+            @Override
             public void onScanning(BleDevice bleDevice) {
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
@@ -245,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void connect(BleDevice bleDevice) {
+    private void connect(final BleDevice bleDevice) {
         BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
             @Override
             public void onStartConnect() {
@@ -253,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void onConnectFail(BleException exception) {
+            public void onConnectFail(BleDevice bleDevice, BleException exception) {
                 img_loading.clearAnimation();
                 img_loading.setVisibility(View.INVISIBLE);
                 btn_scan.setText(getString(R.string.start_scan));
@@ -266,9 +276,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 progressDialog.dismiss();
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
-
-                readRssi(bleDevice);
-                setMtu(bleDevice, 23);
             }
 
             @Override
@@ -278,10 +285,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mDeviceAdapter.removeDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
 
-                if (!isActiveDisConnected) {
+                if (isActiveDisConnected) {
+                    Toast.makeText(MainActivity.this, getString(R.string.active_disconnected), Toast.LENGTH_LONG).show();
+                } else {
                     Toast.makeText(MainActivity.this, getString(R.string.disconnected), Toast.LENGTH_LONG).show();
                     ObserverManager.getInstance().notifyObserver(bleDevice);
                 }
+
             }
         });
     }
@@ -303,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setMtu(BleDevice bleDevice, int mtu) {
         BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
             @Override
-            public void onsetMTUFailure(BleException exception) {
+            public void onSetMTUFailure(BleException exception) {
                 Log.i(TAG, "onsetMTUFailure" + exception.toString());
             }
 
