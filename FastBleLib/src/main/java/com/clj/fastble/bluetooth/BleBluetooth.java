@@ -363,8 +363,9 @@ public class BleBluetooth {
 
             bluetoothGatt = gatt;
 
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
+            mainHandler.removeMessages(BleMsg.MSG_CONNECT_OVER_TIME);
 
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Message message = mainHandler.obtainMessage();
                 message.what = BleMsg.MSG_DISCOVER_SERVICES;
                 mainHandler.sendMessageDelayed(message, 500);

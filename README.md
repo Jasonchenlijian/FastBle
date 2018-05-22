@@ -32,17 +32,17 @@ If you want to quickly preview all the functions, you can download APK as a test
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.3.1</version>
+       <version>2.3.2</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.3.1'
+	compile 'com.clj.fastble:FastBleLib:2.3.2'
 
 ### Jar
 
-[FastBLE-2.3.1.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-2.3.1.jar) 
+[FastBLE-2.3.2.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-2.3.2.jar) 
 
 
 ## Wiki
