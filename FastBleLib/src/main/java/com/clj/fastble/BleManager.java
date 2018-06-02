@@ -370,6 +370,15 @@ public class BleManager {
      * @return
      */
     public BluetoothGatt connect(String mac, BleGattCallback bleGattCallback) {
+        // check the mac address before calling getRemoteDevice() to avoid
+        // exception throwed by the method getRemoteDevice()
+        boolean isValid = BluetoothAdapter.checkBluetoothAddress(mac);
+        if(!isValid){
+            BleLog.e("mac address is invalid");
+            bleGattCallback.onConnectFail(null, new OtherException("mac address is invalid"));
+            return null;
+        }
+
         BluetoothDevice bluetoothDevice = getBluetoothAdapter().getRemoteDevice(mac);
         BleDevice bleDevice = new BleDevice(bluetoothDevice, 0, null, 0);
         return connect(bleDevice, bleGattCallback);
