@@ -535,7 +535,7 @@ public class BleManager {
         if (bleBluetooth == null) {
             callback.onWriteFailure(new OtherException("This device not connect!"));
         } else {
-            if (split && data.length > 20) {
+            if (split && data.length > splitWriteNum) {
                 new SplitWriter().splitWrite(bleBluetooth, uuid_service, uuid_write, data, callback);
             } else {
                 bleBluetooth.newBleConnector()
