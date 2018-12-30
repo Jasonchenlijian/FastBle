@@ -34,7 +34,7 @@ public class BleMsg {
     // Write
     public static final int MSG_CHA_WRITE_START = 0x31;
     public static final int MSG_CHA_WRITE_RESULT = 0x32;
-    public static final int MSG_SPLIT_WRITE = 0x33;
+    public static final int MSG_SPLIT_WRITE_NEXT = 0x33;
     public static final String KEY_WRITE_BUNDLE_STATUS = "write_status";
     public static final String KEY_WRITE_BUNDLE_VALUE = "write_value";
 

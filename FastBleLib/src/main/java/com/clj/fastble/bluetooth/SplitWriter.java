@@ -3,7 +3,6 @@ package com.clj.fastble.bluetooth;
 
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Message;
 
 import com.clj.fastble.BleManager;
@@ -26,6 +25,8 @@ public class SplitWriter {
     private String mUuid_write;
     private byte[] mData;
     private int mCount;
+    private boolean mSendNextWhenLastSuccess;
+    private long mIntervalBetweenTwoPackage;
     private BleWriteCallback mCallback;
     private Queue<byte[]> mDataQueue;
     private int mTotalNum;
@@ -38,7 +39,7 @@ public class SplitWriter {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                if (msg.what == BleMsg.MSG_SPLIT_WRITE) {
+                if (msg.what == BleMsg.MSG_SPLIT_WRITE_NEXT) {
                     write();
                 }
             }
@@ -49,11 +50,15 @@ public class SplitWriter {
                            String uuid_service,
                            String uuid_write,
                            byte[] data,
+                           boolean sendNextWhenLastSuccess,
+                           long intervalBetweenTwoPackage,
                            BleWriteCallback callback) {
         mBleBluetooth = bleBluetooth;
         mUuid_service = uuid_service;
         mUuid_write = uuid_write;
         mData = data;
+        mSendNextWhenLastSuccess = sendNextWhenLastSuccess;
+        mIntervalBetweenTwoPackage = intervalBetweenTwoPackage;
         mCount = BleManager.getInstance().getSplitWriteNum();
         mCallback = callback;
 
@@ -75,35 +80,43 @@ public class SplitWriter {
     private void write() {
         if (mDataQueue.peek() == null) {
             release();
-        } else {
-            byte[] data = mDataQueue.poll();
-            mBleBluetooth.newBleConnector()
-                    .withUUIDString(mUuid_service, mUuid_write)
-                    .writeCharacteristic(data,
-                            new BleWriteCallback() {
-                                @Override
-                                public void onWriteSuccess(int current, int total, byte[] justWrite) {
-                                    int position = mTotalNum - mDataQueue.size();
-                                    if (mCallback != null) {
-                                        mCallback.onWriteSuccess(position, mTotalNum, justWrite);
-                                    }
+            return;
+        }
 
-                                    if (Looper.myLooper() != null && Looper.myLooper() == Looper.getMainLooper()) {
-                                        write();
-                                    } else {
-                                        Message message = mHandler.obtainMessage(BleMsg.MSG_SPLIT_WRITE);
-                                        mHandler.sendMessage(message);
-                                    }
+        byte[] data = mDataQueue.poll();
+        mBleBluetooth.newBleConnector()
+                .withUUIDString(mUuid_service, mUuid_write)
+                .writeCharacteristic(
+                        data,
+                        new BleWriteCallback() {
+                            @Override
+                            public void onWriteSuccess(int current, int total, byte[] justWrite) {
+                                int position = mTotalNum - mDataQueue.size();
+                                if (mCallback != null) {
+                                    mCallback.onWriteSuccess(position, mTotalNum, justWrite);
                                 }
+                                if (mSendNextWhenLastSuccess) {
+                                    Message message = mHandler.obtainMessage(BleMsg.MSG_SPLIT_WRITE_NEXT);
+                                    mHandler.sendMessageDelayed(message, mIntervalBetweenTwoPackage);
+                                }
+                            }
 
-                                @Override
-                                public void onWriteFailure(BleException exception) {
-                                    if (mCallback != null) {
-                                        mCallback.onWriteFailure(new OtherException("exception occur while writing: " + exception.getDescription()));
-                                    }
+                            @Override
+                            public void onWriteFailure(BleException exception) {
+                                if (mCallback != null) {
+                                    mCallback.onWriteFailure(new OtherException("exception occur while writing: " + exception.getDescription()));
                                 }
-                            },
-                            mUuid_write);
+                                if (mSendNextWhenLastSuccess) {
+                                    Message message = mHandler.obtainMessage(BleMsg.MSG_SPLIT_WRITE_NEXT);
+                                    mHandler.sendMessageDelayed(message, mIntervalBetweenTwoPackage);
+                                }
+                            }
+                        },
+                        mUuid_write);
+
+        if (!mSendNextWhenLastSuccess) {
+            Message message = mHandler.obtainMessage(BleMsg.MSG_SPLIT_WRITE_NEXT);
+            mHandler.sendMessageDelayed(message, mIntervalBetweenTwoPackage);
         }
     }
 
@@ -112,29 +125,58 @@ public class SplitWriter {
         mHandler.removeCallbacksAndMessages(null);
     }
 
+//    private static Queue<byte[]> splitByte(byte[] data, int count) {
+//        if (count > 20) {
+//            BleLog.w("Be careful: split count beyond 20! Ensure MTU higher than 23!");
+//        }
+//        Queue<byte[]> byteQueue = new LinkedList<>();
+//        if (data != null) {
+//            int index = 0;
+//            do {
+//                byte[] rawData = new byte[data.length - index];
+//                byte[] newData;
+//                System.arraycopy(data, index, rawData, 0, data.length - index);
+//                if (rawData.length <= count) {
+//                    newData = new byte[rawData.length];
+//                    System.arraycopy(rawData, 0, newData, 0, rawData.length);
+//                    index += rawData.length;
+//                } else {
+//                    newData = new byte[count];
+//                    System.arraycopy(data, index, newData, 0, count);
+//                    index += count;
+//                }
+//                byteQueue.offer(newData);
+//            } while (index < data.length);
+//        }
+//        return byteQueue;
+//    }
+
     private static Queue<byte[]> splitByte(byte[] data, int count) {
         if (count > 20) {
             BleLog.w("Be careful: split count beyond 20! Ensure MTU higher than 23!");
         }
         Queue<byte[]> byteQueue = new LinkedList<>();
-        if (data != null) {
-            int index = 0;
-            do {
-                byte[] rawData = new byte[data.length - index];
-                byte[] newData;
-                System.arraycopy(data, index, rawData, 0, data.length - index);
-                if (rawData.length <= count) {
-                    newData = new byte[rawData.length];
-                    System.arraycopy(rawData, 0, newData, 0, rawData.length);
-                    index += rawData.length;
-                } else {
-                    newData = new byte[count];
-                    System.arraycopy(data, index, newData, 0, count);
-                    index += count;
-                }
-                byteQueue.offer(newData);
-            } while (index < data.length);
+        int pkgCount;
+        if (data.length % count == 0) {
+            pkgCount = data.length / count;
+        } else {
+            pkgCount = Math.round(data.length / count + 1);
         }
+
+        if (pkgCount > 0) {
+            for (int i = 0; i < pkgCount; i++) {
+                byte[] dataPkg;
+                int j;
+                if (pkgCount == 1 || i == pkgCount - 1) {
+                    j = data.length % count == 0 ? count : data.length % count;
+                    System.arraycopy(data, i * count, dataPkg = new byte[j], 0, j);
+                } else {
+                    System.arraycopy(data, i * count, dataPkg = new byte[count], 0, count);
+                }
+                byteQueue.offer(dataPkg);
+            }
+        }
+
         return byteQueue;
     }
 

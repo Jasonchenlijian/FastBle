@@ -267,6 +267,7 @@ public class BleBluetooth {
                     lastState = LastState.CONNECT_DISCONNECT;
                     BleManager.getInstance().getMultipleBluetoothController().removeBleBluetooth(BleBluetooth.this);
 
+                    disconnect();
                     refreshDeviceCache();
                     closeBluetoothGatt();
                     removeRssiCallback();

@@ -517,6 +517,30 @@ public class BleManager {
                       boolean split,
                       BleWriteCallback callback) {
 
+        write(bleDevice, uuid_service, uuid_write, data, split, true, 0, callback);
+    }
+
+    /**
+     * write
+     *
+     * @param bleDevice
+     * @param uuid_service
+     * @param uuid_write
+     * @param data
+     * @param split
+     * @param sendNextWhenLastSuccess
+     * @param intervalBetweenTwoPackage
+     * @param callback
+     */
+    public void write(BleDevice bleDevice,
+                      String uuid_service,
+                      String uuid_write,
+                      byte[] data,
+                      boolean split,
+                      boolean sendNextWhenLastSuccess,
+                      long intervalBetweenTwoPackage,
+                      BleWriteCallback callback) {
+
         if (callback == null) {
             throw new IllegalArgumentException("BleWriteCallback can not be Null!");
         }
@@ -536,7 +560,8 @@ public class BleManager {
             callback.onWriteFailure(new OtherException("This device not connect!"));
         } else {
             if (split && data.length > 20) {
-                new SplitWriter().splitWrite(bleBluetooth, uuid_service, uuid_write, data, callback);
+                new SplitWriter().splitWrite(bleBluetooth, uuid_service, uuid_write, data,
+                        sendNextWhenLastSuccess, intervalBetweenTwoPackage, callback);
             } else {
                 bleBluetooth.newBleConnector()
                         .withUUIDString(uuid_service, uuid_write)
