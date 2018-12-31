@@ -50,7 +50,7 @@ public class BleManager {
     public static final int DEFAULT_SCAN_TIME = 10000;
     private static final int DEFAULT_MAX_MULTIPLE_DEVICE = 7;
     private static final int DEFAULT_OPERATE_TIME = 5000;
-    private static final int DEFAULT_CONNECT_RETRY_COUNT = 0;
+    private static final int DEFAULT_CONNECT_RETRY_COUNT = 1;
     private static final int DEFAULT_CONNECT_RETRY_INTERVAL = 5000;
     private static final int DEFAULT_MTU = 23;
     private static final int DEFAULT_MAX_MTU = 512;
@@ -650,6 +650,27 @@ public class BleManager {
         }
     }
 
+    /**
+     * requestConnectionPriority
+     *
+     * @param connectionPriority Request a specific connection priority. Must be one of
+     *                           {@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED},
+     *                           {@link BluetoothGatt#CONNECTION_PRIORITY_HIGH}
+     *                           or {@link BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER}.
+     * @throws IllegalArgumentException If the parameters are outside of their
+     *                                  specified range.
+     */
+    public boolean requestConnectionPriority(BleDevice bleDevice, int connectionPriority) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
+            if (bleBluetooth == null) {
+                return false;
+            } else {
+                return bleBluetooth.newBleConnector().requestConnectionPriority(connectionPriority);
+            }
+        }
+        return false;
+    }
 
     /**
      * is support ble?

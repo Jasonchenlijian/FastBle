@@ -148,10 +148,21 @@ public class BleBluetooth {
     public synchronized BluetoothGatt connect(BleDevice bleDevice,
                                               boolean autoConnect,
                                               BleGattCallback callback) {
+        return connect(bleDevice, autoConnect, callback, 0);
+    }
+
+    public synchronized BluetoothGatt connect(BleDevice bleDevice,
+                                              boolean autoConnect,
+                                              BleGattCallback callback,
+                                              int connectRetryCount) {
         BleLog.i("connect device: " + bleDevice.getName()
                 + "\nmac: " + bleDevice.getMac()
                 + "\nautoConnect: " + autoConnect
-                + "\ncurrentThread: " + Thread.currentThread().getId());
+                + "\ncurrentThread: " + Thread.currentThread().getId()
+                + "\nconnectCount:" + (connectRetryCount + 1));
+        if (connectRetryCount == 0) {
+            this.connectRetryCount = 0;
+        }
 
         addConnectGattCallback(callback);
 
@@ -242,16 +253,13 @@ public class BleBluetooth {
                     closeBluetoothGatt();
 
                     if (connectRetryCount < BleManager.getInstance().getReConnectCount()) {
-                        BleLog.e("Connect fail, try reconnect " + BleManager.getInstance().getReConnectInterval() + " Millisecond later");
-
-                        connectRetryCount++;
+                        BleLog.e("Connect fail, try reconnect " + BleManager.getInstance().getReConnectInterval() + " millisecond later");
+                        ++connectRetryCount;
 
                         Message message = mainHandler.obtainMessage();
                         message.what = BleMsg.MSG_RECONNECT;
                         mainHandler.sendMessageDelayed(message, BleManager.getInstance().getReConnectInterval());
                     } else {
-                        connectRetryCount = 0;
-
                         lastState = LastState.CONNECT_FAILURE;
                         BleManager.getInstance().getMultipleBluetoothController().removeConnectingBle(BleBluetooth.this);
 
@@ -284,7 +292,7 @@ public class BleBluetooth {
                 break;
 
                 case BleMsg.MSG_RECONNECT: {
-                    connect(bleDevice, false, bleGattCallback);
+                    connect(bleDevice, false, bleGattCallback, connectRetryCount);
                 }
                 break;
 
@@ -302,7 +310,6 @@ public class BleBluetooth {
                 break;
 
                 case BleMsg.MSG_DISCOVER_SERVICES: {
-                    connectRetryCount = 0;
                     if (bluetoothGatt != null) {
                         boolean discoverServiceResult = bluetoothGatt.discoverServices();
                         if (!discoverServiceResult) {

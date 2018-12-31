@@ -235,7 +235,7 @@ public class BleConnector {
     }
 
 
-     /*------------------------------- main operation ----------------------------------- */
+    /*------------------------------- main operation ----------------------------------- */
 
 
     /**
@@ -450,6 +450,23 @@ public class BleConnector {
             if (bleMtuChangedCallback != null)
                 bleMtuChangedCallback.onSetMTUFailure(new OtherException("API level lower than 21"));
         }
+    }
+
+    /**
+     * requestConnectionPriority
+     *
+     * @param connectionPriority Request a specific connection priority. Must be one of
+     *                           {@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED},
+     *                           {@link BluetoothGatt#CONNECTION_PRIORITY_HIGH}
+     *                           or {@link BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER}.
+     * @throws IllegalArgumentException If the parameters are outside of their
+     *                                  specified range.
+     */
+    public boolean requestConnectionPriority(int connectionPriority) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return mBluetoothGatt.requestConnectionPriority(connectionPriority);
+        }
+        return false;
     }
 
 
