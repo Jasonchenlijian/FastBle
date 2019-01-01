@@ -8,8 +8,8 @@ android {
         applicationId "com.clj.blesample"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 232
-        versionName "2.3.2"
+        versionCode 233
+        versionName "2.3.3"
     }
     buildTypes {
         release {

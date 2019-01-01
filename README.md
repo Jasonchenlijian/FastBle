@@ -32,17 +32,17 @@ If you want to quickly preview all the functions, you can download APK as a test
 	<dependency>
        <groupId>com.clj.fastble</groupId>
        <artifactId>FastBleLib</artifactId>
-       <version>2.3.2</version>
+       <version>2.3.4</version>
 	   <type>pom</type>
 	</dependency>
 
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.3.2'
+	compile 'com.clj.fastble:FastBleLib:2.3.4'
 
 ### Jar
 
-[FastBLE-2.3.2.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-2.3.2.jar) 
+[FastBLE-2.3.4.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-2.3.4.jar) 
 
 
 ## Wiki
@@ -236,6 +236,11 @@ If you want to quickly preview all the functions, you can download APK as a test
                        String uuid_service,
                        String uuid_notify,
                        BleNotifyCallback callback)`
+	`void notify(BleDevice bleDevice,
+                       String uuid_service,
+                       String uuid_notify,
+                       boolean useCharacteristicDescriptor,
+                       BleNotifyCallback callback)`
                         
         BleManager.getInstance().notify(
                 bleDevice,
@@ -264,6 +269,10 @@ If you want to quickly preview all the functions, you can download APK as a test
 	`boolean stopNotify(BleDevice bleDevice,
                               String uuid_service,
                               String uuid_notify)`
+	`boolean stopNotify(BleDevice bleDevice,
+                              String uuid_service,
+                              String uuid_notify,
+                              boolean useCharacteristicDescriptor)`
 
 		BleManager.getInstance().stopNotify(uuid_service, uuid_characteristic_notify);
 
@@ -272,6 +281,11 @@ If you want to quickly preview all the functions, you can download APK as a test
 	`void indicate(BleDevice bleDevice,
                          String uuid_service,
                          String uuid_indicate,
+                         BleIndicateCallback callback)`
+	`void indicate(BleDevice bleDevice,
+                         String uuid_service,
+                         String uuid_indicate,
+                         boolean useCharacteristicDescriptor,
                          BleIndicateCallback callback)`
 
         BleManager.getInstance().indicate(
@@ -301,6 +315,10 @@ If you want to quickly preview all the functions, you can download APK as a test
     `boolean stopIndicate(BleDevice bleDevice,
                                 String uuid_service,
                                 String uuid_indicate)`
+	`boolean stopIndicate(BleDevice bleDevice,
+                                String uuid_service,
+                                String uuid_indicate,
+                                boolean useCharacteristicDescriptor)`
     
 		BleManager.getInstance().stopIndicate(uuid_service, uuid_characteristic_indicate);
 
@@ -316,6 +334,14 @@ If you want to quickly preview all the functions, you can download APK as a test
                       String uuid_write,
                       byte[] data,
                       boolean split,
+                      BleWriteCallback callback)`
+	`void write(BleDevice bleDevice,
+                      String uuid_service,
+                      String uuid_write,
+                      byte[] data,
+                      boolean split,
+                      boolean sendNextWhenLastSuccess,
+                      long intervalBetweenTwoPackage,
                       BleWriteCallback callback)`
 
         BleManager.getInstance().write(
@@ -410,11 +436,18 @@ If you want to quickly preview all the functions, you can download APK as a test
 	- The parameter MTU of the method is set to 23, and the maximum setting is 512.
 	- Not every device supports the expansion of MTU, which requires both sides of the communication, that is to say, the need for the device hardware also supports the expansion of the MTU method. After calling this method, you can see through onMtuChanged (int MTU) how much the maximum transmission unit of the device is expanded to after the final setup. If the device does not support, no matter how many settings, the final MTU will be 23.
 
+- #### requestConnectionPriority
+
+	`boolean requestConnectionPriority(BleDevice bleDevice,int connectionPriority)`
+
+	Tips:
+	- Request a specific connection priority. Must be one of{@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED}, {@link BluetoothGatt#CONNECTION_PRIORITY_HIGH} or {@link BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER}.
+
 - #### Converte BleDevice object
 
-	`BleDevice convertBleDevice(BluetoothDevice bluetoothDevice)`通过BluetoothDevice对象构建
+	`BleDevice convertBleDevice(BluetoothDevice bluetoothDevice)`
 
-	`BleDevice convertBleDevice(ScanResult scanResult)`通过ScanResult对象构建
+	`BleDevice convertBleDevice(ScanResult scanResult)`
 
 	Tips：
 	- The completed BleDevice object is still unconnected, if necessary, advanced connection.
@@ -504,10 +537,6 @@ QQ： 1033526540
 
 Email： jasonchenlijian@gmail.com
 
-## Donations
-If this framework is a great help to you and you want to support the subsequent development and maintenance of the library, you can scan the underside donation two-dimensional code to support me, and I would be grateful.
-
-![donation Code](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/donations.png)
 
 ## License
 

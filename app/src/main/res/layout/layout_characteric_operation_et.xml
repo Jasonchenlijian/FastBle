@@ -10,7 +10,7 @@
 
         <Button
             android:id="@+id/btn"
-            android:layout_width="50dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
@@ -24,6 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toLeftOf="@id/btn"
+            android:digits="0123456789ABCDEFabcdef"
             android:gravity="center_vertical"
             android:hint="@string/input_hex"
             android:inputType="text"
