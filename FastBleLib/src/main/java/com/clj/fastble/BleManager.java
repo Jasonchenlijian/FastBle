@@ -50,7 +50,7 @@ public class BleManager {
     public static final int DEFAULT_SCAN_TIME = 10000;
     private static final int DEFAULT_MAX_MULTIPLE_DEVICE = 7;
     private static final int DEFAULT_OPERATE_TIME = 5000;
-    private static final int DEFAULT_CONNECT_RETRY_COUNT = 1;
+    private static final int DEFAULT_CONNECT_RETRY_COUNT = 0;
     private static final int DEFAULT_CONNECT_RETRY_INTERVAL = 5000;
     private static final int DEFAULT_MTU = 23;
     private static final int DEFAULT_MAX_MTU = 512;
@@ -241,7 +241,9 @@ public class BleManager {
      * @return BleManager
      */
     public BleManager setSplitWriteNum(int num) {
-        this.splitWriteNum = num;
+        if (num > 0) {
+            this.splitWriteNum = num;
+        }
         return this;
     }
 
@@ -395,6 +397,23 @@ public class BleManager {
                        String uuid_service,
                        String uuid_notify,
                        BleNotifyCallback callback) {
+        notify(bleDevice, uuid_service, uuid_notify, false, callback);
+    }
+
+    /**
+     * notify
+     *
+     * @param bleDevice
+     * @param uuid_service
+     * @param uuid_notify
+     * @param useCharacteristicDescriptor
+     * @param callback
+     */
+    public void notify(BleDevice bleDevice,
+                       String uuid_service,
+                       String uuid_notify,
+                       boolean useCharacteristicDescriptor,
+                       BleNotifyCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleNotifyCallback can not be Null!");
         }
@@ -405,7 +424,7 @@ public class BleManager {
         } else {
             bleBluetooth.newBleConnector()
                     .withUUIDString(uuid_service, uuid_notify)
-                    .enableCharacteristicNotify(callback, uuid_notify);
+                    .enableCharacteristicNotify(callback, uuid_notify, useCharacteristicDescriptor);
         }
     }
 
@@ -421,6 +440,23 @@ public class BleManager {
                          String uuid_service,
                          String uuid_indicate,
                          BleIndicateCallback callback) {
+        indicate(bleDevice, uuid_service, uuid_indicate, false, callback);
+    }
+
+    /**
+     * indicate
+     *
+     * @param bleDevice
+     * @param uuid_service
+     * @param uuid_indicate
+     * @param useCharacteristicDescriptor
+     * @param callback
+     */
+    public void indicate(BleDevice bleDevice,
+                         String uuid_service,
+                         String uuid_indicate,
+                         boolean useCharacteristicDescriptor,
+                         BleIndicateCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleIndicateCallback can not be Null!");
         }
@@ -431,7 +467,7 @@ public class BleManager {
         } else {
             bleBluetooth.newBleConnector()
                     .withUUIDString(uuid_service, uuid_indicate)
-                    .enableCharacteristicIndicate(callback, uuid_indicate);
+                    .enableCharacteristicIndicate(callback, uuid_indicate, useCharacteristicDescriptor);
         }
     }
 
@@ -446,13 +482,29 @@ public class BleManager {
     public boolean stopNotify(BleDevice bleDevice,
                               String uuid_service,
                               String uuid_notify) {
+        return stopNotify(bleDevice, uuid_service, uuid_notify, false);
+    }
+
+    /**
+     * stop notify, remove callback
+     *
+     * @param bleDevice
+     * @param uuid_service
+     * @param uuid_notify
+     * @param useCharacteristicDescriptor
+     * @return
+     */
+    public boolean stopNotify(BleDevice bleDevice,
+                              String uuid_service,
+                              String uuid_notify,
+                              boolean useCharacteristicDescriptor) {
         BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
             return false;
         }
         boolean success = bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_notify)
-                .disableCharacteristicNotify();
+                .disableCharacteristicNotify(useCharacteristicDescriptor);
         if (success) {
             bleBluetooth.removeNotifyCallback(uuid_notify);
         }
@@ -470,13 +522,29 @@ public class BleManager {
     public boolean stopIndicate(BleDevice bleDevice,
                                 String uuid_service,
                                 String uuid_indicate) {
+        return stopIndicate(bleDevice, uuid_service, uuid_indicate, false);
+    }
+
+    /**
+     * stop indicate, remove callback
+     *
+     * @param bleDevice
+     * @param uuid_service
+     * @param uuid_indicate
+     * @param useCharacteristicDescriptor
+     * @return
+     */
+    public boolean stopIndicate(BleDevice bleDevice,
+                                String uuid_service,
+                                String uuid_indicate,
+                                boolean useCharacteristicDescriptor) {
         BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
         if (bleBluetooth == null) {
             return false;
         }
         boolean success = bleBluetooth.newBleConnector()
                 .withUUIDString(uuid_service, uuid_indicate)
-                .disableCharacteristicIndicate();
+                .disableCharacteristicIndicate(useCharacteristicDescriptor);
         if (success) {
             bleBluetooth.removeIndicateCallback(uuid_indicate);
         }
@@ -559,7 +627,7 @@ public class BleManager {
         if (bleBluetooth == null) {
             callback.onWriteFailure(new OtherException("This device not connect!"));
         } else {
-            if (split && data.length > 20) {
+            if (split && data.length > getSplitWriteNum()) {
                 new SplitWriter().splitWrite(bleBluetooth, uuid_service, uuid_write, data,
                         sendNextWhenLastSuccess, intervalBetweenTwoPackage, callback);
             } else {

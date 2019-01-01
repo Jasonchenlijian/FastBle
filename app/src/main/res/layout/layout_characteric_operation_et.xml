@@ -4,28 +4,31 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/et"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/input_hex"
-            android:inputType="text"
-            android:textSize="15sp" />
+        android:layout_height="wrap_content">
 
         <Button
             android:id="@+id/btn"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
             android:gravity="center"
             android:textSize="15sp" />
 
-    </LinearLayout>
+        <EditText
+            android:id="@+id/et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/btn"
+            android:gravity="center_vertical"
+            android:hint="@string/input_hex"
+            android:inputType="text"
+            android:textSize="15sp" />
+
+    </RelativeLayout>
 
 </LinearLayout>
