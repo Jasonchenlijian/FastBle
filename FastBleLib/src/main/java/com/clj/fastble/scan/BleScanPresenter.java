@@ -210,6 +210,8 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
             @Override
             public void run() {
                 onScanFinished(mBleDeviceList);
+                //czh add  修复stopScan之后内存泄漏问题！外部如果使用匿名类设置的监听引起的内存泄漏
+                mBleScanPresenterImp=null;
             }
         });
     }
