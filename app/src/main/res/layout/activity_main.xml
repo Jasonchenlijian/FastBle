@@ -6,7 +6,7 @@
     android:animateLayoutChanges="true"
     android:orientation="vertical">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -111,8 +111,8 @@
         android:layout_marginTop="10dp"
         android:divider="@android:color/darker_gray"
         android:dividerHeight="0.5dp"
-        android:paddingEnd="5dp"
         android:paddingStart="5dp"
+        android:paddingEnd="5dp"
         android:scrollbars="none" />
 
 

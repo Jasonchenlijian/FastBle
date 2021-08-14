@@ -19,8 +19,8 @@ import java.util.List;
 
 public class DeviceAdapter extends BaseAdapter {
 
-    private Context context;
-    private List<BleDevice> bleDeviceList;
+    private final Context context;
+    private final List<BleDevice> bleDeviceList;
 
     public DeviceAdapter(Context context) {
         this.context = context;
