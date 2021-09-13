@@ -31,23 +31,20 @@ If you want to quickly preview all the functions, you can download APK as a test
 
 - Setp1: Add it in your root build.gradle at the end of repositories
 
+        allprojects {
+            repositories {
+                ...
+                maven { url 'https://jitpack.io' }
+            }
+        }
 
-    allprojects {
-    	repositories {
-    		...
-    		maven { url 'https://jitpack.io' }
-    	}
-    }
-    
 
 - Step2: Add the dependency
 
-
-	dependencies {
-    	implementation 'com.github.Jasonchenlijian:FastBle:2.4.0'
-    }
+        dependencies {
+            implementation 'com.github.Jasonchenlijian:FastBle:2.4.0'
+        }
     
-
 ### Jar
 
 [FastBLE-2.4.0.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-2.4.0.jar)
