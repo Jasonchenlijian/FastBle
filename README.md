@@ -29,7 +29,7 @@ If you want to quickly preview all the functions, you can download APK as a test
 
 ### Gradle
 
-    Setp1: Add it in your root build.gradle at the end of repositories
+- Setp1: Add it in your root build.gradle at the end of repositories
 
     allprojects {
     	repositories {
@@ -38,10 +38,10 @@ If you want to quickly preview all the functions, you can download APK as a test
     	}
     }
 
-    Step2: Add the dependency
+- Step2: Add the dependency
 
 	dependencies {
-    	    implementation 'com.github.Jasonchenlijian:FastBle:2.4.0'
+    	implementation 'com.github.Jasonchenlijian:FastBle:2.4.0'
     }
 
 ### Jar
