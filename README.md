@@ -27,18 +27,22 @@ If you want to quickly preview all the functions, you can download APK as a test
  [FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk) 
 
 
-### Maven
-
-	<dependency>
-       <groupId>com.clj.fastble</groupId>
-       <artifactId>FastBleLib</artifactId>
-       <version>2.3.4</version>
-	   <type>pom</type>
-	</dependency>
-
 ### Gradle
 
-	compile 'com.clj.fastble:FastBleLib:2.3.4'
+    Setp1: Add it in your root build.gradle at the end of repositories
+
+    allprojects {
+    	repositories {
+    		...
+    		maven { url 'https://jitpack.io' }
+    	}
+    }
+
+    Step2: Add the dependency
+
+	dependencies {
+    	    implementation 'com.github.Jasonchenlijian:FastBle:2.4.0'
+    }
 
 ### Jar
 
