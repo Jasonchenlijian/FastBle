@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion '30.0.3'
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 30
-        versionCode 234
-        versionName "2.3.4"
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        versionCode rootProject.ext.versionControl.versionCode
+        versionName rootProject.ext.versionControl.versonName
     }
     buildTypes {
         release {
@@ -21,3 +21,11 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
+
+task makeAAR(type: Copy) {
+    from('build/outputs/aar/')
+    into('build/aarFloder/')
+    include('FastBleLib-release.aar')
+    rename ('FastBleLib-release.aar', 'FastBLE-' + rootProject.ext.versionControl.versonName + '.aar' )
+}
+makeAAR.dependsOn(build)

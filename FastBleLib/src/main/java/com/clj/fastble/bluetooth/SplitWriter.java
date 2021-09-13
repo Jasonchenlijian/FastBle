@@ -125,32 +125,6 @@ public class SplitWriter {
         mHandler.removeCallbacksAndMessages(null);
     }
 
-//    private static Queue<byte[]> splitByte(byte[] data, int count) {
-//        if (count > 20) {
-//            BleLog.w("Be careful: split count beyond 20! Ensure MTU higher than 23!");
-//        }
-//        Queue<byte[]> byteQueue = new LinkedList<>();
-//        if (data != null) {
-//            int index = 0;
-//            do {
-//                byte[] rawData = new byte[data.length - index];
-//                byte[] newData;
-//                System.arraycopy(data, index, rawData, 0, data.length - index);
-//                if (rawData.length <= count) {
-//                    newData = new byte[rawData.length];
-//                    System.arraycopy(rawData, 0, newData, 0, rawData.length);
-//                    index += rawData.length;
-//                } else {
-//                    newData = new byte[count];
-//                    System.arraycopy(data, index, newData, 0, count);
-//                    index += count;
-//                }
-//                byteQueue.offer(newData);
-//            } while (index < data.length);
-//        }
-//        return byteQueue;
-//    }
-
     private static Queue<byte[]> splitByte(byte[] data, int count) {
         if (count > 20) {
             BleLog.w("Be careful: split count beyond 20! Ensure MTU higher than 23!");

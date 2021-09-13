@@ -20,11 +20,10 @@ import java.util.List;
 public class DeviceAdapter extends BaseAdapter {
 
     private final Context context;
-    private final List<BleDevice> bleDeviceList;
+    private final List<BleDevice> bleDeviceList = new ArrayList<>();
 
     public DeviceAdapter(Context context) {
         this.context = context;
-        bleDeviceList = new ArrayList<>();
     }
 
     public void addDevice(BleDevice bleDevice) {
@@ -155,7 +154,7 @@ public class DeviceAdapter extends BaseAdapter {
         return convertView;
     }
 
-    class ViewHolder {
+    static class ViewHolder {
         ImageView img_blue;
         TextView txt_name;
         TextView txt_mac;

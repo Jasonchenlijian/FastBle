@@ -39,7 +39,7 @@ public class CharacteristicOperationFragment extends Fragment {
     public static final int PROPERTY_INDICATE = 5;
 
     private LinearLayout layout_container;
-    private List<String> childList = new ArrayList<>();
+    private final List<String> childList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

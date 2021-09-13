@@ -57,20 +57,23 @@ public class BleDevice implements Parcelable {
     };
 
     public String getName() {
-        if (mDevice != null)
+        if (mDevice != null) {
             return mDevice.getName();
+        }
         return null;
     }
 
     public String getMac() {
-        if (mDevice != null)
+        if (mDevice != null) {
             return mDevice.getAddress();
+        }
         return null;
     }
 
     public String getKey() {
-        if (mDevice != null)
+        if (mDevice != null) {
             return mDevice.getName() + mDevice.getAddress();
+        }
         return "";
     }
 

@@ -4,7 +4,6 @@ package com.clj.fastble.data;
 
 public class BleMsg {
 
-
     // Scan
     public static final int MSG_SCAN_DEVICE = 0X00;
 

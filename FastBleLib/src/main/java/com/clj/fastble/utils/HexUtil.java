@@ -63,7 +63,6 @@ public class HexUtil {
     }
 
     public static byte[] decodeHex(char[] data) {
-
         int len = data.length;
 
         if ((len & 0x01) != 0) {

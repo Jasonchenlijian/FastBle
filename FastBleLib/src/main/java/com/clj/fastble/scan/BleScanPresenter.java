@@ -32,9 +32,9 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     private long mScanTimeout;
     private BleScanPresenterImp mBleScanPresenterImp;
 
-    private List<BleDevice> mBleDeviceList = new ArrayList<>();
+    private final List<BleDevice> mBleDeviceList = new ArrayList<>();
 
-    private Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private HandlerThread mHandlerThread;
     private Handler mHandler;
     private boolean mHandling;

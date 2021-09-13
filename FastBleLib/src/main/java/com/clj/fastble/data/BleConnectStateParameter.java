@@ -6,7 +6,6 @@ public class BleConnectStateParameter {
     private int status;
     private boolean isActive;
 
-
     public BleConnectStateParameter(int status) {
         this.status = status;
     }

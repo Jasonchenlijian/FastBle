@@ -41,16 +41,16 @@ public class BleBluetooth {
     private BleGattCallback bleGattCallback;
     private BleRssiCallback bleRssiCallback;
     private BleMtuChangedCallback bleMtuChangedCallback;
-    private HashMap<String, BleNotifyCallback> bleNotifyCallbackHashMap = new HashMap<>();
-    private HashMap<String, BleIndicateCallback> bleIndicateCallbackHashMap = new HashMap<>();
-    private HashMap<String, BleWriteCallback> bleWriteCallbackHashMap = new HashMap<>();
-    private HashMap<String, BleReadCallback> bleReadCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleNotifyCallback> bleNotifyCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleIndicateCallback> bleIndicateCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleWriteCallback> bleWriteCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleReadCallback> bleReadCallbackHashMap = new HashMap<>();
 
     private LastState lastState;
     private boolean isActiveDisconnect = false;
-    private BleDevice bleDevice;
+    private final BleDevice bleDevice;
     private BluetoothGatt bluetoothGatt;
-    private MainHandler mainHandler = new MainHandler(Looper.getMainLooper());
+    private final MainHandler mainHandler = new MainHandler(Looper.getMainLooper());
     private int connectRetryCount = 0;
 
     public BleBluetooth(BleDevice bleDevice) {
@@ -106,14 +106,10 @@ public class BleBluetooth {
     }
 
     public synchronized void clearCharacterCallback() {
-        if (bleNotifyCallbackHashMap != null)
-            bleNotifyCallbackHashMap.clear();
-        if (bleIndicateCallbackHashMap != null)
-            bleIndicateCallbackHashMap.clear();
-        if (bleWriteCallbackHashMap != null)
-            bleWriteCallbackHashMap.clear();
-        if (bleReadCallbackHashMap != null)
-            bleReadCallbackHashMap.clear();
+        bleNotifyCallbackHashMap.clear();
+        bleIndicateCallbackHashMap.clear();
+        bleWriteCallbackHashMap.clear();
+        bleReadCallbackHashMap.clear();
     }
 
     public synchronized void addRssiCallback(BleRssiCallback callback) {

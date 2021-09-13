@@ -30,7 +30,7 @@ public class BleScanner {
 
     private BleScanState mBleScanState = BleScanState.STATE_IDLE;
 
-    private BleScanPresenter mBleScanPresenter = new BleScanPresenter() {
+    private final BleScanPresenter mBleScanPresenter = new BleScanPresenter() {
 
         @Override
         public void onScanStarted(boolean success) {
