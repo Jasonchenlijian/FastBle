@@ -4,12 +4,10 @@ package com.clj.fastble.scan;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleScanAndConnectCallback;
-import com.clj.fastble.callback.BleScanListener2;
+import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleScanListener;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleScanState;
@@ -50,7 +48,7 @@ public class BleScanner {
                 }
             } else {
                 if (callback != null) {
-                    ((BleScanListener2) callback).onLeScan(bleDevice);
+                    ((BleScanCallback) callback).onLeScan(bleDevice);
                 }
             }
         }
@@ -80,7 +78,7 @@ public class BleScanner {
                 }
             } else {
                 if (callback != null) {
-                    ((BleScanListener2) callback).onScanFinished(bleDeviceList);
+                    ((BleScanCallback) callback).onScanFinished(bleDeviceList);
                 }
             }
             mBleScanPresenter.setCancelBleScanListener();
@@ -88,7 +86,7 @@ public class BleScanner {
     };
 
     public void scan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
-                     long timeOut, final BleScanListener2 callback) {
+                     long timeOut, final BleScanCallback callback) {
 
         startLeScan(serviceUuids, names, mac, fuzzy, false, timeOut, callback);
     }

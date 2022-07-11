@@ -27,7 +27,7 @@ import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleRssiCallback;
 import com.clj.fastble.callback.BleScanAndConnectCallback;
-import com.clj.fastble.callback.BleScanListener2;
+import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleScanState;
@@ -287,7 +287,7 @@ public class BleManager {
      *
      * @param callback
      */
-    public void scan(BleScanListener2 callback) {
+    public void scan(BleScanCallback callback) {
         if (callback == null) {
             throw new IllegalArgumentException("BleScanCallback can not be Null!");
         }

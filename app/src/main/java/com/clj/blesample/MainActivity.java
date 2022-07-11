@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         BleManager.getInstance().disconnectAllDevice();
-        BleManager.getInstance().destroy();
+        BleManager.getInstance().destroy(null);
     }
 
     @Override
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (btn_scan.getText().equals(getString(R.string.start_scan))) {
                     checkPermissions();
                 } else if (btn_scan.getText().equals(getString(R.string.stop_scan))) {
-                    BleManager.getInstance().cancelScan();
+                    BleManager.getInstance().cancelScan(true);
                 }
                 break;
 
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onConnect(BleDevice bleDevice) {
                 if (!BleManager.getInstance().isConnected(bleDevice)) {
-                    BleManager.getInstance().cancelScan();
+                    BleManager.getInstance().cancelScan(true);
                     connect(bleDevice);
                 }
             }
