@@ -1,6 +1,7 @@
 
 package com.clj.fastble.bluetooth;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -213,7 +214,6 @@ public class BleConnector {
                 }
             }
         };
-
     }
 
     private BleConnector withUUID(UUID serviceUUID, UUID characteristicUUID) {
@@ -247,7 +247,7 @@ public class BleConnector {
                 && (mCharacteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
 
             handleCharacteristicNotifyCallback(bleNotifyCallback, uuid_notify);
-            setCharacteristicNotification(mBluetoothGatt, mCharacteristic, userCharacteristicDescriptor, true, bleNotifyCallback);
+            setCharacteristicNotification(mBluetoothGatt, mCharacteristic, userCharacteristicDescriptor, true, bleNotifyCallback, uuid_notify);
         } else {
             if (bleNotifyCallback != null)
                 bleNotifyCallback.onNotifyFailure(new OtherException("this characteristic not support notify!"));
@@ -261,7 +261,7 @@ public class BleConnector {
         if (mCharacteristic != null
                 && (mCharacteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
             return setCharacteristicNotification(mBluetoothGatt, mCharacteristic,
-                    useCharacteristicDescriptor, false, null);
+                    useCharacteristicDescriptor, false, null, null);
         } else {
             return false;
         }
@@ -270,13 +270,16 @@ public class BleConnector {
     /**
      * notify setting
      */
+    @SuppressLint("MissingPermission")
     private boolean setCharacteristicNotification(BluetoothGatt gatt,
                                                   BluetoothGattCharacteristic characteristic,
                                                   boolean useCharacteristicDescriptor,
                                                   boolean enable,
-                                                  BleNotifyCallback bleNotifyCallback) {
+                                                  BleNotifyCallback bleNotifyCallback,
+                                                  String uuid_notify) {
         if (gatt == null || characteristic == null) {
             notifyMsgInit();
+            mBleBluetooth.removeNotifyCallback(uuid_notify);
             if (bleNotifyCallback != null)
                 bleNotifyCallback.onNotifyFailure(new OtherException("gatt or characteristic equal null"));
             return false;
@@ -285,6 +288,7 @@ public class BleConnector {
         boolean success1 = gatt.setCharacteristicNotification(characteristic, enable);
         if (!success1) {
             notifyMsgInit();
+            mBleBluetooth.removeNotifyCallback(uuid_notify);
             if (bleNotifyCallback != null)
                 bleNotifyCallback.onNotifyFailure(new OtherException("gatt setCharacteristicNotification fail"));
             return false;
@@ -347,6 +351,7 @@ public class BleConnector {
     /**
      * indicate setting
      */
+    @SuppressLint("MissingPermission")
     private boolean setCharacteristicIndication(BluetoothGatt gatt,
                                                 BluetoothGattCharacteristic characteristic,
                                                 boolean useCharacteristicDescriptor,
@@ -394,6 +399,7 @@ public class BleConnector {
     /**
      * write
      */
+    @SuppressLint("MissingPermission")
     public void writeCharacteristic(byte[] data, BleWriteCallback bleWriteCallback, String uuid_write) {
         if (data == null || data.length <= 0) {
             if (bleWriteCallback != null)
@@ -424,6 +430,7 @@ public class BleConnector {
     /**
      * read
      */
+    @SuppressLint("MissingPermission")
     public void readCharacteristic(BleReadCallback bleReadCallback, String uuid_read) {
         if (mCharacteristic != null
                 && (mCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
@@ -443,6 +450,7 @@ public class BleConnector {
     /**
      * rssi
      */
+    @SuppressLint("MissingPermission")
     public void readRemoteRssi(BleRssiCallback bleRssiCallback) {
         handleRSSIReadCallback(bleRssiCallback);
         if (!mBluetoothGatt.readRemoteRssi()) {
@@ -455,6 +463,7 @@ public class BleConnector {
     /**
      * set mtu
      */
+    @SuppressLint("MissingPermission")
     public void setMtu(int requiredMtu, BleMtuChangedCallback bleMtuChangedCallback) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             handleSetMtuCallback(bleMtuChangedCallback);
@@ -479,6 +488,7 @@ public class BleConnector {
      * @throws IllegalArgumentException If the parameters are outside of their
      *                                  specified range.
      */
+    @SuppressLint("MissingPermission")
     public boolean requestConnectionPriority(int connectionPriority) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             return mBluetoothGatt.requestConnectionPriority(connectionPriority);
@@ -603,6 +613,16 @@ public class BleConnector {
 
     public void mtuChangedMsgInit() {
         mHandler.removeMessages(BleMsg.MSG_SET_MTU_START);
+    }
+
+    public void removeCallbacksAndMessages() {
+        if (null != mHandler)
+            mHandler.removeCallbacksAndMessages(null);
+        mBluetoothGatt = null;
+        mGattService = null;
+        mCharacteristic = null;
+        mBleBluetooth = null;
+        mHandler = null;
     }
 
 }
