@@ -5,7 +5,7 @@ import com.clj.fastble.data.BleDevice;
 
 import java.util.List;
 
-public abstract class BleScanCallback implements BleScanPresenterImp {
+public abstract class BleScanCallback implements BleScanListener {
 
     public abstract void onScanFinished(List<BleDevice> scanResultList);
 

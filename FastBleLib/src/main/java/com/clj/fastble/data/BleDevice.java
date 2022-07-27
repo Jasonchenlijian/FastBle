@@ -1,9 +1,12 @@
 package com.clj.fastble.data;
 
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.Objects;
 
 
 public class BleDevice implements Parcelable {
@@ -56,6 +59,7 @@ public class BleDevice implements Parcelable {
         }
     };
 
+    @SuppressLint("MissingPermission")
     public String getName() {
         if (mDevice != null) {
             return mDevice.getName();
@@ -70,6 +74,20 @@ public class BleDevice implements Parcelable {
         return null;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BleDevice bleDevice = (BleDevice) o;
+        return mDevice.getAddress().equals(bleDevice.getMac());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mDevice);
+    }
+
+    @SuppressLint("MissingPermission")
     public String getKey() {
         if (mDevice != null) {
             return mDevice.getName() + mDevice.getAddress();

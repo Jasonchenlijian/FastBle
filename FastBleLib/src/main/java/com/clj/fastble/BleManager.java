@@ -1,5 +1,6 @@
 package com.clj.fastble;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
@@ -381,8 +382,8 @@ public class BleManager {
     /**
      * Cancel scan
      */
-    public void cancelScan() {
-        BleScanner.getInstance().stopLeScan();
+    public void cancelScan(boolean isCallbackScanFinish) {
+        BleScanner.getInstance().stopLeScan(isCallbackScanFinish);
     }
 
     /**
@@ -746,13 +747,13 @@ public class BleManager {
      * @return
      */
     public boolean isSupportBle() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                && context.getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+        return context.getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
     /**
      * Open bluetooth
      */
+    @SuppressLint("MissingPermission")
     public void enableBluetooth() {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.enable();
@@ -848,6 +849,13 @@ public class BleManager {
             bleBluetooth.removeNotifyCallback(uuid_notify);
     }
 
+    public boolean isHasNotifyCallback(BleDevice bleDevice, String uuid_notify) {
+        BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
+        if (bleBluetooth != null)
+            return bleBluetooth.isHasNotifyCallback(uuid_notify);
+        return false;
+    }
+
     public void removeIndicateCallback(BleDevice bleDevice, String uuid_indicate) {
         BleBluetooth bleBluetooth = getBleBluetooth(bleDevice);
         if (bleBluetooth != null)
@@ -914,6 +922,14 @@ public class BleManager {
         return false;
     }
 
+    public boolean isConnected() {
+        List<BleDevice> list = getAllConnectedDevice();
+        if (list != null && list.size() > 0) {
+            return true;
+        }
+        return false;
+    }
+
     public void disconnect(BleDevice bleDevice) {
         if (multipleBluetoothController != null) {
             multipleBluetoothController.disconnect(bleDevice);
@@ -926,9 +942,9 @@ public class BleManager {
         }
     }
 
-    public void destroy() {
+    public void destroy(String mac) {
         if (multipleBluetoothController != null) {
-            multipleBluetoothController.destroy();
+            multipleBluetoothController.destroy(mac);
         }
     }
 
