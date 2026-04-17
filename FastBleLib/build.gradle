@@ -1,31 +1,38 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+}
 
 android {
-    compileSdkVersion rootProject.ext.android.compileSdkVersion
-    buildToolsVersion rootProject.ext.android.buildToolsVersion
+    namespace 'com.clj.fastble'
+    compileSdk rootProject.ext.android.compileSdk
 
     defaultConfig {
-        minSdkVersion rootProject.ext.android.minSdkVersion
-        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        minSdk rootProject.ext.android.minSdk
+        targetSdk rootProject.ext.android.targetSdk
         versionCode rootProject.ext.versionControl.versionCode
         versionName rootProject.ext.versionControl.versonName
     }
+
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
-task makeAAR(type: Copy) {
+tasks.register('makeAAR', Copy) {
     from('build/outputs/aar/')
     into('build/aarFloder/')
     include('FastBleLib-release.aar')
-    rename ('FastBleLib-release.aar', 'FastBLE-' + rootProject.ext.versionControl.versonName + '.aar' )
+    rename('FastBleLib-release.aar', 'FastBLE-' + rootProject.ext.versionControl.versonName + '.aar')
 }
-makeAAR.dependsOn(build)
+tasks.named('makeAAR').configure { dependsOn build }
