@@ -111,7 +111,7 @@ public class ServiceListFragment extends Fragment {
             if (convertView != null) {
                 holder = (ViewHolder) convertView.getTag();
             } else {
-                convertView = View.inflate(context, R.layout.adapter_service, null);
+                convertView = LayoutInflater.from(context).inflate(R.layout.adapter_service, parent, false);
                 holder = new ViewHolder();
                 convertView.setTag(holder);
                 holder.txt_title = (TextView) convertView.findViewById(R.id.txt_title);

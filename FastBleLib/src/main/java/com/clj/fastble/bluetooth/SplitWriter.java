@@ -121,8 +121,8 @@ public class SplitWriter {
     }
 
     private void release() {
-        mHandlerThread.quit();
         mHandler.removeCallbacksAndMessages(null);
+        mHandlerThread.quit();
     }
 
     private static Queue<byte[]> splitByte(byte[] data, int count) {
@@ -130,12 +130,7 @@ public class SplitWriter {
             BleLog.w("Be careful: split count beyond 20! Ensure MTU higher than 23!");
         }
         Queue<byte[]> byteQueue = new LinkedList<>();
-        int pkgCount;
-        if (data.length % count == 0) {
-            pkgCount = data.length / count;
-        } else {
-            pkgCount = Math.round(data.length / count + 1);
-        }
+        int pkgCount = (data.length + count - 1) / count;
 
         if (pkgCount > 0) {
             for (int i = 0; i < pkgCount; i++) {

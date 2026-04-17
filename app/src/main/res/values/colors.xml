@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#1DE9B6</color>
-    <color name="colorPrimaryDark">#1DE9B6</color>
-    <color name="colorAccent">#FF5722</color>
+    <color name="colorPrimary">#1565C0</color>
+    <color name="colorPrimaryDark">#0D47A1</color>
+    <color name="colorAccent">#448AFF</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="background">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="divider">#E0E0E0</color>
+
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+
+    <color name="connected_green">#4CAF50</color>
+    <color name="disconnect_red">#F44336</color>
+    <color name="rssi_amber">#FF8F00</color>
 </resources>

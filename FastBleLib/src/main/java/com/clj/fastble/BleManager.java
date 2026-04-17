@@ -1,6 +1,6 @@
 package com.clj.fastble;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -38,7 +38,7 @@ import com.clj.fastble.utils.BleLog;
 import java.util.List;
 import java.util.UUID;
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+@SuppressLint("MissingPermission")
 public class BleManager {
 
     private Application context;
@@ -729,15 +729,12 @@ public class BleManager {
      *                                  specified range.
      */
     public boolean requestConnectionPriority(BleDevice bleDevice, int connectionPriority) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
-            if (bleBluetooth == null) {
-                return false;
-            } else {
-                return bleBluetooth.newBleConnector().requestConnectionPriority(connectionPriority);
-            }
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
+        if (bleBluetooth == null) {
+            return false;
+        } else {
+            return bleBluetooth.newBleConnector().requestConnectionPriority(connectionPriority);
         }
-        return false;
     }
 
     /**
@@ -746,8 +743,8 @@ public class BleManager {
      * @return
      */
     public boolean isSupportBle() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                && context.getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+        return context.getApplicationContext().getPackageManager()
+                .hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
     /**
@@ -783,7 +780,6 @@ public class BleManager {
         return new BleDevice(bluetoothDevice);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public BleDevice convertBleDevice(ScanResult scanResult) {
         if (scanResult == null) {
             throw new IllegalArgumentException("scanResult can not be Null!");

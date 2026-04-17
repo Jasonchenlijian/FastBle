@@ -2,6 +2,7 @@ package com.clj.fastble.data;
 
 
 import android.bluetooth.BluetoothDevice;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -25,7 +26,11 @@ public class BleDevice implements Parcelable {
     }
 
     protected BleDevice(Parcel in) {
-        mDevice = in.readParcelable(BluetoothDevice.class.getClassLoader());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mDevice = in.readParcelable(BluetoothDevice.class.getClassLoader(), BluetoothDevice.class);
+        } else {
+            mDevice = in.readParcelable(BluetoothDevice.class.getClassLoader());
+        }
         mScanRecord = in.createByteArray();
         mRssi = in.readInt();
         mTimestampNanos = in.readLong();
@@ -72,7 +77,8 @@ public class BleDevice implements Parcelable {
 
     public String getKey() {
         if (mDevice != null) {
-            return mDevice.getName() + mDevice.getAddress();
+            String name = mDevice.getName();
+            return (name != null ? name : "") + mDevice.getAddress();
         }
         return "";
     }

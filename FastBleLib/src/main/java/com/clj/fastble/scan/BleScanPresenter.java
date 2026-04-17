@@ -1,10 +1,7 @@
 package com.clj.fastble.scan;
 
 
-import android.annotation.TargetApi;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -22,8 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallback {
+public abstract class BleScanPresenter {
 
     private String[] mDeviceNames;
     private String mDeviceMac;
@@ -95,8 +91,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
         return mBleScanPresenterImp;
     }
 
-    @Override
-    public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+    public void handleScanResult(BluetoothDevice device, int rssi, byte[] scanRecord) {
         if (device == null)
             return;
 

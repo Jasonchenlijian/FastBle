@@ -1,17 +1,23 @@
 ![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/fastble_poster.png)
 
-Thanks to the logo designed by [anharismail](https://github.com/anharismail)
-
-
 # FastBle
-Android Bluetooth Low Energy
+Android Bluetooth Low Energy (BLE) fast development framework.
 
 - Filtering, scanning, linking, reading, writing, notification subscription and cancellation in a simple way.
 - Supports acquiring signal strength and setting the maximum transmission unit.
 - Support custom scan rules  
 - Support multi device connections  
 - Support reconnection  
-- Support configuration timeout for conncet or operation  
+- Support configuration timeout for connect or operation  
+
+
+### Requirements
+
+| Item | Minimum |
+|------|---------|
+| Android SDK | minSdk 21 (Android 5.0) |
+| Java | 17 |
+| Android Studio | Ladybug (2024.2) or later |
 
 
 ### Preview
@@ -29,7 +35,7 @@ If you want to quickly preview all the functions, you can download APK as a test
 
 ### Gradle
 
-- Setp1: Add it in your root build.gradle at the end of repositories
+- Step1: Add it in your root build.gradle at the end of repositories
 
         allprojects {
             repositories {
@@ -42,13 +48,9 @@ If you want to quickly preview all the functions, you can download APK as a test
 - Step2: Add the dependency
 
         dependencies {
-            implementation 'com.github.Jasonchenlijian:FastBle:2.4.0'
+            implementation 'com.github.Jasonchenlijian:FastBle:2.5.0'
         }
     
-### Jar
-
-[FastBLE-2.4.0.jar](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE-2.4.0.jar)
-
 
 ## Wiki
 
@@ -56,6 +58,70 @@ If you want to quickly preview all the functions, you can download APK as a test
 
 [Android BLE开发详解和FastBle源码解析](https://www.jianshu.com/p/795bb0a08beb)
 
+
+## Permissions
+
+### Manifest Declaration
+
+FastBle already declares the following permissions in its own AndroidManifest.xml. You do NOT need to add them again in your app manifest:
+
+```xml
+<!-- Android 11 and below -->
+<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+
+<!-- Android 12+ -->
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```
+
+### Runtime Permission Handling
+
+Starting from **Android 6.0 (API 23)**, location permissions must be requested at runtime before scanning BLE devices.
+
+Starting from **Android 12 (API 31)**, the new `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT` permissions must also be requested at runtime.
+
+**Example:**
+
+```java
+private void checkPermissions() {
+    List<String> permissionDeniedList = new ArrayList<>();
+
+    // Android 12+: request Bluetooth permissions
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionDeniedList.add(Manifest.permission.BLUETOOTH_SCAN);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionDeniedList.add(Manifest.permission.BLUETOOTH_CONNECT);
+        }
+    }
+
+    // All versions: request location permission
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+        permissionDeniedList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    if (!permissionDeniedList.isEmpty()) {
+        ActivityCompat.requestPermissions(this,
+                permissionDeniedList.toArray(new String[0]),
+                REQUEST_CODE_PERMISSION);
+    } else {
+        // All permissions granted, start scanning
+        startScan();
+    }
+}
+```
+
+Tips:
+- On Android 6.0 ~ 11, GPS must be enabled for BLE scanning to work. On Android 12+, this is no longer required if you only use `BLUETOOTH_SCAN`.
+- All runtime permissions must be granted **before** calling any scan or connect methods. Otherwise a `SecurityException` will be thrown.
 
 
 ## Usage
@@ -72,6 +138,9 @@ If you want to quickly preview all the functions, you can download APK as a test
 
 		void enableBluetooth()
 		void disableBluetooth()
+
+	Tips:
+	- On Android 13+, `enableBluetooth()` / `disableBluetooth()` are deprecated by the system. It is recommended to use `Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)` to prompt the user to enable Bluetooth instead.
 
 - #### Initialization configuration
 
@@ -95,7 +164,7 @@ If you want to quickly preview all the functions, you can download APK as a test
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
 
-	Tips：
+	Tips:
 	- Before scanning the device, scan rules can be configured to filter out the equipment matching the program.
 	- What is not configured is the default parameter
 
@@ -121,7 +190,8 @@ If you want to quickly preview all the functions, you can download APK as a test
         });
 
 	Tips:
-	- The scanning and filtering process is carried out in the worker thread, so it will not affect the UI operation of the main thread. Eventually, every callback result will return to the main thread.。
+	- The scanning and filtering process is carried out in the worker thread, so it will not affect the UI operation of the main thread. Eventually, every callback result will return to the main thread.
+	- Internally uses `BluetoothLeScanner` with `ScanCallback` (the modern Android BLE scanning API).
 
 - #### Connect with device
 
@@ -413,9 +483,9 @@ If you want to quickly preview all the functions, you can download APK as a test
                     }
                 });
 
-	Tips：
+	Tips:
 	- Obtaining the signal strength of the device must be carried out after the device is connected.
-	- Some devices may not be able to read Rssi, do not callback onRssiSuccess (), and callback onRssiFailure () because of timeout.
+	- Some devices may not be able to read Rssi, do not callback onRssiSuccess(), and callback onRssiFailure() because of timeout.
 
 - #### set Mtu
 
@@ -435,26 +505,25 @@ If you want to quickly preview all the functions, you can download APK as a test
             }
         });
 
-	Tips：
+	Tips:
 	- Setting up MTU requires operation after the device is connected.
-	- There is no such restriction in the Android Version (API-17 to API-20). Therefore, only the equipment above API21 will expand the demand for MTU.
 	- The parameter MTU of the method is set to 23, and the maximum setting is 512.
-	- Not every device supports the expansion of MTU, which requires both sides of the communication, that is to say, the need for the device hardware also supports the expansion of the MTU method. After calling this method, you can see through onMtuChanged (int MTU) how much the maximum transmission unit of the device is expanded to after the final setup. If the device does not support, no matter how many settings, the final MTU will be 23.
+	- Not every device supports the expansion of MTU, which requires both sides of the communication, that is to say, the need for the device hardware also supports the expansion of the MTU method. After calling this method, you can see through onMtuChanged(int mtu) how much the maximum transmission unit of the device is expanded to after the final setup. If the device does not support, no matter how many settings, the final MTU will be 23.
 
 - #### requestConnectionPriority
 
-	`boolean requestConnectionPriority(BleDevice bleDevice,int connectionPriority)`
+	`boolean requestConnectionPriority(BleDevice bleDevice, int connectionPriority)`
 
 	Tips:
-	- Request a specific connection priority. Must be one of{@link BluetoothGatt#CONNECTION_PRIORITY_BALANCED}, {@link BluetoothGatt#CONNECTION_PRIORITY_HIGH} or {@link BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER}.
+	- Request a specific connection priority. Must be one of `BluetoothGatt.CONNECTION_PRIORITY_BALANCED`, `BluetoothGatt.CONNECTION_PRIORITY_HIGH` or `BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER`.
 
-- #### Converte BleDevice object
+- #### Convert BleDevice object
 
 	`BleDevice convertBleDevice(BluetoothDevice bluetoothDevice)`
 
 	`BleDevice convertBleDevice(ScanResult scanResult)`
 
-	Tips：
+	Tips:
 	- The completed BleDevice object is still unconnected, if necessary, advanced connection.
 
 - #### Get all connected devices
@@ -534,13 +603,32 @@ If you want to quickly preview all the functions, you can download APK as a test
     `int getRssi()` Initial signal intensity
 
 
+## Changelog
+
+### v2.5.0
+- Upgrade build tools: Gradle 8.13, AGP 8.5.0, compileSdk/targetSdk 35, minSdk 21
+- Adapt to Android 12+ (API 31): add `BLUETOOTH_SCAN` / `BLUETOOTH_CONNECT` runtime permissions
+- Replace deprecated `BluetoothAdapter.startLeScan()` with `BluetoothLeScanner` + `ScanCallback` API
+- Fix `ConcurrentModificationException` risk: use `ConcurrentHashMap` for GATT callback maps
+- Fix `BleDevice.getKey()` null pointer when device name is null
+- Fix `SplitWriter` cleanup order and integer division precision
+- Fix deprecated `Parcel.readParcelable()` for API 33+
+- Remove unnecessary API version checks (minSdk is now 21)
+- Add `@SuppressLint("MissingPermission")` annotations for Android 12+ permission model
+- Require Java 17
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Jasonchenlijian/FastBle&type=Date)](https://star-history.com/#Jasonchenlijian/FastBle&Date)
+
 
 ## Contact
 If you have problems and ideas to communicate with me, you can contact me in the following ways.
 
-WeChat： chenlijian1216
+WeChat: chenlijian1216
 
-Email： jasonchenlijian@gmail.com
+Email: jasonchenlijian@gmail.com
 
 
 ## License
@@ -558,7 +646,3 @@ Email： jasonchenlijian@gmail.com
 	   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	   See the License for the specific language governing permissions and
 	   limitations under the License.
-
-
-
-

@@ -2,119 +2,168 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:animateLayoutChanges="true"
     android:orientation="vertical">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        style="@style/AppToolbar"
         android:title="@string/app_name"
-        app:titleTextColor="@android:color/white" />
+        app:titleTextColor="@color/white" />
 
     <LinearLayout
         android:id="@+id/layout_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#eeeeee"
+        android:background="@color/card_background"
+        android:elevation="2dp"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="20dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="12dp"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:text="@string/scan_setting"
-            android:textColor="@color/colorPrimaryDark"
-            android:textSize="12sp" />
+            android:textColor="@color/colorPrimary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/et_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/setting_name"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:textSize="13sp" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/SettingEditText"
+            android:hint="@string/setting_name">
 
-        <EditText
-            android:id="@+id/et_mac"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/setting_mac"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:textSize="13sp" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp" />
 
-        <EditText
-            android:id="@+id/et_uuid"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/setting_uuid"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <Switch
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/SettingEditText"
+            android:hint="@string/setting_mac">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_mac"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/SettingEditText"
+            android:hint="@string/setting_uuid">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_uuid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/sw_auto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
+            android:layout_marginTop="12dp"
             android:text="AutoConnect ?"
+            android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
     </LinearLayout>
 
     <TextView
         android:id="@+id/txt_setting"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:background="#eeeeee"
-        android:padding="10dp" />
+        android:background="@color/card_background"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/colorAccent"
+        android:textSize="12sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="12dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_scan"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/ScanButton"
             android:layout_centerInParent="true"
             android:text="@string/start_scan" />
 
         <ImageView
             android:id="@+id/img_loading"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentRight="true"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginRight="10dp"
+            android:layout_marginEnd="12dp"
             android:src="@mipmap/ic_loading"
             android:visibility="invisible" />
 
     </RelativeLayout>
 
-    <ListView
-        android:id="@+id/list_device"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="0.5dp"
-        android:paddingStart="5dp"
-        android:paddingEnd="5dp"
-        android:scrollbars="none" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_device"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:scrollbars="none" />
+
+        <LinearLayout
+            android:id="@+id/layout_scanning"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/background"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                app:indicatorColor="@color/colorPrimary"
+                app:indicatorSize="48dp"
+                app:trackThickness="4dp" />
+
+            <TextView
+                android:id="@+id/txt_scanning"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>
-

@@ -1,10 +1,16 @@
 package com.clj.fastble.scan;
 
 
-import android.annotation.TargetApi;
-import android.os.Build;
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelUuid;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleScanAndConnectCallback;
@@ -14,10 +20,10 @@ import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.data.BleScanState;
 import com.clj.fastble.utils.BleLog;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class BleScanner {
 
     public static BleScanner getInstance() {
@@ -29,6 +35,7 @@ public class BleScanner {
     }
 
     private BleScanState mBleScanState = BleScanState.STATE_IDLE;
+    private ScanCallback mScanCallback;
 
     private final BleScanPresenter mBleScanPresenter = new BleScanPresenter() {
 
@@ -106,6 +113,7 @@ public class BleScanner {
         startLeScan(serviceUuids, names, mac, fuzzy, true, timeOut, callback);
     }
 
+    @SuppressLint("MissingPermission")
     private synchronized void startLeScan(UUID[] serviceUuids, String[] names, String mac, boolean fuzzy,
                                           boolean needConnect, long timeOut, BleScanPresenterImp imp) {
 
@@ -119,14 +127,58 @@ public class BleScanner {
 
         mBleScanPresenter.prepare(names, mac, fuzzy, needConnect, timeOut, imp);
 
-        boolean success = BleManager.getInstance().getBluetoothAdapter()
-                .startLeScan(serviceUuids, mBleScanPresenter);
-        mBleScanState = success ? BleScanState.STATE_SCANNING : BleScanState.STATE_IDLE;
-        mBleScanPresenter.notifyScanStarted(success);
+        BluetoothLeScanner scanner = BleManager.getInstance().getBluetoothAdapter().getBluetoothLeScanner();
+        if (scanner == null) {
+            mBleScanState = BleScanState.STATE_IDLE;
+            mBleScanPresenter.notifyScanStarted(false);
+            return;
+        }
+
+        mScanCallback = new ScanCallback() {
+            @Override
+            public void onScanResult(int callbackType, ScanResult result) {
+                BluetoothDevice device = result.getDevice();
+                byte[] scanRecord = null;
+                if (result.getScanRecord() != null) {
+                    scanRecord = result.getScanRecord().getBytes();
+                }
+                mBleScanPresenter.handleScanResult(device, result.getRssi(), scanRecord);
+            }
+
+            @Override
+            public void onScanFailed(int errorCode) {
+                BleLog.e("onScanFailed, errorCode: " + errorCode);
+            }
+        };
+
+        List<ScanFilter> filters = new ArrayList<>();
+        if (serviceUuids != null && serviceUuids.length > 0) {
+            for (UUID uuid : serviceUuids) {
+                ScanFilter filter = new ScanFilter.Builder()
+                        .setServiceUuid(new ParcelUuid(uuid))
+                        .build();
+                filters.add(filter);
+            }
+        }
+
+        ScanSettings settings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build();
+
+        scanner.startScan(filters, settings, mScanCallback);
+        mBleScanState = BleScanState.STATE_SCANNING;
+        mBleScanPresenter.notifyScanStarted(true);
     }
 
+    @SuppressLint("MissingPermission")
     public synchronized void stopLeScan() {
-        BleManager.getInstance().getBluetoothAdapter().stopLeScan(mBleScanPresenter);
+        if (mScanCallback != null) {
+            BluetoothLeScanner scanner = BleManager.getInstance().getBluetoothAdapter().getBluetoothLeScanner();
+            if (scanner != null) {
+                scanner.stopScan(mScanCallback);
+            }
+            mScanCallback = null;
+        }
         mBleScanState = BleScanState.STATE_IDLE;
         mBleScanPresenter.notifyScanStopped();
     }
@@ -134,6 +186,5 @@ public class BleScanner {
     public BleScanState getScanState() {
         return mBleScanState;
     }
-
 
 }

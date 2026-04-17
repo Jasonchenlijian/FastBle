@@ -23,8 +23,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Switch;
+import com.google.android.material.switchmaterial.SwitchMaterial;
+
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,12 +64,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView txt_setting;
     private Button btn_scan;
     private EditText et_name, et_mac, et_uuid;
-    private Switch sw_auto;
+    private SwitchMaterial sw_auto;
     private ImageView img_loading;
+
+    private LinearLayout layout_scanning;
+    private TextView txt_scanning;
 
     private Animation operatingAnim;
     private DeviceAdapter mDeviceAdapter;
     private ProgressDialog progressDialog;
+
+    private final List<BleDevice> mPendingDevices = new ArrayList<>();
+    private int mScanDeviceCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_name = (EditText) findViewById(R.id.et_name);
         et_mac = (EditText) findViewById(R.id.et_mac);
         et_uuid = (EditText) findViewById(R.id.et_uuid);
-        sw_auto = (Switch) findViewById(R.id.sw_auto);
+        sw_auto = (SwitchMaterial) findViewById(R.id.sw_auto);
 
         layout_setting = (LinearLayout) findViewById(R.id.layout_setting);
         txt_setting = (TextView) findViewById(R.id.txt_setting);
@@ -139,7 +148,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         operatingAnim.setInterpolator(new LinearInterpolator());
         progressDialog = new ProgressDialog(this);
 
-        mDeviceAdapter = new DeviceAdapter(this);
+        layout_scanning = (LinearLayout) findViewById(R.id.layout_scanning);
+        txt_scanning = (TextView) findViewById(R.id.txt_scanning);
+
+        mDeviceAdapter = new DeviceAdapter();
         mDeviceAdapter.setOnDeviceClickListener(new DeviceAdapter.OnDeviceClickListener() {
             @Override
             public void onConnect(BleDevice bleDevice) {
@@ -165,13 +177,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
-        ListView listView_device = (ListView) findViewById(R.id.list_device);
-        listView_device.setAdapter(mDeviceAdapter);
+        RecyclerView recyclerView = findViewById(R.id.list_device);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recyclerView.setAdapter(mDeviceAdapter);
     }
 
     private void showConnectedDevice() {
         List<BleDevice> deviceList = BleManager.getInstance().getAllConnectedDevice();
-        mDeviceAdapter.clearConnectedDevice();
+        mDeviceAdapter.clearScanDevice();
         for (BleDevice bleDevice : deviceList) {
             mDeviceAdapter.addDevice(bleDevice);
         }
@@ -213,11 +227,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean isAutoConnect = sw_auto.isChecked();
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                .setServiceUuids(serviceUuids)      // 只扫描指定的服务的设备，可选
-                .setDeviceName(true, names)   // 只扫描指定广播名的设备，可选
-                .setDeviceMac(mac)                  // 只扫描指定mac的设备，可选
-                .setAutoConnect(isAutoConnect)      // 连接时的autoConnect参数，可选，默认false
-                .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒
+                .setServiceUuids(serviceUuids)
+                .setDeviceName(true, names)
+                .setDeviceMac(mac)
+                .setAutoConnect(isAutoConnect)
+                .setScanTimeOut(10000)
                 .build();
         BleManager.getInstance().initScanRule(scanRuleConfig);
     }
@@ -226,11 +240,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BleManager.getInstance().scan(new BleScanCallback() {
             @Override
             public void onScanStarted(boolean success) {
+                mPendingDevices.clear();
+                mScanDeviceCount = 0;
                 mDeviceAdapter.clearScanDevice();
                 mDeviceAdapter.notifyDataSetChanged();
                 img_loading.startAnimation(operatingAnim);
                 img_loading.setVisibility(View.VISIBLE);
                 btn_scan.setText(getString(R.string.stop_scan));
+                txt_scanning.setText(getString(R.string.scanning_devices));
+                layout_scanning.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -240,12 +258,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onScanning(BleDevice bleDevice) {
-                mDeviceAdapter.addDevice(bleDevice);
-                mDeviceAdapter.notifyDataSetChanged();
+                mPendingDevices.add(bleDevice);
+                mScanDeviceCount++;
+                txt_scanning.setText(getString(R.string.scanning_devices) + "（" + mScanDeviceCount + "）");
             }
 
             @Override
             public void onScanFinished(List<BleDevice> scanResultList) {
+                mDeviceAdapter.setScanResult(mPendingDevices);
+                mPendingDevices.clear();
+                mDeviceAdapter.notifyDataSetChanged();
+
+                layout_scanning.setVisibility(View.GONE);
                 img_loading.clearAnimation();
                 img_loading.setVisibility(View.INVISIBLE);
                 btn_scan.setText(getString(R.string.start_scan));
@@ -327,16 +351,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                  @NonNull String[] permissions,
                                                  @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_CODE_PERMISSION_LOCATION:
-                if (grantResults.length > 0) {
-                    for (int i = 0; i < grantResults.length; i++) {
-                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                            onPermissionGranted(permissions[i]);
-                        }
-                    }
+        if (requestCode == REQUEST_CODE_PERMISSION_LOCATION) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
                 }
-                break;
+            }
+            if (allGranted) {
+                onAllPermissionsGranted();
+            } else {
+                Toast.makeText(this, getString(R.string.please_open_blue), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -347,52 +374,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION};
         List<String> permissionDeniedList = new ArrayList<>();
-        for (String permission : permissions) {
-            int permissionCheck = ContextCompat.checkSelfPermission(this, permission);
-            if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-                onPermissionGranted(permission);
-            } else {
-                permissionDeniedList.add(permission);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionDeniedList.add(Manifest.permission.BLUETOOTH_SCAN);
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionDeniedList.add(Manifest.permission.BLUETOOTH_CONNECT);
             }
         }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionDeniedList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
         if (!permissionDeniedList.isEmpty()) {
-            String[] deniedPermissions = permissionDeniedList.toArray(new String[permissionDeniedList.size()]);
+            String[] deniedPermissions = permissionDeniedList.toArray(new String[0]);
             ActivityCompat.requestPermissions(this, deniedPermissions, REQUEST_CODE_PERMISSION_LOCATION);
+        } else {
+            onAllPermissionsGranted();
         }
     }
 
-    private void onPermissionGranted(String permission) {
-        switch (permission) {
-            case Manifest.permission.ACCESS_FINE_LOCATION:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !checkGPSIsOpen()) {
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.notifyTitle)
-                            .setMessage(R.string.gpsNotifyMsg)
-                            .setNegativeButton(R.string.cancel,
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            finish();
-                                        }
-                                    })
-                            .setPositiveButton(R.string.setting,
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                                            startActivityForResult(intent, REQUEST_CODE_OPEN_GPS);
-                                        }
-                                    })
-
-                            .setCancelable(false)
-                            .show();
-                } else {
-                    setScanRule();
-                    startScan();
-                }
-                break;
+    private void onAllPermissionsGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                && !checkGPSIsOpen()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.notifyTitle)
+                    .setMessage(R.string.gpsNotifyMsg)
+                    .setNegativeButton(R.string.cancel,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    finish();
+                                }
+                            })
+                    .setPositiveButton(R.string.setting,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                    startActivityForResult(intent, REQUEST_CODE_OPEN_GPS);
+                                }
+                            })
+                    .setCancelable(false)
+                    .show();
+        } else {
+            setScanRule();
+            startScan();
         }
     }
 

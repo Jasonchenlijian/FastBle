@@ -37,5 +37,7 @@
     <string name="connected">已连接</string>
     <string name="disconnect">断开连接</string>
     <string name="enter">进入操作</string>
+    <string name="scanning_devices">正在搜索设备…</string>
+    <string name="scan_found_devices">搜索完成，共发现 %d 个设备</string>
 
 </resources>

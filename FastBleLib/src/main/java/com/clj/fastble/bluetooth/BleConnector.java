@@ -1,12 +1,11 @@
 
 package com.clj.fastble.bluetooth;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,7 +27,7 @@ import com.clj.fastble.exception.TimeoutException;
 import java.util.UUID;
 
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+@SuppressLint("MissingPermission")
 public class BleConnector {
 
     private static final String UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
@@ -456,16 +455,11 @@ public class BleConnector {
      * set mtu
      */
     public void setMtu(int requiredMtu, BleMtuChangedCallback bleMtuChangedCallback) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            handleSetMtuCallback(bleMtuChangedCallback);
-            if (!mBluetoothGatt.requestMtu(requiredMtu)) {
-                mtuChangedMsgInit();
-                if (bleMtuChangedCallback != null)
-                    bleMtuChangedCallback.onSetMTUFailure(new OtherException("gatt requestMtu fail"));
-            }
-        } else {
+        handleSetMtuCallback(bleMtuChangedCallback);
+        if (!mBluetoothGatt.requestMtu(requiredMtu)) {
+            mtuChangedMsgInit();
             if (bleMtuChangedCallback != null)
-                bleMtuChangedCallback.onSetMTUFailure(new OtherException("API level lower than 21"));
+                bleMtuChangedCallback.onSetMTUFailure(new OtherException("gatt requestMtu fail"));
         }
     }
 
@@ -480,10 +474,7 @@ public class BleConnector {
      *                                  specified range.
      */
     public boolean requestConnectionPriority(int connectionPriority) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return mBluetoothGatt.requestConnectionPriority(connectionPriority);
-        }
-        return false;
+        return mBluetoothGatt.requestConnectionPriority(connectionPriority);
     }
 
 
