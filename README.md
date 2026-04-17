@@ -1,621 +1,296 @@
-![效果图](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/fastble_poster.png)
+<div align="center">
+
+![FastBle](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/fastble_poster.png)
 
 # FastBle
-Android Bluetooth Low Energy (BLE) fast development framework.
 
-- Filtering, scanning, linking, reading, writing, notification subscription and cancellation in a simple way.
-- Supports acquiring signal strength and setting the maximum transmission unit.
-- Support custom scan rules  
-- Support multi device connections  
-- Support reconnection  
-- Support configuration timeout for connect or operation  
+**Android Bluetooth Low Energy fast development framework**
 
+[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Version](https://img.shields.io/badge/Version-2.5.0-orange.svg)](https://github.com/Jasonchenlijian/FastBle)
+[![Platform](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com)
 
-### Requirements
+Filtering, scanning, connecting, reading, writing, notification — all in a simple way.
+
+[Wiki](https://github.com/Jasonchenlijian/FastBle/wiki) · [Download APK](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk) · [Source Analysis](https://www.jianshu.com/p/795bb0a08beb)
+
+</div>
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Preview](#preview)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+  - [Init](#init)
+  - [Scan](#scan)
+  - [Connect](#connect)
+  - [Notify / Indicate](#notify--indicate)
+  - [Read / Write](#read--write)
+  - [RSSI / MTU](#rssi--mtu)
+  - [Other APIs](#other-apis)
+- [Changelog](#changelog)
+- [Star History](#star-history)
+- [Contact](#contact)
+- [License](#license)
+
+---
+
+## Features
+
+- Scan with custom filter rules (name / MAC / UUID)
+- Multi-device simultaneous connections
+- Read, write, notify, indicate operations
+- Signal strength (RSSI) reading & MTU configuration
+- Auto reconnection with configurable retry count and interval
+- Configurable timeouts for connect & operations
+- Modern `BluetoothLeScanner` + `ScanCallback` API internally
+- Supports Android 5.0 ~ 15 (API 21 ~ 35)
+
+## Requirements
 
 | Item | Minimum |
-|------|---------|
-| Android SDK | minSdk 21 (Android 5.0) |
+|:-----|:--------|
+| Android SDK | API 21 (Android 5.0) |
 | Java | 17 |
 | Android Studio | Ladybug (2024.2) or later |
 
+## Preview
 
-### Preview
-![Preview_1](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_1.png) 
-![Preview_2](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_2.png) 
-![Preview_3](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_3.png)
-![Preview_4](https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_4.png)
+<p align="center">
+<img src="https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_1.png" width="24%" />
+<img src="https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_2.png" width="24%" />
+<img src="https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_3.png" width="24%" />
+<img src="https://github.com/Jasonchenlijian/FastBle/raw/master/preview/new_4.png" width="24%" />
+</p>
 
 
-### APK
-If you want to quickly preview all the functions, you can download APK as a test tool directly.
-
- [FastBLE.apk](https://github.com/Jasonchenlijian/FastBle/raw/master/FastBLE.apk) 
-
+## Getting Started
 
 ### Gradle
 
-- Step1: Add it in your root build.gradle at the end of repositories
+**Step 1.** Add JitPack to your root `build.gradle` (or `settings.gradle`):
 
-        allprojects {
-            repositories {
-                ...
-                maven { url 'https://jitpack.io' }
-            }
-        }
-
-
-- Step2: Add the dependency
-
-        dependencies {
-            implementation 'com.github.Jasonchenlijian:FastBle:2.5.0'
-        }
-    
-
-## Wiki
-
-[中文文档](https://github.com/Jasonchenlijian/FastBle/wiki)
-
-[Android BLE开发详解和FastBle源码解析](https://www.jianshu.com/p/795bb0a08beb)
-
-
-## Permissions
-
-### Manifest Declaration
-
-FastBle already declares the following permissions in its own AndroidManifest.xml. You do NOT need to add them again in your app manifest:
-
-```xml
-<!-- Android 11 and below -->
-<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
-
-<!-- Android 12+ -->
-<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```gradle
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
 ```
 
-### Runtime Permission Handling
+**Step 2.** Add the dependency:
 
-Starting from **Android 6.0 (API 23)**, location permissions must be requested at runtime before scanning BLE devices.
+```gradle
+dependencies {
+    implementation 'com.github.Jasonchenlijian:FastBle:2.5.0'
+}
+```
 
-Starting from **Android 12 (API 31)**, the new `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT` permissions must also be requested at runtime.
+### Permissions
 
-**Example:**
+FastBle declares all required permissions in its own manifest. **You do NOT need to add them again.**
+
+However, you **must** request runtime permissions before scanning:
 
 ```java
 private void checkPermissions() {
-    List<String> permissionDeniedList = new ArrayList<>();
+    List<String> denied = new ArrayList<>();
 
-    // Android 12+: request Bluetooth permissions
+    // Android 12+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
-                != PackageManager.PERMISSION_GRANTED) {
-            permissionDeniedList.add(Manifest.permission.BLUETOOTH_SCAN);
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
-                != PackageManager.PERMISSION_GRANTED) {
-            permissionDeniedList.add(Manifest.permission.BLUETOOTH_CONNECT);
-        }
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PERMISSION_GRANTED)
+            denied.add(Manifest.permission.BLUETOOTH_SCAN);
+        if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED)
+            denied.add(Manifest.permission.BLUETOOTH_CONNECT);
     }
 
-    // All versions: request location permission
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-        permissionDeniedList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-    }
+    // All versions
+    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED)
+        denied.add(Manifest.permission.ACCESS_FINE_LOCATION);
 
-    if (!permissionDeniedList.isEmpty()) {
-        ActivityCompat.requestPermissions(this,
-                permissionDeniedList.toArray(new String[0]),
-                REQUEST_CODE_PERMISSION);
+    if (!denied.isEmpty()) {
+        requestPermissions(denied.toArray(new String[0]), REQUEST_CODE);
     } else {
-        // All permissions granted, start scanning
         startScan();
     }
 }
 ```
 
-Tips:
-- On Android 6.0 ~ 11, GPS must be enabled for BLE scanning to work. On Android 12+, this is no longer required if you only use `BLUETOOTH_SCAN`.
-- All runtime permissions must be granted **before** calling any scan or connect methods. Otherwise a `SecurityException` will be thrown.
+> **Note:** On Android 6.0 ~ 11, GPS must be enabled for BLE scanning. On Android 12+, this is no longer required.
 
 
 ## Usage
 
-- #### Init
-    
-        BleManager.getInstance().init(getApplication());
+### Init
 
-- #### Determine whether the current Android system supports BLE
+```java
+BleManager.getInstance().init(getApplication());
+BleManager.getInstance()
+        .enableLog(true)
+        .setReConnectCount(1, 5000)
+        .setSplitWriteNum(20)
+        .setConnectOverTime(10000)
+        .setOperateTimeout(5000);
+```
 
-        boolean isSupportBle()
+### Scan
 
-- #### Open or close Bluetooth
+```java
+// Configure scan rules
+BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
+        .setServiceUuids(serviceUuids)
+        .setDeviceName(true, names)
+        .setDeviceMac(mac)
+        .setAutoConnect(isAutoConnect)
+        .setScanTimeOut(10000)
+        .build();
+BleManager.getInstance().initScanRule(scanRuleConfig);
 
-		void enableBluetooth()
-		void disableBluetooth()
+// Start scanning
+BleManager.getInstance().scan(new BleScanCallback() {
+    @Override
+    public void onScanStarted(boolean success) { }
 
-	Tips:
-	- On Android 13+, `enableBluetooth()` / `disableBluetooth()` are deprecated by the system. It is recommended to use `Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)` to prompt the user to enable Bluetooth instead.
+    @Override
+    public void onScanning(BleDevice bleDevice) { }
 
-- #### Initialization configuration
+    @Override
+    public void onScanFinished(List<BleDevice> scanResultList) { }
+});
+```
 
-        BleManager.getInstance()
-                .enableLog(true)
-                .setReConnectCount(1, 5000)
-	            .setSplitWriteNum(20)
-	            .setConnectOverTime(10000)
-                .setOperateTimeout(5000);
+### Connect
 
-- #### Configuration scan rules
+```java
+// Connect by BleDevice
+BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
+    @Override
+    public void onStartConnect() { }
 
-	`void initScanRule(BleScanRuleConfig scanRuleConfig)`
+    @Override
+    public void onConnectFail(BleDevice bleDevice, BleException exception) { }
 
-        BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                .setServiceUuids(serviceUuids)
-                .setDeviceName(true, names)
-                .setDeviceMac(mac)
-                .setAutoConnect(isAutoConnect)
-                .setScanTimeOut(10000)
-                .build();
-        BleManager.getInstance().initScanRule(scanRuleConfig);
+    @Override
+    public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) { }
 
-	Tips:
-	- Before scanning the device, scan rules can be configured to filter out the equipment matching the program.
-	- What is not configured is the default parameter
+    @Override
+    public void onDisConnected(boolean isActiveDisConnected, BleDevice device,
+                               BluetoothGatt gatt, int status) { }
+});
 
-- #### Scan
+// Or connect directly by MAC address
+BleManager.getInstance().connect(mac, bleGattCallback);
 
-	`void scan(BleScanCallback callback)`
+// Or scan and auto-connect the first matched device
+BleManager.getInstance().scanAndConnect(bleScanAndConnectCallback);
+```
 
-        BleManager.getInstance().scan(new BleScanCallback() {
+### Notify / Indicate
+
+```java
+// Subscribe to notifications
+BleManager.getInstance().notify(bleDevice, uuid_service, uuid_notify,
+        new BleNotifyCallback() {
             @Override
-            public void onScanStarted(boolean success) {
-
-            }
+            public void onNotifySuccess() { }
 
             @Override
-            public void onScanning(BleDevice bleDevice) {
-
-            }
+            public void onNotifyFailure(BleException exception) { }
 
             @Override
-            public void onScanFinished(List<BleDevice> scanResultList) {
-
-            }
+            public void onCharacteristicChanged(byte[] data) { }
         });
 
-	Tips:
-	- The scanning and filtering process is carried out in the worker thread, so it will not affect the UI operation of the main thread. Eventually, every callback result will return to the main thread.
-	- Internally uses `BluetoothLeScanner` with `ScanCallback` (the modern Android BLE scanning API).
+// Stop notifications
+BleManager.getInstance().stopNotify(bleDevice, uuid_service, uuid_notify);
 
-- #### Connect with device
+// Indicate works the same way
+BleManager.getInstance().indicate(bleDevice, uuid_service, uuid_indicate, bleIndicateCallback);
+BleManager.getInstance().stopIndicate(bleDevice, uuid_service, uuid_indicate);
+```
 
+### Read / Write
 
-	`BluetoothGatt connect(BleDevice bleDevice, BleGattCallback bleGattCallback)`
-
-        BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
+```java
+// Write data
+BleManager.getInstance().write(bleDevice, uuid_service, uuid_write, data,
+        new BleWriteCallback() {
             @Override
-            public void onStartConnect() {
-
-            }
-
-            @Override
-            public void onConnectFail(BleDevice bleDevice, BleException exception) {
-
-            }
+            public void onWriteSuccess(int current, int total, byte[] justWrite) { }
 
             @Override
-            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
-
-            }
+            public void onWriteFailure(BleException exception) { }
         });
 
-	Tips:
-	- On some types of phones, connectGatt must be effective on the main thread. It is very recommended that the connection process be placed in the main thread.
-	- After connection failure, reconnect: the framework contains reconnection mechanism after connection failure, which can configure reconnection times and intervals. Of course, you can also call the `connect` method in `onConnectFail` callback automatically.
-	- The connection is disconnected and reconnected: you can call the `connect` method again in the `onDisConnected` callback method.
-	- In order to ensure the success rate of reconnection, it is recommended to reconnect after a period of interval.
-	- When some models fail, they will be unable to scan devices for a short time. They can be connected directly through device objects or devices MAC without scanning.
-
-- #### Connect with Mac
-
-	`BluetoothGatt connect(String mac, BleGattCallback bleGattCallback)`
-
-        BleManager.getInstance().connect(mac, new BleGattCallback() {
+// Read data
+BleManager.getInstance().read(bleDevice, uuid_service, uuid_read,
+        new BleReadCallback() {
             @Override
-            public void onStartConnect() {
-
-            }
+            public void onReadSuccess(byte[] data) { }
 
             @Override
-            public void onConnectFail(BleDevice bleDevice, BleException exception) {
-
-            }
-
-            @Override
-            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
-
-            }
+            public void onReadFailure(BleException exception) { }
         });
-
-	Tips:
-	- This method can attempt to connect directly to the BLE device around the Mac without scanning.
-	- In many usage scenarios, I suggest that APP save the Mac of the user's customary device, then use this method to connect, which will greatly improve the connection efficiency.
-
-- #### Scan and connect
-
-	After scanning the first equipment that meets the scanning rules, it will stop scanning and connect to the device.
-
-	`void scanAndConnect(BleScanAndConnectCallback callback)`
-
-        BleManager.getInstance().scanAndConnect(new BleScanAndConnectCallback() {
-            @Override
-            public void onScanStarted(boolean success) {
-
-            }
-
-            @Override
-            public void onScanFinished(BleDevice scanResult) {
-
-            }
-
-            @Override
-            public void onStartConnect() {
-
-            }
-
-            @Override
-            public void onConnectFail(BleDevice bleDevice,BleException exception) {
-
-            }
-
-            @Override
-            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-
-            }
-
-            @Override
-            public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
-
-            }
-        }); 
-
-
-- #### Cancel scan
-
-	`void cancelScan()`
-
-		BleManager.getInstance().cancelScan();
-
-	Tips:
-	- If this method is called, if it is still in the scan state, it will end immediately, and callback the `onScanFinished` method.
-
-
-- #### Notify
-	`void notify(BleDevice bleDevice,
-                       String uuid_service,
-                       String uuid_notify,
-                       BleNotifyCallback callback)`
-	`void notify(BleDevice bleDevice,
-                       String uuid_service,
-                       String uuid_notify,
-                       boolean useCharacteristicDescriptor,
-                       BleNotifyCallback callback)`
-                        
-        BleManager.getInstance().notify(
-                bleDevice,
-                uuid_service,
-                uuid_characteristic_notify,
-                new BleNotifyCallback() {
-                    @Override
-                    public void onNotifySuccess() {
-
-                    }
-
-                    @Override
-                    public void onNotifyFailure(BleException exception) {
-
-                    }
-
-                    @Override
-                    public void onCharacteristicChanged(byte[] data) {
-
-                    }
-                });
-	
-
-- #### Stop Notify
-
-	`boolean stopNotify(BleDevice bleDevice,
-                              String uuid_service,
-                              String uuid_notify)`
-	`boolean stopNotify(BleDevice bleDevice,
-                              String uuid_service,
-                              String uuid_notify,
-                              boolean useCharacteristicDescriptor)`
-
-		BleManager.getInstance().stopNotify(uuid_service, uuid_characteristic_notify);
-
-- #### Indicate
-
-	`void indicate(BleDevice bleDevice,
-                         String uuid_service,
-                         String uuid_indicate,
-                         BleIndicateCallback callback)`
-	`void indicate(BleDevice bleDevice,
-                         String uuid_service,
-                         String uuid_indicate,
-                         boolean useCharacteristicDescriptor,
-                         BleIndicateCallback callback)`
-
-        BleManager.getInstance().indicate(
-                bleDevice,
-                uuid_service,
-                uuid_characteristic_indicate,
-                new BleIndicateCallback() {
-                    @Override
-                    public void onIndicateSuccess() {
-
-                    }
-
-                    @Override
-                    public void onIndicateFailure(BleException exception) {
-
-                    }
-
-                    @Override
-                    public void onCharacteristicChanged(byte[] data) {
-
-                    }
-                });
-
-
-- #### Stop Indicate
-
-    `boolean stopIndicate(BleDevice bleDevice,
-                                String uuid_service,
-                                String uuid_indicate)`
-	`boolean stopIndicate(BleDevice bleDevice,
-                                String uuid_service,
-                                String uuid_indicate,
-                                boolean useCharacteristicDescriptor)`
-    
-		BleManager.getInstance().stopIndicate(uuid_service, uuid_characteristic_indicate);
-
-- #### Write
-
-	`void write(BleDevice bleDevice,
-                      String uuid_service,
-                      String uuid_write,
-                      byte[] data,
-                      BleWriteCallback callback)`
-	`void write(BleDevice bleDevice,
-                      String uuid_service,
-                      String uuid_write,
-                      byte[] data,
-                      boolean split,
-                      BleWriteCallback callback)`
-	`void write(BleDevice bleDevice,
-                      String uuid_service,
-                      String uuid_write,
-                      byte[] data,
-                      boolean split,
-                      boolean sendNextWhenLastSuccess,
-                      long intervalBetweenTwoPackage,
-                      BleWriteCallback callback)`
-
-        BleManager.getInstance().write(
-                bleDevice,
-                uuid_service,
-                uuid_characteristic_write,
-                data,
-                new BleWriteCallback() {
-                    @Override
-                    public void onWriteSuccess(int current, int total, byte[] justWrite) {
-
-                    }
-
-                    @Override
-                    public void onWriteFailure(BleException exception) {
-
-                    }
-                });
-
-	Tips:
-	- Without expanding MTU and expanding MTU's ineffectiveness, subcontracting is required when long data with more than 20 bytes are to be sent. The parameter `boolean split` indicates whether to use packet delivery; the `write` method without the `boolean split` parameter is subcontracted to the data by more than 20 bytes by default.
-	- On the `onWriteSuccess` callback method: `current` represents the number of packets that are currently sent, and `total` represents the total packet data this time, and `justWrite` represents the successful packet that has just been sent.
-
-- #### Read
-
-	`void read(BleDevice bleDevice,
-                     String uuid_service,
-                     String uuid_read,
-                     BleReadCallback callback)`
-
-        BleManager.getInstance().read(
-                bleDevice,
-                uuid_service,
-                uuid_characteristic_read,
-                new BleReadCallback() {
-                    @Override
-                    public void onReadSuccess(byte[] data) {
-
-                    }
-
-                    @Override
-                    public void onReadFailure(BleException exception) {
-
-                    }
-                });
-
-
-- #### Get Rssi
-
-	`void readRssi(BleDevice bleDevice, BleRssiCallback callback)`
-
-        BleManager.getInstance().readRssi(
-                bleDevice,
-                new BleRssiCallback() {
-
-                    @Override
-                    public void onRssiFailure(BleException exception) {
-
-                    }
-
-                    @Override
-                    public void onRssiSuccess(int rssi) {
-
-                    }
-                });
-
-	Tips:
-	- Obtaining the signal strength of the device must be carried out after the device is connected.
-	- Some devices may not be able to read Rssi, do not callback onRssiSuccess(), and callback onRssiFailure() because of timeout.
-
-- #### set Mtu
-
-	`void setMtu(BleDevice bleDevice,
-                       int mtu,
-                       BleMtuChangedCallback callback)`
-
-        BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
-            @Override
-            public void onSetMTUFailure(BleException exception) {
-
-            }
-
-            @Override
-            public void onMtuChanged(int mtu) {
-
-            }
-        });
-
-	Tips:
-	- Setting up MTU requires operation after the device is connected.
-	- The parameter MTU of the method is set to 23, and the maximum setting is 512.
-	- Not every device supports the expansion of MTU, which requires both sides of the communication, that is to say, the need for the device hardware also supports the expansion of the MTU method. After calling this method, you can see through onMtuChanged(int mtu) how much the maximum transmission unit of the device is expanded to after the final setup. If the device does not support, no matter how many settings, the final MTU will be 23.
-
-- #### requestConnectionPriority
-
-	`boolean requestConnectionPriority(BleDevice bleDevice, int connectionPriority)`
-
-	Tips:
-	- Request a specific connection priority. Must be one of `BluetoothGatt.CONNECTION_PRIORITY_BALANCED`, `BluetoothGatt.CONNECTION_PRIORITY_HIGH` or `BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER`.
-
-- #### Convert BleDevice object
-
-	`BleDevice convertBleDevice(BluetoothDevice bluetoothDevice)`
-
-	`BleDevice convertBleDevice(ScanResult scanResult)`
-
-	Tips:
-	- The completed BleDevice object is still unconnected, if necessary, advanced connection.
-
-- #### Get all connected devices
-
-	`List<BleDevice> getAllConnectedDevice()`
-
-        BleManager.getInstance().getAllConnectedDevice();
-
-- #### Get a BluetoothGatt of a connected device
-
-	`BluetoothGatt getBluetoothGatt(BleDevice bleDevice)`
-
-- #### Get all Service of a connected device
-
-	`List<BluetoothGattService> getBluetoothGattServices(BleDevice bleDevice)`
-
-- #### Get all the Characteristic of a Service
-
-	`List<BluetoothGattCharacteristic> getBluetoothGattCharacteristics(BluetoothGattService service)`
-		
-- #### Determine whether a device has been connected
-
-	`boolean isConnected(BleDevice bleDevice)`
-
-        BleManager.getInstance().isConnected(bleDevice);
-
-	`boolean isConnected(String mac)`
-
-		BleManager.getInstance().isConnected(mac);
-
-- #### Determine the current connection state of a device
-
-	`int getConnectState(BleDevice bleDevice)`
-
-		BleManager.getInstance().getConnectState(bleDevice);
-
-- #### Disconnect a device
-
-	`void disconnect(BleDevice bleDevice)`
-
-        BleManager.getInstance().disconnect(bleDevice);
-
-- #### Disconnect all devices
-
-	`void disconnectAllDevice()`
-
-        BleManager.getInstance().disconnectAllDevice();
-
-- #### Out of use, clean up resources
-
-	`void destroy()`
-
-        BleManager.getInstance().destroy();
-
-
-- #### HexUtil
-
-    Data operation tool class
-
-    `String formatHexString(byte[] data, boolean addSpace)`
-
-	`byte[] hexStringToBytes(String hexString)`
-
-	`char[] encodeHex(byte[] data, boolean toLowerCase)`
-
-
-- #### BleDevice
-
-    BLE device object is the smallest unit object of scanning, connection and operation in this framework.
-
-    `String getName()` Bluetooth broadcast name
-
-    `String getMac()` Bluetooth MAC
-
-    `byte[] getScanRecord()` Broadcast data
-
-    `int getRssi()` Initial signal intensity
+```
+
+> **Tip:** Data longer than 20 bytes is automatically split into packets. Use `write(bleDevice, uuid_service, uuid_write, data, split, callback)` to control this behavior.
+
+### RSSI / MTU
+
+```java
+// Read signal strength (device must be connected)
+BleManager.getInstance().readRssi(bleDevice, new BleRssiCallback() {
+    @Override
+    public void onRssiSuccess(int rssi) { }
+
+    @Override
+    public void onRssiFailure(BleException exception) { }
+});
+
+// Set MTU (range: 23 ~ 512, requires device support)
+BleManager.getInstance().setMtu(bleDevice, mtu, new BleMtuChangedCallback() {
+    @Override
+    public void onMtuChanged(int mtu) { }
+
+    @Override
+    public void onSetMTUFailure(BleException exception) { }
+});
+```
+
+### Other APIs
+
+| Method | Description |
+|:-------|:------------|
+| `isSupportBle()` | Check if device supports BLE |
+| `enableBluetooth()` | Enable Bluetooth (deprecated on Android 13+) |
+| `getAllConnectedDevice()` | Get all connected devices |
+| `isConnected(bleDevice)` | Check connection state |
+| `getConnectState(bleDevice)` | Get detailed connection state |
+| `getBluetoothGatt(bleDevice)` | Get BluetoothGatt object |
+| `getBluetoothGattServices(bleDevice)` | Get all services |
+| `getBluetoothGattCharacteristics(service)` | Get all characteristics |
+| `disconnect(bleDevice)` | Disconnect a device |
+| `disconnectAllDevice()` | Disconnect all devices |
+| `destroy()` | Release all resources |
+| `convertBleDevice(bluetoothDevice)` | Convert to BleDevice object |
+| `requestConnectionPriority(bleDevice, priority)` | Request connection priority |
 
 
 ## Changelog
 
 ### v2.5.0
-- Upgrade build tools: Gradle 8.13, AGP 8.5.0, compileSdk/targetSdk 35, minSdk 21
-- Adapt to Android 12+ (API 31): add `BLUETOOTH_SCAN` / `BLUETOOTH_CONNECT` runtime permissions
-- Replace deprecated `BluetoothAdapter.startLeScan()` with `BluetoothLeScanner` + `ScanCallback` API
-- Fix `ConcurrentModificationException` risk: use `ConcurrentHashMap` for GATT callback maps
-- Fix `BleDevice.getKey()` null pointer when device name is null
-- Fix `SplitWriter` cleanup order and integer division precision
-- Fix deprecated `Parcel.readParcelable()` for API 33+
-- Remove unnecessary API version checks (minSdk is now 21)
-- Add `@SuppressLint("MissingPermission")` annotations for Android 12+ permission model
-- Require Java 17
+- **Build:** Gradle 8.13, AGP 8.5.0, compileSdk/targetSdk 35, minSdk 21, Java 17
+- **Android 12+:** Add `BLUETOOTH_SCAN` / `BLUETOOTH_CONNECT` runtime permissions
+- **Scan API:** Replace deprecated `startLeScan()` with `BluetoothLeScanner` + `ScanCallback`
+- **Thread safety:** Use `ConcurrentHashMap` for GATT callback maps
+- **Bug fixes:** Null device name crash, `SplitWriter` cleanup order, `Parcel.readParcelable` deprecation
+- **Cleanup:** Remove unnecessary API version checks (minSdk is now 21)
 
 
 ## Star History
@@ -624,25 +299,27 @@ Tips:
 
 
 ## Contact
-If you have problems and ideas to communicate with me, you can contact me in the following ways.
 
-WeChat: chenlijian1216
-
-Email: jasonchenlijian@gmail.com
+| Channel | |
+|:--------|:-|
+| WeChat | chenlijian1216 |
+| Email | jasonchenlijian@gmail.com |
 
 
 ## License
 
-	   Copyright 2016 chenlijian
+```
+Copyright 2016 chenlijian
 
-	   Licensed under the Apache License, Version 2.0 (the "License");
-	   you may not use this file except in compliance with the License.
-	   You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-   		   http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-	   Unless required by applicable law or agreed to in writing, software
-	   distributed under the License is distributed on an "AS IS" BASIS,
-	   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	   See the License for the specific language governing permissions and
-	   limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
